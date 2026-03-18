@@ -11,17 +11,25 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Options
 option(PC_CONSOLE "Show console window (disables -mwindows, useful for debugging)" OFF)
+option(PC_EXPERIMENTAL_64BIT "Allow experimental 64-bit bringup work" OFF)
 
 # =============================================================================
 # 32-bit enforcement (required: JSystem casts pointers to u32)
 # =============================================================================
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT PC_EXPERIMENTAL_64BIT)
     message(FATAL_ERROR
         "This project MUST be built as 32-bit (pointer-to-u32 casts in JSystem).\n"
+        "  Experimental bringup: pass -DPC_EXPERIMENTAL_64BIT=ON to continue at your own risk\n"
         "  Windows/MSYS2: Use the MINGW32 shell (not MINGW64)\n"
         "  Linux: Use a 32-bit toolchain, e.g.:\n"
         "    cmake .. -DCMAKE_C_COMPILER=i686-linux-gnu-gcc -DCMAKE_CXX_COMPILER=i686-linux-gnu-g++\n"
         "    OR: cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-linux32.cmake")
+endif()
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND PC_EXPERIMENTAL_64BIT)
+    message(WARNING
+        "Configuring experimental 64-bit bringup mode.\n"
+        "  This is for portability work only and is not expected to run correctly yet.")
 endif()
 
 # Allow mixed C/C++ linkage
@@ -39,6 +47,10 @@ add_compile_definitions(
     _LANGUAGE_C    # Required for N64 GBI/ultratypes headers
     PC_ENHANCEMENTS  # Optional visual improvements (MSAA, etc). Remove to get pure PC port.
 )
+
+if(PC_EXPERIMENTAL_64BIT)
+    add_compile_definitions(PC_EXPERIMENTAL_64BIT)
+endif()
 
 # Common compiler flags (applied to all sources)
 if(MSVC)

@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include <stdlib.h>
+
 #include "boot.h"
 #include "irqmgr.h"
 #include "sys_stacks.h"

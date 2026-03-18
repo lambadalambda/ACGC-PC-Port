@@ -10,6 +10,7 @@
 #include "m_event.h"
 #include "m_private.h"
 #include "m_time.h"
+#include "dolphin/os.h"
 #include "libultra/libultra.h"
 #include "initial_menu.h"
 #include "m_titledemo.h"

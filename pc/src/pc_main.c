@@ -27,6 +27,64 @@ int           g_pc_widescreen_stretch = 0;
 unsigned int pc_image_base = 0;
 unsigned int pc_image_end  = 0;
 
+#ifndef _WIN32
+static unsigned int pc_get_image_end(const void* image_base) {
+#if defined(__APPLE__)
+    const struct mach_header* header = (const struct mach_header*)image_base;
+    const unsigned char* cmd_ptr = NULL;
+    uintptr_t slide = 0;
+    uintptr_t max_end = (uintptr_t)image_base;
+
+    for (uint32_t image_idx = 0; image_idx < _dyld_image_count(); image_idx++) {
+        if ((const void*)_dyld_get_image_header(image_idx) == image_base) {
+            slide = (uintptr_t)_dyld_get_image_vmaddr_slide(image_idx);
+            break;
+        }
+    }
+
+    if (header->magic == MH_MAGIC_64 || header->magic == MH_CIGAM_64) {
+        const struct mach_header_64* header64 = (const struct mach_header_64*)image_base;
+        cmd_ptr = (const unsigned char*)(header64 + 1);
+    } else {
+        cmd_ptr = (const unsigned char*)(header + 1);
+    }
+
+    for (uint32_t i = 0; i < header->ncmds; i++) {
+        const struct load_command* cmd = (const struct load_command*)cmd_ptr;
+        if (cmd->cmd == LC_SEGMENT) {
+            const struct segment_command* segment = (const struct segment_command*)cmd_ptr;
+            uintptr_t seg_end = (uintptr_t)segment->vmaddr + (uintptr_t)segment->vmsize + slide;
+            if (seg_end > max_end) max_end = seg_end;
+        } else if (cmd->cmd == LC_SEGMENT_64) {
+            const struct segment_command_64* segment = (const struct segment_command_64*)cmd_ptr;
+            uintptr_t seg_end = (uintptr_t)(segment->vmaddr + segment->vmsize + slide);
+            if (seg_end > max_end) max_end = seg_end;
+        }
+        cmd_ptr += cmd->cmdsize;
+    }
+
+    return (unsigned int)max_end;
+#else
+    const Elf32_Ehdr* ehdr = (const Elf32_Ehdr*)image_base;
+    const Elf32_Phdr* phdr = (const Elf32_Phdr*)((const char*)image_base + ehdr->e_phoff);
+    unsigned int max_end = 0;
+
+    for (int i = 0; i < ehdr->e_phnum; i++) {
+        if (phdr[i].p_type == PT_LOAD) {
+            unsigned int seg_end = phdr[i].p_vaddr + phdr[i].p_memsz;
+            if (seg_end > max_end) max_end = seg_end;
+        }
+    }
+
+    if (ehdr->e_type == ET_DYN) {
+        return (unsigned int)(uintptr_t)image_base + max_end;
+    }
+
+    return max_end;
+#endif
+}
+#endif
+
 static jmp_buf* pc_active_jmpbuf = NULL;
 static volatile unsigned int pc_last_crash_addr = 0;
 
@@ -316,21 +374,7 @@ int main(int argc, char* argv[]) {
         Dl_info dl;
         if (dladdr((void*)main, &dl) && dl.dli_fbase) {
             pc_image_base = (unsigned int)(uintptr_t)dl.dli_fbase;
-            Elf32_Ehdr* ehdr = (Elf32_Ehdr*)dl.dli_fbase;
-            Elf32_Phdr* phdr = (Elf32_Phdr*)((char*)dl.dli_fbase + ehdr->e_phoff);
-            unsigned int max_end = 0;
-            for (int i = 0; i < ehdr->e_phnum; i++) {
-                if (phdr[i].p_type == PT_LOAD) {
-                    unsigned int seg_end = phdr[i].p_vaddr + phdr[i].p_memsz;
-                    if (seg_end > max_end) max_end = seg_end;
-                }
-            }
-            /* ET_EXEC: p_vaddr is absolute. ET_DYN (PIE): relative to load address. */
-            if (ehdr->e_type == ET_DYN) {
-                pc_image_end = pc_image_base + max_end;
-            } else {
-                pc_image_end = max_end;
-            }
+            pc_image_end = pc_get_image_end(dl.dli_fbase);
         }
     }
 #endif

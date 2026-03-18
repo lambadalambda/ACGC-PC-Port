@@ -10,7 +10,9 @@ extern "C" {
 #include "types.h"
 
 #ifndef _GBI_STATIC_PTR
-#ifdef TARGET_PC
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#define _GBI_STATIC_PTR(s) 0u
+#elif defined(TARGET_PC)
 #define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
 #else
 #define _GBI_STATIC_PTR(s) (unsigned int)(s)

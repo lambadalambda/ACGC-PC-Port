@@ -2,6 +2,7 @@
 #include "TwoHeadArena.h"
 #include "m_skin_matrix.h"
 #include "graph.h"
+#include "libultra/gu.h"
 #include "libc64/math64.h"
 #include "MSL_C/w_math.h"
 #include "libforest/gbi_extensions.h"

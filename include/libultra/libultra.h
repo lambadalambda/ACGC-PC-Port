@@ -16,14 +16,26 @@
 #define N64_SCREEN_HEIGHT 240
 #define N64_SCREEN_WIDTH 320
 
+#ifdef TARGET_PC
+#ifdef bcmp
+#undef bcmp
+#endif
+#ifdef bcopy
+#undef bcopy
+#endif
+#ifdef bzero
+#undef bzero
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef u64 Z_OSTime;
 
-int bcmp(void* v1, void* v2, u32 size);
-void bcopy(void* src, void* dst, size_t n);
+int bcmp(const void* v1, const void* v2, size_t size);
+void bcopy(const void* src, void* dst, size_t n);
 void bzero(void* ptr, size_t size);
 void osSyncPrintf(const char* fmt, ...);
 void osWritebackDCache(void* vaddr, u32 nbytes);

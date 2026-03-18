@@ -3,6 +3,18 @@
 
 #include "stddef.h"
 
+#ifdef TARGET_PC
+#ifdef memcpy
+#undef memcpy
+#endif
+#ifdef memset
+#undef memset
+#endif
+#ifdef memcmp
+#undef memcmp
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

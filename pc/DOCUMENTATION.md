@@ -322,7 +322,7 @@ Three layers:
 
 32-bit MinGW GCC 15.x (i686) + CMake + SDL2 2.30.10 + GLAD2 (GL 3.3 Core).
 
-**Must compile as 32-bit** — decomp code casts pointers to u32 everywhere.
+The supported build remains 32-bit. For 64-bit portability work only, CMake also exposes `-DPC_EXPERIMENTAL_64BIT=ON` so the project can be configured on LP64 hosts while type and address-model fixes are in progress.
 
 ### Quick Start
 
@@ -365,7 +365,7 @@ Linux support uses POSIX equivalents: `signal()` instead of VEH, `mmap()` instea
 
 ## Common Pitfalls
 
-- **32-bit required**: 64-bit builds crash in JKRHeap (pointer→u32 casts).
+- **32-bit remains the working path**: use `-DPC_EXPERIMENTAL_64BIT=ON` only for bringup work. 64-bit builds are still expected to fail or misbehave until the pointer-width cleanup is complete.
 - **`__attribute__((weak))`** doesn't work on MinGW/PE. Use regular definitions.
 - **libc64/malloc.c** is excluded — it redefines system malloc and crashes the CRT.
 - **NDEBUG must always be defined**: decomp asserts have side effects. Without NDEBUG, assert macros run and cause texture corruption.

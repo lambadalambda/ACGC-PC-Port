@@ -68,6 +68,9 @@ typedef struct {
 } OSContPad;
 /* Restore errno macro */
 #include <errno.h>
+#ifdef errno
+#undef errno
+#endif
 #else
 
 typedef struct {

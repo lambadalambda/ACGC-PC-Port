@@ -969,8 +969,16 @@ typedef enum NASubtrack {
 #define NA_COMMAND_AUDIO_GROUP_SET_APPLY_SUBTRACK_MASK(group, mask) \
     Nap_SetU16(NA_MAKE_COMMAND(AUDIOCMD_SET_GROUP_MASK, group, 0, 0), mask)
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#define NA_AUDIO_PTR_PARAM(ptr) 0
+#elif defined(TARGET_PC)
+#define NA_AUDIO_PTR_PARAM(ptr) ((s32)(uintptr_t)(ptr))
+#else
+#define NA_AUDIO_PTR_PARAM(ptr) ((s32)(ptr))
+#endif
+
 #define NA_COMMAND_AUDIO_SUBTRACK_SET_FILTER(group, subtrack, filterCutoff, pFilter) \
-    Nap_SetS32(NA_MAKE_COMMAND(AUDIOCMD_OP_SUB_SET_FILTER, group, subtrack, filterCutoff), (s32)pFilter)
+    Nap_SetS32(NA_MAKE_COMMAND(AUDIOCMD_OP_SUB_SET_FILTER, group, subtrack, filterCutoff), NA_AUDIO_PTR_PARAM(pFilter))
 
 #ifdef __cplusplus
 }

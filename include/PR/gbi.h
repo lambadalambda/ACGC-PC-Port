@@ -22,7 +22,10 @@
 
 #include <PR/ultratypes.h>
 
-#ifdef TARGET_PC
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+/* Compile-only placeholder. Static GBI pointer encoding is still 32-bit-only. */
+#define _GBI_STATIC_PTR(s) 0u
+#elif defined(TARGET_PC)
 /* GCC GNU extension: pointer-to-integer cast in static initializers.
    Safe on 32-bit where sizeof(void*) == sizeof(unsigned int). */
 #define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
@@ -3190,7 +3193,7 @@ typedef union {
 {{									\
 	_SHIFTL(cmd, 24, 8) | _SHIFTL(fmt, 21, 3) |			\
 	_SHIFTL(siz, 19, 2) | _SHIFTL((width)-1, 0, 12),		\
-	(unsigned int)(i)						\
+	_GBI_STATIC_PTR(i)						\
 }}
 
 #define	gDPSetColorImage(pkt, f, s, w, i)	gSetImage(pkt, G_SETCIMG, f, s, w, i)
