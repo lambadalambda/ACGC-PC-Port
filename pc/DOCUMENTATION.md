@@ -322,7 +322,7 @@ Three layers:
 
 32-bit MinGW GCC 15.x (i686) + CMake + SDL2 2.30.10 + GLAD2 (GL 3.3 Core).
 
-The supported build remains 32-bit. For 64-bit portability work only, CMake also exposes `-DPC_EXPERIMENTAL_64BIT=ON` so the project can be configured on LP64 hosts while type and address-model fixes are in progress.
+The supported build remains 32-bit. For 64-bit portability work only, CMake also exposes `-DPC_EXPERIMENTAL_64BIT=ON`. That guarded path now configures and builds on LP64 hosts, but runtime validation is still incomplete.
 
 ### Quick Start
 
@@ -336,6 +336,15 @@ pc/build32/bin/AnimalCrossing.exe --verbose
 ```
 
 `build_pc.sh` handles CMake configuration and build in one step.
+
+For guarded 64-bit bringup work, the smallest useful checks are:
+
+```bash
+sh pc/tests/check_type_widths.sh
+sh pc/tests/check_static_ptr_contract.sh
+cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
+cmake --build /tmp/acgc-p2-config-64 -j2
+```
 
 ### Cross-Compilation
 
@@ -365,7 +374,7 @@ Linux support uses POSIX equivalents: `signal()` instead of VEH, `mmap()` instea
 
 ## Common Pitfalls
 
-- **32-bit remains the working path**: use `-DPC_EXPERIMENTAL_64BIT=ON` only for bringup work. 64-bit builds are still expected to fail or misbehave until the pointer-width cleanup is complete.
+- **32-bit remains the working path**: use `-DPC_EXPERIMENTAL_64BIT=ON` only for bringup work. The guarded 64-bit path now builds, but runtime is still unproven and some static pointer-bearing initializers are still zero placeholders on LP64.
 - **`__attribute__((weak))`** doesn't work on MinGW/PE. Use regular definitions.
 - **libc64/malloc.c** is excluded — it redefines system malloc and crashes the CRT.
 - **NDEBUG must always be defined**: decomp asserts have side effects. Without NDEBUG, assert macros run and cause texture corruption.

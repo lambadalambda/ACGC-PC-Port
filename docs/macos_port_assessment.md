@@ -6,11 +6,11 @@ Date: 2026-03-18
 
 This repository is not currently close to running on modern macOS.
 
-The PC port is built around a hard 32-bit assumption, with Windows as the primary target and Linux i686 as a secondary target. That is the main blocker for macOS today, especially on Apple Silicon, where current macOS only supports 64-bit user-space and the local toolchain cannot link a 32-bit test binary.
+The PC port is still built around a 32-bit address model, with Windows as the primary target and Linux i686 as a secondary target. The main macOS blocker is no longer configuration alone; it is the remaining runtime portability work needed to make the guarded 64-bit path correct.
 
 I verified the current state on this machine:
 
-- `cmake -S pc -B /tmp/acgc-macos-config` fails immediately on the project's 32-bit enforcement.
+- `cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON` now configures and builds on this macOS host.
 - A direct `cc -m32` link test fails on this arm64 macOS host with `ld: unknown -arch name: armv4t`.
 
 If the goal is modern macOS support, this should be treated as a broader 64-bit portability project, not as a small platform shim.
@@ -78,21 +78,21 @@ The sibling repos slightly refine the strategic recommendation, but they do not 
 
 ## Hard blockers for macOS
 
-### 1. The port is explicitly 32-bit only
+### 1. The port is no longer hard-blocked at build time, but it is still not 64-bit-correct
 
 This is the biggest issue.
 
-- `pc/CMakeLists.txt` stops configuration when `CMAKE_SIZEOF_VOID_P` is 8.
-- `pc/include/pc_platform.h` emits `#error` unless `UINTPTR_MAX == 0xFFFFFFFFu`.
-- `pc/DOCUMENTATION.md` says 64-bit builds crash because JSystem and related code cast pointers to `u32`.
+- `pc/CMakeLists.txt` now exposes a guarded `PC_EXPERIMENTAL_64BIT` bringup mode instead of hard-stopping on LP64.
+- `pc/include/pc_platform.h` now allows that guarded mode on 64-bit hosts.
+- `include/PR/gbi.h`, `include/libforest/gbi_extensions.h`, and `include/m_scene.h` still rely on compile-only zero placeholders for static 32-bit pointer fields under LP64, guarded by `pc/tests/check_static_ptr_contract.sh`.
 
 That means:
 
-- Modern macOS cannot use the current build as-is.
-- Apple Silicon is completely blocked by the current address model.
-- Even an Intel Mac on current macOS would still be blocked by the OS-level 64-bit-only environment.
+- Modern macOS can now build the guarded bringup path, but runtime correctness is still unproven.
+- Apple Silicon is no longer blocked at configure time, but it is still blocked by the remaining address-model and pointer-representation work.
+- Even on Intel macOS, the current problem is now runtime correctness rather than simply getting CMake to accept a 64-bit host.
 
-The only scenario where the current architecture is even remotely plausible is a legacy pre-Catalina Intel macOS target, which is likely not what most users mean by "macOS support" today.
+The project is now plausible as a guarded modern macOS bringup target, but not yet as a supported macOS runtime.
 
 ### 2. The POSIX path assumes ELF, not Mach-O
 

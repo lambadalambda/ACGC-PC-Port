@@ -19,8 +19,8 @@ This is not because `ACGC-PC-Port` is cleaner. It is because it is the only repo
 | Area | `ACGC-PC-Port` | `../forest` | `../ac-decomp` |
 | --- | --- | --- | --- |
 | Native runtime completeness | Highest. Real `pc/` runtime layer with SDL2/OpenGL, save, disc, model viewer, texture packs, boot path. | Low today. PC entry files are empty and many Dolphin PC stubs are no-op or failure paths. | Not a native runtime repo. |
-| Current configure status on this Mac | Fails immediately because the build hard-requires 32-bit. | Fails immediately because `CMakeLists.txt` forces a missing sibling `../aurora` checkout. | Not relevant to native runtime; macOS is documented as a host for the decomp toolchain. |
-| 32-bit enforcement | Explicit and hard. | No hard 32-bit gate found. | No native runtime target here. |
+| Current configure status on this Mac | Configures and builds in guarded experimental 64-bit mode; runtime validation is still pending. | Fails immediately because `CMakeLists.txt` forces a missing sibling `../aurora` checkout. | Not relevant to native runtime; macOS is documented as a host for the decomp toolchain. |
+| 32-bit enforcement | 32-bit remains the supported path, but a guarded `PC_EXPERIMENTAL_64BIT` bringup mode now exists. | No hard 32-bit gate found. | No native runtime target here. |
 | 64-bit cleanliness | Poor. Type model and platform layer both assume 32-bit addresses. | Also poor. No hard stop, but LP64 and pointer-truncation hazards are still pervasive. | Poor in the same original-code ways. |
 | macOS-specific code today | Very little, and some POSIX code is actually Linux/ELF-specific. | Better signs: has `_NSGetExecutablePath` and Mach-O path handling in one PC file. | macOS only appears as a build-host environment. |
 | External dependency risk | Lower. Everything important for runtime is in this repo. | Higher. Runtime direction depends heavily on `aurora`, which is not present locally and is currently hardwired as a sibling path. | Medium for tooling, but not relevant to native runtime. |
@@ -169,6 +169,12 @@ Goals:
 - stop storing host pointers in 32-bit command words and engine fields
 - define a deliberate 64-bit-safe representation for runtime addresses
 - decide which addresses are true console-style segment/offset values and which are host pointers
+
+Current guarded status:
+
+- `include/PR/gbi.h`, `include/libforest/gbi_extensions.h`, and `include/m_scene.h` now share an explicit compile-only LP64 placeholder contract through `include/pc_static_ptr.h`
+- `pc/tests/check_static_ptr_contract.sh` locks that contract in so known static pointer initializers fail fast if silent narrowing is reintroduced
+- this is still bringup scaffolding, not the final runtime-safe address representation
 
 ### P4 - Redesign seg2k0 and address disambiguation
 
