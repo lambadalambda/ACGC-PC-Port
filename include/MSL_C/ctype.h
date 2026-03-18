@@ -1,6 +1,10 @@
 #ifndef _CTYPE_H
 #define _CTYPE_H
 
+#ifdef TARGET_PC
+#include <ctype.h> // Conflicts can happen otherwise in certain compiler versions
+#else
+
 #include "MSL_C/locale.h"
 #include "MSL_C/ctype_api.h"
 
@@ -51,4 +55,5 @@ inline int _toupper(int c) {
 #endif
 
 #undef MSL_CTYPE_WEAK
-#endif
+#endif /* !TARGET_PC */
+#endif /* _CTYPE_H */
