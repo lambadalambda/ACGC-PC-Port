@@ -21,17 +21,9 @@
 #define	_GBI_H_
 
 #include <PR/ultratypes.h>
+#include "pc_static_ptr.h"
 
-#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-/* Compile-only placeholder. Static GBI pointer encoding is still 32-bit-only. */
-#define _GBI_STATIC_PTR(s) 0u
-#elif defined(TARGET_PC)
-/* GCC GNU extension: pointer-to-integer cast in static initializers.
-   Safe on 32-bit where sizeof(void*) == sizeof(unsigned int). */
-#define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
-#else
-#define _GBI_STATIC_PTR(s) (unsigned int)(s)
-#endif
+#define _GBI_STATIC_PTR(s) PC_STATIC_U32_PTR(s)
 
 /*
  * To use the F3DEX ucodes, define F3DEX_GBI before include this file.

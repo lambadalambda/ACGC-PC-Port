@@ -2,6 +2,7 @@
 #define M_SCENE_H
 
 #include "types.h"
+#include "pc_static_ptr.h"
 #include "m_actor.h"
 #include "m_lib.h"
 #include "famicom_emu.h"
@@ -165,11 +166,7 @@ typedef union scene_word_u {
     Scene_Word_Data_ArrangeFurniture_ct_c arrange_ftr_ct;
 } Scene_Word_u;
 
-#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-#define mSc_STATIC_U32_PTR(ptr) 0u
-#else
-#define mSc_STATIC_U32_PTR(ptr) ((u32)(ptr))
-#endif
+#define mSc_STATIC_U32_PTR(ptr) PC_STATIC_U32_PTR(ptr)
 
 #define mSc_DATA_PLAYER(actor_data_p)                               \
     {                                                               \

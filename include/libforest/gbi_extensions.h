@@ -8,15 +8,10 @@ extern "C" {
 // clang-format off
 
 #include "types.h"
+#include "pc_static_ptr.h"
 
 #ifndef _GBI_STATIC_PTR
-#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-#define _GBI_STATIC_PTR(s) 0u
-#elif defined(TARGET_PC)
-#define _GBI_STATIC_PTR(s) (unsigned int)(uintptr_t)(s)
-#else
-#define _GBI_STATIC_PTR(s) (unsigned int)(s)
-#endif
+#define _GBI_STATIC_PTR(s) PC_STATIC_U32_PTR(s)
 #endif
 #include <PR/mbi.h>
 #include "dolphin/gx.h"
