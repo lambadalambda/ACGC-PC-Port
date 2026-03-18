@@ -6,11 +6,11 @@
 
 #define OS_MALLOC_MAGIC (s16)'ss' // magic number for an OSMemBlock
 #define OS_MALLOC_BLOCK_OK(block) ((block) != NULL && (block)->magic == OS_MALLOC_MAGIC) // check if OSMemBlock structure is OK
-#define OS_MALLOC_DATA2BLOCK(data) ((OSMemBlock*)((u32)(data) - sizeof(OSMemBlock))) // get memblock data pointer from OSMemBlock
+#define OS_MALLOC_DATA2BLOCK(data) ((OSMemBlock*)((uintptr_t)(data) - sizeof(OSMemBlock))) // get memblock data pointer from OSMemBlock
 #define OS_MALLOC_BLOCK2DATA(block) ((u8*)(block) + sizeof(OSMemBlock)) // get OSMemBlock pointer from data
 
 // Gets the pointer to the next OSMemBlock immediately following this block in RAM, may or may not be a valid OSMemBlock
-#define OS_MALLOC_NEXTMEMBLOCK(block) ((OSMemBlock*)((u32)(block) + sizeof(OSMemBlock) + (block)->size))
+#define OS_MALLOC_NEXTMEMBLOCK(block) ((OSMemBlock*)((uintptr_t)(block) + sizeof(OSMemBlock) + (block)->size))
 
 int __osMalloc_FreeBlockTest_Enable = FALSE;
 
@@ -87,10 +87,12 @@ extern void __osMallocAddBlock(OSArena* arena, u8* base, s32 size) {
     s32 align_size;
     OSMemBlock* block;
     OSMemBlock* last;
+    uintptr_t block_addr;
     
     if (base != NULL) {
-        block = (OSMemBlock*)ALIGN_NEXT((u32)base, 32);
-        align_size = ALIGN_PREV(size - ((u32)block - (u32)base), 32);
+        block_addr = ALIGN_NEXT((uintptr_t)base, 32);
+        block = (OSMemBlock*)block_addr;
+        align_size = ALIGN_PREV(size - (s32)(block_addr - (uintptr_t)base), 32);
 
         if (align_size > (int)sizeof(OSMemBlock)) {
             memset(block, 0xAB, align_size);
@@ -160,13 +162,13 @@ static void __osMalloc_FreeBlockTest(OSArena* arena, OSMemBlock* block) {
 static void* __osMallocAlign_NoLock(OSArena* arena, u32 size, u32 align) {
     OSMemBlock* aligned_block;
     OSMemBlock* new_next;
-    int alignment_bytes;
+    u32 alignment_bytes;
     OSMemBlock* block;
     u8* data_p = NULL;
     OSMemBlock* next;
     u32 full_size;
     u32 mask;
-    int remain;
+    u32 remain;
 
     size = ALIGN_NEXT(size, 32);
     full_size = ALIGN_NEXT(size, 32) + sizeof(OSMemBlock);
@@ -191,9 +193,9 @@ static void* __osMallocAlign_NoLock(OSArena* arena, u32 size, u32 align) {
     mask = align - 1;
     while (block != NULL) {
         if (block->free) {
-            remain = ((u32)block + sizeof(OSMemBlock)) & mask;
+            remain = (u32)(((uintptr_t)block + sizeof(OSMemBlock)) & mask);
             alignment_bytes = remain == 0 ? 0 : align - remain;
-            aligned_block = (OSMemBlock*)((u32)block + alignment_bytes);
+            aligned_block = (OSMemBlock*)((uintptr_t)block + alignment_bytes);
 
             if (block->size - alignment_bytes >= size) {
                 if (arena->flags & OSArena_FLAG_FREE_BLOCK_TEST) {
@@ -217,7 +219,7 @@ static void* __osMallocAlign_NoLock(OSArena* arena, u32 size, u32 align) {
                 }
 
                 if (block->size > full_size) {
-                    new_next = (OSMemBlock*)((u32)block + full_size);
+                    new_next = (OSMemBlock*)((uintptr_t)block + full_size);
                     new_next->next = get_block_next(block);
                     new_next->prev = block;
                     new_next->size = block->size - full_size;
@@ -284,7 +286,7 @@ extern void* __osMallocR(OSArena* arena, u32 size) {
             }
 
             if (block->size > full_size) {
-                next = (OSMemBlock*)((u32)block + block->size - size);
+                next = (OSMemBlock*)((uintptr_t)block + block->size - size);
                 next->next = get_block_next(block);
                 next->prev = block;
                 next->size = size;
@@ -419,7 +421,7 @@ extern void* __osRealloc(OSArena* arena, void* ptr, u32 size) {
             next = get_block_next(orig_block);
             need_size = size - orig_block->size;
             if (next == OS_MALLOC_NEXTMEMBLOCK(orig_block) && next->free && next->size >= need_size) {
-                OSMemBlock* new_next = (OSMemBlock*)((u32)next + need_size);
+                OSMemBlock* new_next = (OSMemBlock*)((uintptr_t)next + need_size);
                 next->size -= need_size;
                 temp = get_block_next(next);
                 if (temp != NULL) {
@@ -439,7 +441,7 @@ extern void* __osRealloc(OSArena* arena, void* ptr, u32 size) {
         } else if (size < orig_block->size) {
             next = get_block_next(orig_block);
             if (next != NULL && next->free) {
-                OSMemBlock* new_next = (OSMemBlock*)((u32)orig_block + full_size);
+                OSMemBlock* new_next = (OSMemBlock*)((uintptr_t)orig_block + full_size);
                 *new_next = *next;
                 new_next->size += orig_block->size - size;
                 orig_block->next = new_next;
@@ -449,7 +451,7 @@ extern void* __osRealloc(OSArena* arena, void* ptr, u32 size) {
                     temp->prev = new_next;
                 }
             } else if (size + sizeof(OSMemBlock) < orig_block->size) {
-                new_next = (OSMemBlock*)((u32)orig_block + full_size);
+                new_next = (OSMemBlock*)((uintptr_t)orig_block + full_size);
                 new_next->next = get_block_next(orig_block);
                 new_next->prev = orig_block;
                 new_next->size = orig_block->size - full_size;

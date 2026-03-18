@@ -304,16 +304,16 @@ void* JKRExpHeap::allocFromTail(u32 size, int align) {
     CMemBlock* foundBlock = nullptr;
     CMemBlock* newBlock = nullptr;
     u32 usedSize;
-    u32 start;
+    uintptr_t startAddr;
 
     for (CMemBlock* block = mTail; block; block = block->mPrev) {
         uintptr_t contentAddr = (uintptr_t)block->getContent();
-        start = (u32)ALIGN_PREV(contentAddr + block->mAllocatedSpace - size, align);
-        usedSize = (u32)(contentAddr + block->mAllocatedSpace - start);
+        startAddr = ALIGN_PREV(contentAddr + block->mAllocatedSpace - size, align);
+        usedSize = (u32)(contentAddr + block->mAllocatedSpace - startAddr);
         if (block->mAllocatedSpace >= usedSize) {
             foundBlock = block;
             offset = block->mAllocatedSpace - usedSize;
-            newBlock = (CMemBlock*)start - 1;
+            newBlock = (CMemBlock*)startAddr - 1;
             break;
         }
     }

@@ -754,7 +754,7 @@ static s32 __Kill_Bank(s32 bank_id) {
     return 0;
 }
 
-void Nas_SetExtPointer(s32 table_type, s32 idx, s32 param_3, s32 data) {
+void Nas_SetExtPointer(s32 table_type, s32 idx, s32 param_3, u32 data) {
     ArcHeader* header = __Get_ArcHeader(table_type);
 
     if (header->entries[idx].medium == MEDIUM_RAM_UNLOADED) {

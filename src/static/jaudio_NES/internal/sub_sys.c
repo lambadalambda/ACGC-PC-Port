@@ -144,8 +144,7 @@ static void Nap_AudioSysProcess(AudioPort* port) {
         case AUDIOCMD_SET_PERC_BANK:
         case AUDIOCMD_SET_EFFECT_BANK:
         case AUDIOCMD_SET_VOICE_BANK:
-            OverwriteBank(port->command.opcode - AUDIOCMD_SET_PERC_BANK, port->command.arg1, port->command.arg2,
-                          port->param.asS32);
+            OverwriteBank(port->command.opcode - AUDIOCMD_SET_PERC_BANK, port->command.arg1, port->command.arg2, port->param.asU32);
             break;
         case AUDIOCMD_FORCE_STOP_ALL_GROUPS:
             s32 flags = port->param.asS32;
@@ -164,7 +163,7 @@ static void Nap_AudioSysProcess(AudioPort* port) {
             Nas_SzStayDelete(port->param.asS32);
             break;
         case AUDIOCMD_SET_EXTERNAL_POINTER:
-            Nas_SetExtPointer(port->command.arg0, port->command.arg1, port->command.arg2, port->param.asS32);
+            Nas_SetExtPointer(port->command.arg0, port->command.arg1, port->command.arg2, port->param.asU32);
             break;
         case AUDIOCMD_SET_DELAY_LINE_PARAM:
             Nas_SetDelayLineParam(port->command.arg1, port->command.arg0, port->param.asS32, FALSE);
