@@ -3,6 +3,7 @@
 #include "jaudio_NES/connect.h"
 #include "jaudio_NES/heapctrl.h"
 #include "jaudio_NES/bx.h"
+#include "pc_runtime_ptr.h"
 
 #define WAVEARC_SIZE   (0x100)
 #define WAVEGROUP_SIZE (0x100)
@@ -36,7 +37,7 @@ static void PTconvert(void** pointer, u32 base_address)
  */
 CtrlGroup_* Wave_Test(u8* data)
 {
-    u32 base_addr = (u32)data;
+    u32 base_addr = PC_RUNTIME_U32_PTR(data);
 	CtrlGroup_* group;
 	SCNE_* scene;
 	Ctrl_* cst;

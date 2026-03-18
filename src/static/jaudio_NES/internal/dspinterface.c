@@ -6,6 +6,7 @@
 #include "jaudio_NES/dspdriver.h"
 #include "jaudio_NES/driverinterface.h"
 #include "jaudio_NES/fxinterface.h"
+#include "pc_runtime_ptr.h"
 
 #include "limits.h"
 
@@ -459,7 +460,8 @@ static u32 DSPRES_FILTER[] ATTRIBUTE_ALIGN(32) = {
  */
 void DSP_SetupBuffer()
 {
-	DsetupTable((u32)CH_BUF_LENGTH, (u32)CH_BUF, (u32)DSPRES_FILTER, (u32)DSPADPCM_FILTER, (u32)FX_BUF);
+	DsetupTable((u32)CH_BUF_LENGTH, PC_RUNTIME_U32_PTR(CH_BUF), PC_RUNTIME_U32_PTR(DSPRES_FILTER),
+	            PC_RUNTIME_U32_PTR(DSPADPCM_FILTER), PC_RUNTIME_U32_PTR(FX_BUF));
 }
 
 /*

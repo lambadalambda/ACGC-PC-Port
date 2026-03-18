@@ -61,7 +61,7 @@ extern void Jac_Init(void) {
     }
 
     AIInit(nullptr);
-    AIInitDMA((u32)dac[2], DAC_SIZE * 2);
+    AIInitDMA(PC_RUNTIME_U32_PTR(dac[2]), DAC_SIZE * 2);
 }
 
 static void MixMonoTrack(s16* track, s32 nSamples, MixCallback callback) {

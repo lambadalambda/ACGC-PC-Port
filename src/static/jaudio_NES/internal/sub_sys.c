@@ -7,7 +7,10 @@
 #include "jaudio_NES/os.h"
 #include "jaudio_NES/audiomacro.h"
 #include "jaudio_NES/driver.h"
+#include "pc_runtime_ptr.h"
 #include "dolphin/os.h"
+
+#define JAUDIO_U32_CALLBACK(type, value) ((type)(uintptr_t)(u32)(value))
 
 static void __Nas_GroupFadeOut(s32 group, s32 fadeout_timer);
 static void __Nas_GroupFadeIn(s32 group, s32 fadein_timer);
@@ -127,15 +130,15 @@ static void Nap_AudioSysProcess(AudioPort* port) {
             AG.main_group.subtracks[0]->changes.flags.volume = TRUE;
             break;
         case AUDIOCMD_SET_VFRAME_CALLBACK:
-            NA_VFRAME_CALLBACK = (VFRAME_CALLBACK)port->param.asU32;
+            NA_VFRAME_CALLBACK = JAUDIO_U32_CALLBACK(VFRAME_CALLBACK, port->param.asU32);
             break;
         case AUDIOCMD_SET_CALLBACK:
             if (port->command.arg2 == AUDIO_CALLBACK_SOUND) {
-                NA_SOUND_CALLBACK = (SOUND_CALLBACK)port->param.asU32;
+                NA_SOUND_CALLBACK = JAUDIO_U32_CALLBACK(SOUND_CALLBACK, port->param.asU32);
             } else if (port->command.arg2 == AUDIO_CALLBACK_DACOUT) {
-                NA_DACOUT_CALLBACK = (DACOUT_CALLBACK)port->param.asU32;
+                NA_DACOUT_CALLBACK = JAUDIO_U32_CALLBACK(DACOUT_CALLBACK, port->param.asU32);
             } else {
-                AG.seq_callbacks[port->command.arg2] = (SequenceCallback)port->param.asU32;
+                AG.seq_callbacks[port->command.arg2] = JAUDIO_U32_CALLBACK(SequenceCallback, port->param.asU32);
             }
             break;
         case AUDIOCMD_SET_PERC_BANK:

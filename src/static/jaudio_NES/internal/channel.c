@@ -10,7 +10,10 @@
 #include "jaudio_NES/track.h"
 #include "jaudio_NES/sub_sys.h"
 #include "jaudio_NES/audioheaders.h"
+#include "pc_runtime_ptr.h"
 #include <dolphin/os.h>
+
+#define JAUDIO_U32_ADDR_PTR(type, value) ((type*)(uintptr_t)(u32)(value))
 
 static void Nas_smzSetPitch(channel* chan, f32 pitch);
 static void Nas_AddListHead(link* list, link* l);
@@ -513,21 +516,21 @@ extern s32 OverwriteBank(s32 type, s32 bankId, s32 idx, s32 table) {
                 return -3;
             }
 
-            AG.voice_info[bankId].percussion[idx] = (perctable*)table;
+            AG.voice_info[bankId].percussion[idx] = JAUDIO_U32_ADDR_PTR(perctable, table);
             break;
         case VOICE_TYPE_SOUND_EFF:
             if (idx >= AG.voice_info[bankId].num_sfx) {
                 return -3;
             }
 
-            AG.voice_info[bankId].effects[idx] = *(percvoicetable*)table;
+            AG.voice_info[bankId].effects[idx] = *JAUDIO_U32_ADDR_PTR(percvoicetable, table);
             break;
         default:
             if (idx >= AG.voice_info[bankId].num_instruments) {
                 return -3;
             }
 
-            AG.voice_info[bankId].instruments[idx] = (voicetable*)table;
+            AG.voice_info[bankId].instruments[idx] = JAUDIO_U32_ADDR_PTR(voicetable, table);
             break;
     }
 

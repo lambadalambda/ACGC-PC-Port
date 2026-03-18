@@ -8,6 +8,7 @@
 #include "jaudio_NES/dspinterface.h"
 #include "jaudio_NES/playercall.h"
 #include "jaudio_NES/dummyprobe.h"
+#include "pc_runtime_ptr.h"
 
 #define DSPBUF_NUM 3
 
@@ -52,7 +53,8 @@ extern s16* DspbufProcess(DSPBUF_EVENTS event) {
                 write_buffer = write;
                 DspSyncCountClear(JAC_SUBFRAMES);
                 Probe_Start(7, "DSP-MAIN");
-                DsyncFrame(JAC_SUBFRAMES, (u32)dsp_buf[write_buffer], (u32)&dsp_buf[write_buffer][JAC_FRAMESAMPLES]);
+				DsyncFrame(JAC_SUBFRAMES, PC_RUNTIME_U32_PTR(dsp_buf[write_buffer]),
+				           PC_RUNTIME_U32_PTR(&dsp_buf[write_buffer][JAC_FRAMESAMPLES]));
                 dspstatus = 1;
                 UpdateDSP();
             }

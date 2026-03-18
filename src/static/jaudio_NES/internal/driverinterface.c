@@ -6,6 +6,7 @@
 #include "jaudio_NES/ja_calc.h"
 #include "jaudio_NES/bankdrv.h"
 #include "jaudio_NES/aictrl.h"
+#include "pc_runtime_ptr.h"
 
 #define CHANNEL_SIZE (0x100)
 
@@ -896,7 +897,7 @@ BOOL StopLogicalChannel(jc_* jc)
 	jc->dspChannel->_06 = 0;
 	DSP_PlayStop(jc->dspChannel->buffer_idx);
 	DSP_FlushChannel(jc->dspChannel->buffer_idx);
-	DeAllocDSPchannel(jc->dspChannel, (u32)jc);
+	DeAllocDSPchannel(jc->dspChannel, PC_RUNTIME_U32_PTR(jc));
 	jc->dspChannel = NULL;
 	return TRUE;
 }
@@ -1043,7 +1044,7 @@ void __Entry_WaitChannel(u8 a)
 	while (cur_waits != 0) {
 		jc = waitp[cur_top];
 		if (jc) {
-			ch = AllocDSPchannel(0, (u32)jc);
+			ch = AllocDSPchannel(0, PC_RUNTIME_U32_PTR(jc));
 			if (ch == NULL) {
 				break;
 			}

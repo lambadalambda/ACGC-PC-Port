@@ -350,6 +350,10 @@ sh pc/tests/check_audio_ptr_overflow.sh
 sh pc/tests/check_audio_runtime_ptr_contract.sh
 sh pc/tests/check_audio_arq_runtime_ptr_contract.sh
 sh pc/tests/check_audio_simple_runtime_ptr_contract.sh
+sh pc/tests/check_audio_dsp_runtime_ptr_contract.sh
+sh pc/tests/check_audio_system_runtime_ptr_contract.sh
+sh pc/tests/check_audio_driver_runtime_ptr_contract.sh
+sh pc/tests/check_audio_bank_runtime_ptr_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2

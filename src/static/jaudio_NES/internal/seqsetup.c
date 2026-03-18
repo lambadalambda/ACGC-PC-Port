@@ -8,6 +8,7 @@
 #include "jaudio_NES/driverinterface.h"
 #include "jaudio_NES/oneshot.h"
 #include "jaudio_NES/fat.h"
+#include "pc_runtime_ptr.h"
 
 #include "dolphin/os/OSInterrupt.h"
 
@@ -398,7 +399,7 @@ s32 Jaq_SetSeqData_Limit(seqp_* track, u8* param_2, u32 param_3, u32 param_4, u8
 	}
 	track->trackId = root;
 	track->flags   = 3;
-	Init_Track(track, (u32)puVar2, NULL);
+	Init_Track(track, PC_RUNTIME_U32_PTR(puVar2), NULL);
 	Jam_InitExtBuffer(&ROOT_OUTER[root]);
 	Jam_AssignExtBuffer(track, &ROOT_OUTER[root]);
 	Init_1shot(&track->parentController, param_5);

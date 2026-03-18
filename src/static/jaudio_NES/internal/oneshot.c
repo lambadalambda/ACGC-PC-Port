@@ -9,6 +9,7 @@
 #include "jaudio_NES/dspdriver.h"
 #include "jaudio_NES/rate.h"
 #include "jaudio_NES/bx.h"
+#include "pc_runtime_ptr.h"
 
 static int Jesus1Shot_Update(jc_*, JCSTATUS);
 
@@ -219,7 +220,7 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
 	jc->playId         = id;
 	jc->savedPlayId    = jc->playId;
 	jc->updateCallback = Jesus1Shot_Update;
-	jc->dspChannel     = AllocDSPchannel(0, (u32)jc);
+	jc->dspChannel     = AllocDSPchannel(0, PC_RUNTIME_U32_PTR(jc));
 
 	if (jc->dspChannel == NULL) {
 		play = CheckLogicalChannel(jc);
@@ -236,7 +237,7 @@ static jc_* __Oneshot_Play_Start(jcs_* jcs, jc_* jc, u32 id)
 			return NULL;
 		}
 	} else if (play == FALSE) {
-		DeAllocDSPchannel(jc->dspChannel, (u32)jc);
+		DeAllocDSPchannel(jc->dspChannel, PC_RUNTIME_U32_PTR(jc));
 		jc->dspChannel = NULL;
 		List_AddChannelTail(&jcs->freeChannels, jc);
 		return NULL;

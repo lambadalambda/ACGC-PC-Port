@@ -74,7 +74,7 @@ static void DRAM_TO_DRAM_DMA(u32 src, u32 dst, u32 totalSize)
 	u32 dma_buffer_top;
 	u32 burstSize;
 
-	dma_buffer_top = (u32)JAC_ARAM_DMA_BUFFER_TOP;
+	dma_buffer_top = PC_RUNTIME_U32_PTR(JAC_ARAM_DMA_BUFFER_TOP);
 	OSInitMessageQueue(&msgQueue, &msg, 1);
 	DCFlushRange((void*)src, totalSize);
 	DCInvalidateRange((void*)dst, totalSize);

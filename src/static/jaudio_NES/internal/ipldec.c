@@ -1,6 +1,7 @@
 #include "jaudio_NES/ipldec.h"
 #include "jaudio_NES/audiostruct.h"
 #include "jaudio_NES/dspproc.h"
+#include "pc_runtime_ptr.h"
 
 DSPTask EX_DSPTASK[4];
 
@@ -96,7 +97,7 @@ void Jac_IPLDspSec(void)
  */
 void Jac_DSPcardDecodeAsync(void* task, void* cmd, DSPCallback callback)
 {
-	while (WriteTask(DSPTARGET_IPL, (u32)cmd, task, callback) == NULL) {
+	while (WriteTask(DSPTARGET_IPL, PC_RUNTIME_U32_PTR(cmd), task, callback) == NULL) {
 		;
 	}
 }
@@ -108,5 +109,5 @@ void Jac_DSPcardDecodeAsync(void* task, void* cmd, DSPCallback callback)
  */
 void Jac_DSPagbDecodeAsync(void* task, void* cmd, DSPCallback callback)
 {
-	while (WriteTask(DSPTARGET_AGB, (u32)cmd, task, callback) == NULL) {}
+	while (WriteTask(DSPTARGET_AGB, PC_RUNTIME_U32_PTR(cmd), task, callback) == NULL) {}
 }
