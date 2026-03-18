@@ -270,9 +270,12 @@ extern void graph_dt(GRAPH* graph);
 
 #define FONT_DISP __font_gfx
 
-#define GRAPH_ALLOC(graph, size)                        \
-    ((void*)((graph)->polygon_opaque_thaga.tha.tail_p = \
-                 (char*)((int)(graph)->polygon_opaque_thaga.tha.tail_p - (int)(size))))
+static inline void* graph_alloc_tail(GRAPH* graph, size_t size) {
+    graph->polygon_opaque_thaga.tha.tail_p -= size;
+    return graph->polygon_opaque_thaga.tha.tail_p;
+}
+
+#define GRAPH_ALLOC(graph, size) (graph_alloc_tail((graph), (size)))
 #define GRAPH_ALLOC_TYPE(graph, type, num) (GRAPH_ALLOC(graph, sizeof(type) * (num)))
 
 #if VERSION != VER_GAFU01_00
