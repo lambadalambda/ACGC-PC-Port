@@ -27,7 +27,7 @@ JUTDirectFile::JUTDirectFile() {
     mLength = 0;
     mPos = 0;
     mToRead = 0;
-    mSectorStart = (u8*)ALIGN_NEXT((u32)mBuffer, DVD_MIN_TRANSFER_SIZE);
+    mSectorStart = (u8*)(((uintptr_t)mBuffer + DVD_MIN_TRANSFER_SIZE - 1) & ~((uintptr_t)DVD_MIN_TRANSFER_SIZE - 1));
     mIsOpen = false;
 }
 
