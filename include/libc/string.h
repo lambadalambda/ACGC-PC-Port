@@ -1,11 +1,14 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
-#ifdef TARGET_PC
-#include_next <string.h>
-#else
-
 #include <stddef.h>
+
+#ifdef TARGET_PC
+/* Undef guard since libc++ string.h uses the same _STRING_H_ guard name */
+#undef _STRING_H_
+#include_next <string.h>
+#define _STRING_H_
+#else
 
 #ifdef __cplusplus
 extern "C" {
