@@ -9,6 +9,14 @@
 #include "JSystem/JKernel/JKRDvdRipper.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#define JKR_DVD_ARAM_HOST_ADDR(ptr) 0u
+#define JKR_DVD_ARAM_CALLBACK_ARG(ptr) 0u
+#else
+#define JKR_DVD_ARAM_HOST_ADDR(ptr) ((u32)(uintptr_t)(ptr))
+#define JKR_DVD_ARAM_CALLBACK_ARG(ptr) ((u32)(uintptr_t)(ptr))
+#endif
+
 JSUList<JKRADCommand> JKRDvdAramRipper::sDvdAramAsyncList;
 
 bool JKRDvdAramRipper::errorRetry = true;
@@ -77,7 +85,7 @@ JKRADCommand* JKRDvdAramRipper::callCommand_Async(JKRADCommand* command) {
         fileSize = ALIGN_NEXT(fileSize, 0x20);
         if (command->mExpandSwitch == EXPAND_SWITCH_DECOMPRESS) {
             u8 buffer[0x40];
-            u8* bufPtr = (u8*)ALIGN_NEXT((u32)buffer, 0x20);
+            u8* bufPtr = (u8*)(((uintptr_t)buffer + 31u) & ~(uintptr_t)31u);
             while (true) {
                 if (DVDReadPrio(dvdFile->getFileInfo(), bufPtr, 0x20, 0, 2) >= 0) {
                     break;
@@ -151,7 +159,7 @@ JKRADCommand* JKRDvdAramRipper::callCommand_Async(JKRADCommand* command) {
         if (!command->mCallBack) {
             sDvdAramAsyncList.append(&command->mLink);
         } else {
-            command->mCallBack((u32)command);
+            command->mCallBack(JKR_DVD_ARAM_CALLBACK_ARG(command));
         }
     }
 
@@ -398,7 +406,7 @@ u32 dmaBufferFlush(u32 src) {
         return 0;
     } else {
         u32 length = ALIGN_NEXT((u32)(dmaCurrent - dmaBuf), 32);
-        JKRAramPiece::orderSync(0, (u32)dmaBuf, src, length, nullptr);
+        JKRAramPiece::orderSync(0, JKR_DVD_ARAM_HOST_ADDR(dmaBuf), src, length, nullptr);
         dmaCurrent = dmaBuf;
         return length;
     }

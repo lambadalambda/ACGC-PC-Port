@@ -16,6 +16,12 @@ u8* JKRAramStream::transBuffer = nullptr;
 u32 JKRAramStream::transSize = (u32)0;
 JKRHeap* JKRAramStream::transHeap = nullptr;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#define JKR_ARAM_STREAM_HOST_ADDR(ptr) 0u
+#else
+#define JKR_ARAM_STREAM_HOST_ADDR(ptr) ((u32)(uintptr_t)(ptr))
+#endif
+
 JKRAramStream* JKRAramStream::create(s32 param) {
     if (JKRAramStream::sAramStreamObject == nullptr) {
         JKRAramStream::sAramStreamObject = new (JKRGetSystemHeap(), 0) JKRAramStream(param);
@@ -90,13 +96,13 @@ s32 JKRAramStream::writeToAram(JKRAramStreamCommand* command) {
     }
 
     if (buffer) {
-        command->mStream->seek(offset, SEEK_SET);
+        command->mStream->seek(offset, static_cast<JSUStreamSeekFrom>(0));
         while (dstSize != 0) {
             u32 length = (dstSize > bufferSize) ? bufferSize : dstSize;
 
             s32 readLength = command->mStream->read(buffer, length);
 
-            JKRAramPcs(0, (u32)buffer, destination, length, nullptr);
+            JKRAramPcs(0, JKR_ARAM_STREAM_HOST_ADDR(buffer), destination, length, nullptr);
             dstSize -= length;
             writtenLength += length;
             destination += length;
@@ -122,7 +128,7 @@ JKRAramStreamCommand* JKRAramStream::write_StreamToAram_Async(JSUFileInputStream
                                                               u32 offset) {
     JKRAramStreamCommand* command = new (JKRGetSystemHeap(), -4) JKRAramStreamCommand();
     command->type = JKRAramStreamCommand::ECT_WRITE;
-    command->mAddress = (u32)addr;
+    command->mAddress = addr != nullptr ? addr->getAddress() : 0;
     command->mSize = size;
     command->mStream = stream;
     command->_28 = stream->getAvailable();
@@ -199,7 +205,7 @@ void JKRAramStream::setTransBuffer(u8* buffer, u32 bufferSize, JKRHeap* heap) {
     transHeap = nullptr;
 
     if (buffer) {
-        transBuffer = (u8*)ALIGN_NEXT((u32)buffer, 0x20);
+        transBuffer = (u8*)(((uintptr_t)buffer + 31u) & ~(uintptr_t)31u);
     }
 
     if (bufferSize) {

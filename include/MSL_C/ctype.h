@@ -8,14 +8,20 @@
 extern "C" {
 #endif
 
-__declspec(weak) int isalpha(int __c);
-__declspec(weak) int isdigit(int __c);
-__declspec(weak) int isspace(int __c);
-__declspec(weak) int isupper(int __c);
-__declspec(weak) int isxdigit(int __c);
+#ifdef __MWERKS__
+#define MSL_CTYPE_WEAK __declspec(weak)
+#else
+#define MSL_CTYPE_WEAK
+#endif
 
-__declspec(weak) int tolower(int __c);
-__declspec(weak) int toupper(int __c);
+MSL_CTYPE_WEAK int isalpha(int __c);
+MSL_CTYPE_WEAK int isdigit(int __c);
+MSL_CTYPE_WEAK int isspace(int __c);
+MSL_CTYPE_WEAK int isupper(int __c);
+MSL_CTYPE_WEAK int isxdigit(int __c);
+
+MSL_CTYPE_WEAK int tolower(int __c);
+MSL_CTYPE_WEAK int toupper(int __c);
 
 // added underscore to avoid naming conflicts
 inline int _isalpha(int c) {
@@ -43,4 +49,6 @@ inline int _toupper(int c) {
 #ifdef __cplusplus
 }
 #endif
+
+#undef MSL_CTYPE_WEAK
 #endif

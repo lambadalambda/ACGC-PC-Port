@@ -10,6 +10,12 @@ OSMessage JKRDecomp::sMessageBuffer[JKRDECOMP_MSG_BUF_COUNT] = { 0 };
 OSMessageQueue JKRDecomp::sMessageQueue = { 0 };
 JKRDecomp* JKRDecomp::sDecompObject;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#define JKR_DECOMP_CALLBACK_ARG(ptr) 0u
+#else
+#define JKR_DECOMP_CALLBACK_ARG(ptr) ((u32)(uintptr_t)(ptr))
+#endif
+
 JKRDecomp* JKRDecomp::create(s32 decompPriority) {
     if (JKRDecomp::sDecompObject == nullptr) {
         JKRDecomp::sDecompObject = new (JKRGetSystemHeap(), 0) JKRDecomp(decompPriority);
@@ -50,7 +56,7 @@ void* JKRDecomp::run() {
                 break;
             }
 
-            cmd->mCallback((u32)cmd);
+            cmd->mCallback(JKR_DECOMP_CALLBACK_ARG(cmd));
         }
 
         if (cmd->pMesgQueue1C != nullptr) {
