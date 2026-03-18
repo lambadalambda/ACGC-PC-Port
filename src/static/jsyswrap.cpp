@@ -489,8 +489,14 @@ extern void JW_Init() {
 
     void* arena_hi = OSGetArenaHi();
     void* arena_lo = OSGetArenaLo();
+    uintptr_t system_heap_size = (uintptr_t)arena_hi - (uintptr_t)arena_lo;
 
-    SystemHeapSize = (u32)arena_hi - (u32)arena_lo - 0xD0;
+    if (system_heap_size < 0xD0 || system_heap_size - 0xD0 > 0xFFFFFFFFu) {
+        OSPanic(__FILE__, __LINE__, "JW_Init(): system heap size exceeds u32");
+    }
+
+    system_heap_size -= 0xD0;
+    SystemHeapSize = (u32)system_heap_size;
     JC_JFWSystem_setMaxStdHeap(1);
     JC_JFWSystem_setSysHeapSize(SystemHeapSize);
     JC_JFWSystem_setFifoBufSize(0x10001);

@@ -369,8 +369,22 @@ extern void* JC__JKRMountArchive(const char* path, int mount_mode, void* heap, i
     return JKRMountArchive(path, (JKRArchive::EMountMode)mount_mode, reinterpret_cast<JKRHeap*>(heap), (JKRArchive::EMountDirection)mount_direction);
 }
 
+static_assert(sizeof(CSDIFileEntry) == sizeof(JKRArchive::SDIFileEntry), "CSDIFileEntry size mismatch");
+static_assert(offsetof(CSDIFileEntry, mFileID) == offsetof(JKRArchive::SDIFileEntry, mFileID),
+              "CSDIFileEntry mFileID offset mismatch");
+static_assert(offsetof(CSDIFileEntry, mHash) == offsetof(JKRArchive::SDIFileEntry, mHash),
+              "CSDIFileEntry mHash offset mismatch");
+static_assert(offsetof(CSDIFileEntry, mFlag) == offsetof(JKRArchive::SDIFileEntry, mFlag),
+              "CSDIFileEntry mFlag offset mismatch");
+static_assert(offsetof(CSDIFileEntry, mDataOffset) == offsetof(JKRArchive::SDIFileEntry, mDataOffset),
+              "CSDIFileEntry mDataOffset offset mismatch");
+static_assert(offsetof(CSDIFileEntry, mSize) == offsetof(JKRArchive::SDIFileEntry, mSize),
+              "CSDIFileEntry mSize offset mismatch");
+static_assert(offsetof(CSDIFileEntry, mData) == offsetof(JKRArchive::SDIFileEntry, mData),
+              "CSDIFileEntry mData offset mismatch");
+
 extern CSDIFileEntry* JC__JKRGetResourceEntry_byName(u32 root_name, const char* res_name, void* archive) {
-    return JKRGetResourceEntry_byName(root_name, res_name, reinterpret_cast<JKRArchive*>(archive));
+    return reinterpret_cast<CSDIFileEntry*>(JKRGetResourceEntry_byName(root_name, res_name, reinterpret_cast<JKRArchive*>(archive)));
 }
 
 extern void JC_JKRAramHeap_dump(void* heap) {
