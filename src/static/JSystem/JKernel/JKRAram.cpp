@@ -5,17 +5,14 @@
 #include "JSystem/JKernel/JKRDvdRipper.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JSystem.h"
+#include "pc_runtime_ptr.h"
 #include "_mem.h"
 
 JSUList<JKRAMCommand> JKRAram::sAramCommandList;
 JKRAram* JKRAram::sAramObject;
 u32 JKRAram::sSZSBufferSize = 0x400;
 
-#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-#define JKR_ARAM_HOST_ADDR(ptr) 0u
-#else
-#define JKR_ARAM_HOST_ADDR(ptr) ((u32)(uintptr_t)(ptr))
-#endif
+#define JKR_ARAM_HOST_ADDR(ptr) PC_RUNTIME_U32_PTR(ptr)
 
 JKRAram* JKRAram::create(u32 aram_audio_buffer_size, u32 aram_audio_graph_size, s32 streamPriority, s32 decomp_priority,
                          s32 piece_priority) {

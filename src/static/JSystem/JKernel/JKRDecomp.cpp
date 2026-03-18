@@ -4,17 +4,14 @@
 #include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JSystem.h"
 #include "dolphin/os/OSMessage.h"
+#include "pc_runtime_ptr.h"
 #include "types.h"
 
 OSMessage JKRDecomp::sMessageBuffer[JKRDECOMP_MSG_BUF_COUNT] = { 0 };
 OSMessageQueue JKRDecomp::sMessageQueue = { 0 };
 JKRDecomp* JKRDecomp::sDecompObject;
 
-#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-#define JKR_DECOMP_CALLBACK_ARG(ptr) 0u
-#else
-#define JKR_DECOMP_CALLBACK_ARG(ptr) ((u32)(uintptr_t)(ptr))
-#endif
+#define JKR_DECOMP_CALLBACK_ARG(ptr) PC_RUNTIME_U32_PTR(ptr)
 
 JKRDecomp* JKRDecomp::create(s32 decompPriority) {
     if (JKRDecomp::sDecompObject == nullptr) {

@@ -3,6 +3,7 @@
 #include "jaudio_NES/heapctrl.h"
 #include "jaudio_NES/dummyrom.h"
 #include "jaudio_NES/dvdthread.h"
+#include "pc_runtime_ptr.h"
 
 #include "string.h"
 
@@ -103,7 +104,7 @@ void Init_AramMotherHeap(void)
 		inited = TRUE;
 
 		void* alloc = ARAllocFull(&outSize);
-		Jac_InitMotherHeap(&aram_mother, (u32)alloc, outSize, 0);
+		Jac_InitMotherHeap(&aram_mother, PC_RUNTIME_U32_PTR(alloc), outSize, 0);
 	}
 }
 

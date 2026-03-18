@@ -174,6 +174,13 @@ Current guarded status:
 
 - `include/PR/gbi.h`, `include/libforest/gbi_extensions.h`, and `include/m_scene.h` now share an explicit compile-only LP64 placeholder contract through `include/pc_static_ptr.h`
 - `pc/tests/check_static_ptr_contract.sh` locks that contract in so known static pointer initializers fail fast if silent narrowing is reintroduced
+- `include/pc_runtime_ptr.h` now makes dynamic GBI pointer writes narrow through an explicit checked helper, with `pc/tests/check_gbi_runtime_ptrs.sh` covering the common runtime macros that previously warned on LP64 hosts
+- JSystem ARAM/decompression call sites now route their dynamic host-pointer and callback narrowing through that same checked helper, with `pc/tests/check_jkr_runtime_ptr_contract.sh` locking the current contract in the affected `JKR*` files
+- `pc/src/pc_aram.c` now uses the same checked helper for ARQ callback request arguments and for the legacy host-pointer ARAM fallback path, with `pc/tests/check_pc_aram_callback_overflow.sh` and `pc/tests/check_pc_aram_host_pointer_guard.sh` proving that guarded LP64 builds fail fast instead of silently truncating
+- audio pointer-parameter paths now use the checked helper as well, with `pc/tests/check_audio_ptr_overflow.sh` covering overflow behavior and `pc/tests/check_audio_runtime_ptr_contract.sh` locking the current source contract in the touched audio files
+- jaudio ARQ owner/buffer pointer packing in `src/static/jaudio_NES/internal/heapctrl.c` and `src/static/jaudio_NES/internal/dvdthread.c` now routes through the same checked helper too, with `pc/tests/check_audio_arq_runtime_ptr_contract.sh` locking the current source contract
+- the remaining simple jaudio pointer-to-`u32` call sites in `src/static/jaudio_NES/internal/dummyrom.c`, `src/static/jaudio_NES/internal/aramcall.c`, and `src/static/jaudio_NES/internal/aictrl.c` now use the same checked helper as well, with `pc/tests/check_audio_simple_runtime_ptr_contract.sh` locking the current source contract
+- PC GX texture/TLUT/EFB pointer packing now routes through the same checked helper too, with `pc/tests/check_pc_gx_runtime_ptr_contract.sh` locking the current source contract in `pc/src/pc_gx_texture.c` and `pc/src/pc_gx.c`
 - this is still bringup scaffolding, not the final runtime-safe address representation
 
 ### P4 - Redesign seg2k0 and address disambiguation

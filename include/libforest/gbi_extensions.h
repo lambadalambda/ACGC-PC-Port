@@ -8,6 +8,7 @@ extern "C" {
 // clang-format off
 
 #include "types.h"
+#include "pc_runtime_ptr.h"
 #include "pc_static_ptr.h"
 
 #ifndef _GBI_STATIC_PTR
@@ -1075,7 +1076,7 @@ do { \
 do { \
     Gfx* _g = (Gfx*)(pkt); \
     _g->words.w0 = _SHIFTL(G_LOADTLUT, 24, 8) | _SHIFTL(G_TLUT_DOLPHIN, 22, 2) | _SHIFTL(name, 16, 4) | _SHIFTL(unk, 14, 2) | _SHIFTL(count, 0, 14); \
-    _g->words.w1 = (unsigned int)addr; \
+    _g->words.w1 = PC_RUNTIME_U32_PTR(addr); \
 } while (0)
 
 #define gsDPLoadTLUT_Dolphin(name, count, unk, addr) \
@@ -1101,7 +1102,7 @@ do { \
     Gfx* _gfx = (Gfx*)(pkt); \
     _gfx->words.w0 = _SHIFTL(G_SETTIMG, 24, 8) | _SHIFTL(fmt, 21, 3) | _SHIFTL(siz, 19, 2) | _SHIFTL(1, 18, 1) | \
         _SHIFTL((h/4)-1, 10, 8) | _SHIFTL((w-1), 0, 10); \
-    _gfx->words.w1 = (unsigned int)img; \
+    _gfx->words.w1 = PC_RUNTIME_U32_PTR(img); \
 }}
 
 #define gDPSetTile_Dolphin(pkt, d_fmt, tile, tlut_name, wrap_s, wrap_t, shift_s, shift_t) \

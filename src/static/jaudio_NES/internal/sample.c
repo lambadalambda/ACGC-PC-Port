@@ -3,8 +3,6 @@
 #include "dolphin/os/OSCache.h"
 
 #ifdef TARGET_PC
-/* reinterpret_cast -> C cast so sample.c compiles as C on PC */
-#define CAST_PTR_U32(p) ((u32)(uintptr_t)(p))
 #include <string.h> /* memmove */
 #endif
 
@@ -93,7 +91,7 @@ extern void Jac_bzero(void* dest, s32 size) {
     u32* udest;
     u8* bdest = (u8*)dest;
 #ifdef TARGET_PC
-    u8 alignedbitsDst = CAST_PTR_U32(bdest) & 0x3;
+    u8 alignedbitsDst = (u8)((uintptr_t)bdest & 0x3u);
 #else
     u8 alignedbitsDst = reinterpret_cast<u32>(bdest) & 0x3;
 #endif

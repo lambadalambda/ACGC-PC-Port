@@ -1643,7 +1643,7 @@ static void pc_gx_copy_tex_execute(void* dest, GXBool clear) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        pc_gx_efb_capture_store((u32)(uintptr_t)dest, efb_tex);
+        pc_gx_efb_capture_store(PC_RUNTIME_U32_PTR(dest), efb_tex);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 #else
@@ -1935,4 +1935,3 @@ void GXReadXfRasMetric(u32* xf_wait_in, u32* xf_wait_out, u32* ras_busy, u32* cl
 /* --- Verify --- */
 void GXSetVerifyLevel(u32 level) { (void)level; }
 void* GXSetVerifyCallback(void* cb) { return NULL; }
-

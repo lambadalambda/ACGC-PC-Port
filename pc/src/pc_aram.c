@@ -1,5 +1,6 @@
 /* pc_aram.c - GC's 16MB auxiliary RAM, replaced with a malloc'd buffer */
 #include "pc_platform.h"
+#include "pc_runtime_ptr.h"
 
 static u8* aram_base = NULL;
 static u32 aram_alloc_ptr = 0;
@@ -41,10 +42,12 @@ void ARFree(u32* addr) {
 void ARStartDMA(u32 type, u32 mram_addr, u32 aram_addr, u32 length) {
     if (!aram_base) return;
 
-    /* some code passes (aram_base + offset) instead of just the offset */
-    u32 base = (u32)(uintptr_t)aram_base;
-    if (aram_addr >= base && aram_addr < base + PC_ARAM_SIZE) {
-        aram_addr -= base;
+    /* some legacy code passes (aram_base + offset) instead of just the offset */
+    if (aram_addr >= PC_ARAM_SIZE) {
+        u32 base = PC_RUNTIME_U32_PTR(aram_base);
+        if (aram_addr >= base && aram_addr - base < PC_ARAM_SIZE) {
+            aram_addr -= base;
+        }
     }
 
     if (length > PC_ARAM_SIZE || aram_addr > PC_ARAM_SIZE - length) {
@@ -75,7 +78,7 @@ void ARQPostRequest(void* req, u32 owner, u32 type, u32 prio,
     } else {
         ARStartDMA(type, dest, source, length); /* source=aram, dest=mram — swapped */
     }
-    if (callback) ((void (*)(u32))callback)((u32)(uintptr_t)req);
+    if (callback) ((void (*)(u32))callback)(PC_RUNTIME_U32_PTR(req));
 }
 
 void ARQFlushQueue(void) {}

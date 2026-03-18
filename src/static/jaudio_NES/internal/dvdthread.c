@@ -7,6 +7,14 @@
 #include "string.h"
 #include "dolphin/os/OSTime.h"
 
+#include "pc_runtime_ptr.h"
+
+#if defined(TARGET_PC)
+#define JAUDIO_ARQ_PTR(ptr) PC_RUNTIME_U32_PTR(ptr)
+#else
+#define JAUDIO_ARQ_PTR(ptr) ((u32)(ptr))
+#endif
+
 typedef struct DVDCall_ {
     u32 owner;
     char fileName[64];
@@ -186,7 +194,7 @@ extern s32 DVDT_LoadtoARAM_Main(void* arg) {
 
         /* Copy to ARAM synchronously */
         ARQPostRequest(nullptr, 0x12345678, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH,
-                       (u32)buf, call->dst, readSize, nullptr);
+                       JAUDIO_ARQ_PTR(buf), call->dst, readSize, nullptr);
         call->dst += readSize;
     }
 
@@ -212,7 +220,7 @@ extern s32 DVDT_LoadtoARAM(u32 owner, char* name, u32 dst, u32 src, u32 length, 
 
 extern s32 DVDT_ARAMtoDRAM_Main(void* arg) {
     DVDCall* call = (DVDCall*)arg;
-    ARQPostRequest(nullptr, (u32)call, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH,
+    ARQPostRequest(nullptr, JAUDIO_ARQ_PTR(call), ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH,
                    call->src, call->dst, call->length, nullptr);
     __DoFinish(call, call->length);
     return 0;
@@ -220,7 +228,7 @@ extern s32 DVDT_ARAMtoDRAM_Main(void* arg) {
 
 extern s32 DVDT_DRAMtoARAM_Main(void* arg) {
     DVDCall* call = (DVDCall*)arg;
-    ARQPostRequest(nullptr, (u32)call, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH,
+    ARQPostRequest(nullptr, JAUDIO_ARQ_PTR(call), ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH,
                    call->dst, call->src, call->length, nullptr);
     __DoFinish(call, call->length);
     return 0;
@@ -488,7 +496,7 @@ extern s32 DVDT_LoadtoARAM_Main(void* arg) {
             call->length -= buffersize;
         }
 
-        ARQPostRequest(&req[arq_index], 0x12345678, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, (u32)buf, call->dst,
+        ARQPostRequest(&req[arq_index], 0x12345678, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, JAUDIO_ARQ_PTR(buf), call->dst,
                        readSize, ARAM_DMAfinish);
         buffer_full++;
         arq_index++;
@@ -542,7 +550,7 @@ extern s32 DVDT_ARAMtoDRAM_Main(void* arg) {
 
     buffer_full2++;
 
-    ARQPostRequest(&req, (u32)call, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH, call->src, call->dst, call->length,
+    ARQPostRequest(&req, JAUDIO_ARQ_PTR(call), ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_HIGH, call->src, call->dst, call->length,
                    ARAM_DMAfinish2);
 
     while (buffer_full2 != 0)
@@ -559,7 +567,7 @@ extern s32 DVDT_DRAMtoARAM_Main(void* arg) {
 
     buffer_full2++;
 
-    ARQPostRequest(&req, (u32)call, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, call->dst, call->src, call->length,
+    ARQPostRequest(&req, JAUDIO_ARQ_PTR(call), ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_HIGH, call->dst, call->src, call->length,
                    ARAM_DMAfinish2);
 
     while (buffer_full2 != 0)

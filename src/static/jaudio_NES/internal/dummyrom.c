@@ -4,6 +4,7 @@
 #include "jaudio_NES/dvdthread.h"
 #include "jaudio_NES/os.h"
 #include "jaudio_NES/memory.h"
+#include "pc_runtime_ptr.h"
 
 ALHeap aram_hp;
 u8* JAC_ARAM_DMA_BUFFER_TOP = nullptr;
@@ -27,7 +28,7 @@ extern u32 GetNeosRomTop(void) {
 }
 
 extern u32 GetNeosRom_PreLoaded(void) {
-    DVDT_DRAMtoARAM(0, (u32)init_load_addr, AUDIO_ARAM_TOP, init_load_size, nullptr, nullptr);
+    DVDT_DRAMtoARAM(0, PC_RUNTIME_U32_PTR(init_load_addr), AUDIO_ARAM_TOP, init_load_size, nullptr, nullptr);
     return init_load_size;
 }
 
@@ -45,9 +46,9 @@ extern BOOL ARAMStartDMAmesg(u32 dir, u32 dramAddr, u32 aramAddr, u32 size, s32 
     aramAddr += AUDIO_ARAM_TOP;
 
     if (dir == DUMMYROM_ARAM_TO_DRAM) {
-        DVDT_ARAMtoDRAM((u32)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
+        DVDT_ARAMtoDRAM(PC_RUNTIME_U32_PTR(mq), dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
     } else {
-        DVDT_DRAMtoARAM((u32)mq, dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
+        DVDT_DRAMtoARAM(PC_RUNTIME_U32_PTR(mq), dramAddr, aramAddr, size, nullptr, &mesg_finishcall);
     }
 
     return FALSE;

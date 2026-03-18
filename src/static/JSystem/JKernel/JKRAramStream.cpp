@@ -4,6 +4,7 @@
 #include "JSystem/JSupport/JSUStream.h"
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
+#include "pc_runtime_ptr.h"
 #include "types.h"
 
 // From Pikmin Repo
@@ -16,11 +17,7 @@ u8* JKRAramStream::transBuffer = nullptr;
 u32 JKRAramStream::transSize = (u32)0;
 JKRHeap* JKRAramStream::transHeap = nullptr;
 
-#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-#define JKR_ARAM_STREAM_HOST_ADDR(ptr) 0u
-#else
-#define JKR_ARAM_STREAM_HOST_ADDR(ptr) ((u32)(uintptr_t)(ptr))
-#endif
+#define JKR_ARAM_STREAM_HOST_ADDR(ptr) PC_RUNTIME_U32_PTR(ptr)
 
 JKRAramStream* JKRAramStream::create(s32 param) {
     if (JKRAramStream::sAramStreamObject == nullptr) {

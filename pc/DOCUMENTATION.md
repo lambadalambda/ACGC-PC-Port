@@ -342,6 +342,15 @@ For guarded 64-bit bringup work, the smallest useful checks are:
 ```bash
 sh pc/tests/check_type_widths.sh
 sh pc/tests/check_static_ptr_contract.sh
+sh pc/tests/check_gbi_runtime_ptrs.sh
+sh pc/tests/check_jkr_runtime_ptr_contract.sh
+sh pc/tests/check_pc_aram_callback_overflow.sh
+sh pc/tests/check_pc_aram_host_pointer_guard.sh
+sh pc/tests/check_audio_ptr_overflow.sh
+sh pc/tests/check_audio_runtime_ptr_contract.sh
+sh pc/tests/check_audio_arq_runtime_ptr_contract.sh
+sh pc/tests/check_audio_simple_runtime_ptr_contract.sh
+sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
 ```

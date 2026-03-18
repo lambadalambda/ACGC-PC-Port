@@ -2,9 +2,17 @@
 
 #include "jaudio_NES/dummyrom.h"
 
+#include "pc_runtime_ptr.h"
+
 #include "dolphin/os/OSMessage.h"
 #include "dolphin/ar.h"
 #include "dolphin/os/OSCache.h"
+
+#if defined(TARGET_PC)
+#define JAUDIO_ARQ_PTR(ptr) PC_RUNTIME_U32_PTR(ptr)
+#else
+#define JAUDIO_ARQ_PTR(ptr) ((u32)(ptr))
+#endif
 
 #define DMABUFFER_SIZE (0x10000)
 static u8 dmabuffer[DMABUFFER_SIZE] ATTRIBUTE_ALIGN(32);
@@ -42,9 +50,9 @@ static void ARAM_TO_ARAM_DMA(u32 src, u32 dst, u32 totalSize)
 	while (totalSize != 0) {
 		burstSize = totalSize >= DMABUFFER_SIZE ? DMABUFFER_SIZE : totalSize;
 
-		ARQPostRequest(&request, (u32)&msgQueue, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, src, (u32)dmabuffer, burstSize, &ARAMFinish);
+		ARQPostRequest(&request, JAUDIO_ARQ_PTR(&msgQueue), ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, src, JAUDIO_ARQ_PTR(dmabuffer), burstSize, &ARAMFinish);
 		OSReceiveMessage(&msgQueue, NULL, OS_MESSAGE_BLOCK);
-		ARQPostRequest(&request, (u32)&msgQueue, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, (u32)dmabuffer, dst, burstSize, &ARAMFinish);
+		ARQPostRequest(&request, JAUDIO_ARQ_PTR(&msgQueue), ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, JAUDIO_ARQ_PTR(dmabuffer), dst, burstSize, &ARAMFinish);
 		OSReceiveMessage(&msgQueue, NULL, OS_MESSAGE_BLOCK);
 
 		totalSize -= burstSize;
@@ -73,9 +81,9 @@ static void DRAM_TO_DRAM_DMA(u32 src, u32 dst, u32 totalSize)
 	while (totalSize != 0) {
 		burstSize = totalSize >= DMABUFFER_SIZE ? DMABUFFER_SIZE : totalSize;
 
-		ARQPostRequest(&request, (u32)&msgQueue, ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, src, dma_buffer_top, burstSize, &ARAMFinish);
+		ARQPostRequest(&request, JAUDIO_ARQ_PTR(&msgQueue), ARQ_TYPE_MRAM_TO_ARAM, ARQ_PRIORITY_LOW, src, dma_buffer_top, burstSize, &ARAMFinish);
 		OSReceiveMessage(&msgQueue, NULL, OS_MESSAGE_BLOCK);
-		ARQPostRequest(&request, (u32)&msgQueue, ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, dma_buffer_top, dst, burstSize, &ARAMFinish);
+		ARQPostRequest(&request, JAUDIO_ARQ_PTR(&msgQueue), ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, dma_buffer_top, dst, burstSize, &ARAMFinish);
 		OSReceiveMessage(&msgQueue, NULL, OS_MESSAGE_BLOCK);
 
 		totalSize -= burstSize;

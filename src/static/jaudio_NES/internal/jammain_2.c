@@ -10,6 +10,7 @@
 #include "jaudio_NES/centcalc.h"
 #include "jaudio_NES/bankdrv.h"
 #include "jaudio_NES/driverinterface.h"
+#include "pc_runtime_ptr.h"
 
 #include "dolphin/os/OSError.h"
 #include <dolphin/os/OSFastCast.h>
@@ -2612,10 +2613,8 @@ static u32 Cmd_Printf()
 	for (i = 0; i < fmtCount; ++i) {
 		fmtParms[i] = __ByteRead(SEQ_P);
 		if (fmtFlags[i] == 2) {
-		#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-			fmtParms[i] = 0;
-		#elif defined(TARGET_PC)
-			fmtParms[i] = (u32)(uintptr_t)Jam_OfsToAddr(SEQ_P, fmtParms[i]);
+		#if defined(TARGET_PC)
+			fmtParms[i] = PC_RUNTIME_U32_PTR(Jam_OfsToAddr(SEQ_P, fmtParms[i]));
 		#else
 			fmtParms[i] = (u32)Jam_OfsToAddr(SEQ_P, fmtParms[i]);
 		#endif

@@ -21,6 +21,7 @@
 #define	_GBI_H_
 
 #include <PR/ultratypes.h>
+#include "pc_runtime_ptr.h"
 #include "pc_static_ptr.h"
 
 #define _GBI_STATIC_PTR(s) PC_STATIC_U32_PTR(s)
@@ -1887,7 +1888,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 									\
 	_g->words.w0 = _SHIFTL((c), 24, 8) | _SHIFTL((l), 0, 24);	\
-	_g->words.w1 = (unsigned int)(s);				\
+	_g->words.w1 = PC_RUNTIME_U32_PTR(s);				\
 }
 
 #define	gsDma0p(c, s, l)						\
@@ -1901,7 +1902,7 @@ typedef union {
 									\
 	_g->words.w0 = (_SHIFTL((c), 24, 8) | _SHIFTL((p), 16, 8) |	\
 			_SHIFTL((l), 0, 16));				\
-	_g->words.w1 = (unsigned int)(s);				\
+	_g->words.w1 = PC_RUNTIME_U32_PTR(s);				\
 }
 
 #define	gsDma1p(c, s, l, p)						\
@@ -1916,7 +1917,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = (_SHIFTL((c),24,8)|_SHIFTL(((len)-1)/8,19,5)|	\
 			_SHIFTL((ofs)/8,8,8)|_SHIFTL((idx),0,8));	\
-	_g->words.w1 = (unsigned int)(adrs);				\
+	_g->words.w1 = PC_RUNTIME_U32_PTR(adrs);				\
 }
 #define	gsDma2p(c, adrs, len, idx, ofs)					\
 {{									\
@@ -1953,7 +1954,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 =							\
 	  _SHIFTL(G_VTX,24,8)|_SHIFTL((n),12,8)|_SHIFTL((v0)+(n),1,7);	\
-	_g->words.w1 = (unsigned int)(v);				\
+	_g->words.w1 = PC_RUNTIME_U32_PTR(v);				\
 }
 # define	gsSPVertex(v, n, v0)					\
 {{									\

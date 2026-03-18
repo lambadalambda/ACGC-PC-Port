@@ -3,6 +3,7 @@
 #define PC_GX_INTERNAL_H
 
 #include "pc_platform.h"
+#include "pc_runtime_ptr.h"
 
 /* Define PC_GL_DEBUG to check for GL errors after significant calls */
 #ifdef PC_GL_DEBUG

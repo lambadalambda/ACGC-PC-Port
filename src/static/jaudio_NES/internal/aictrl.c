@@ -6,6 +6,7 @@
 #include "jaudio_NES/dspbuf.h"
 #include "jaudio_NES/streamctrl.h"
 #include "jaudio_NES/rate.h"
+#include "pc_runtime_ptr.h"
 #include "dolphin/os.h"
 #include "dolphin/ai.h"
 
@@ -282,7 +283,7 @@ extern void Jac_UpdateDAC(void) {
     }
 
     if (use_rsp_madep != nullptr) {
-        AIInitDMA((u32)use_rsp_madep, DAC_SIZE * 2);
+        AIInitDMA(PC_RUNTIME_U32_PTR(use_rsp_madep), DAC_SIZE * 2);
         use_rsp_madep = nullptr;
     } else {
         UNIVERSAL_DACCOUNTER++;
