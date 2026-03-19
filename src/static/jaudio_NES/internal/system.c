@@ -298,7 +298,7 @@ static u16 pc_bank_wavetable_capacity(const voiceinfo* vinfo) {
     return capacity > 0xFFFF ? 0xFFFF : (u16)capacity;
 }
 
-static void pc_init_voiceinfo_shadow(voiceinfo* vinfo) {
+static BOOL pc_init_voiceinfo_shadow(voiceinfo* vinfo) {
     u16 wavetable_capacity = pc_bank_wavetable_capacity(vinfo);
 
     if (vinfo->num_instruments != 0 && vinfo->instruments == NULL) {
@@ -351,6 +351,17 @@ static void pc_init_voiceinfo_shadow(voiceinfo* vinfo) {
         vinfo->wavetable_capacity = wavetable_capacity;
     }
     vinfo->wavetable_count = 0;
+
+    return (vinfo->num_instruments == 0 ||
+            (vinfo->instruments != NULL && vinfo->instrument_entries != NULL &&
+             vinfo->instrument_capacity >= vinfo->num_instruments)) &&
+           (vinfo->num_drums == 0 ||
+            (vinfo->percussion != NULL && vinfo->percussion_entries != NULL &&
+             vinfo->percussion_capacity >= vinfo->num_drums)) &&
+           (vinfo->num_sfx == 0 || (vinfo->effects != NULL && vinfo->effect_capacity >= vinfo->num_sfx)) &&
+           (wavetable_capacity == 0 ||
+            (vinfo->wavetable_entries != NULL && vinfo->wavetable_keys != NULL &&
+             vinfo->wavetable_capacity >= wavetable_capacity));
 }
 
 static void pc_reset_voiceinfo_shadow(voiceinfo* vinfo) {
@@ -1261,7 +1272,10 @@ static u8* __Load_Bank(s32 table_type, s32 id, s32* did_alloc) {
                 vinfo->num_drums = ((u16*)rom_addr)[1];
                 vinfo->num_sfx = ((u16*)rom_addr)[2];
 #if PC_JAUDIO_LP64_BANK_SHADOW
-                pc_init_voiceinfo_shadow(vinfo);
+                if (!pc_init_voiceinfo_shadow(vinfo)) {
+                    OSReport("JAUDIO LP64 shadow allocation failed while loading bank %d\n", link_id);
+                    OSPanic(__FILE__, __LINE__, "");
+                }
                 pc_reset_voiceinfo_shadow(vinfo);
 #endif
                 rom_addr += sizeof(ArcEntry);
@@ -1370,7 +1384,10 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
 #endif
 
 #if PC_JAUDIO_LP64_BANK_SHADOW
-    pc_init_voiceinfo_shadow(vinfo);
+    if (!pc_init_voiceinfo_shadow(vinfo)) {
+        OSReport("JAUDIO LP64 shadow allocation failed for bank %d\n", bank_id);
+        OSPanic(__FILE__, __LINE__, "");
+    }
     pc_reset_voiceinfo_shadow(vinfo);
 
     if (n_perc_inst > vinfo->percussion_capacity) {
@@ -1949,7 +1966,10 @@ void Nas_InitAudio(u64* heap_p, s32 heap_size) {
     for (i = 0; i < bank_count; i++) {
         __SetVlute(i);
 #if PC_JAUDIO_LP64_BANK_SHADOW
-        pc_init_voiceinfo_shadow(&AG.voice_info[i]);
+        if (!pc_init_voiceinfo_shadow(&AG.voice_info[i])) {
+            OSReport("JAUDIO LP64 shadow allocation failed during audio init for bank %d\n", i);
+            OSPanic(__FILE__, __LINE__, "");
+        }
 #endif
     }
 
