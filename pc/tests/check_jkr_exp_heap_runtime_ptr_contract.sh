@@ -31,7 +31,13 @@ check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'uintptr_t startAddr;
 check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'startAddr = ALIGN_PREV\(contentAddr \+ block->mAllocatedSpace - size, align\);' 'tail allocation alignment uses uintptr_t'
 check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'usedSize = \(u32\)\(contentAddr \+ block->mAllocatedSpace - startAddr\);' 'tail allocation size uses pointer diff'
 check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'newBlock = \(CMemBlock\*\)startAddr - 1;' 'tail allocation reconstructs pointer from uintptr_t'
+check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUTWarningConsole_f\(":::addr %p: bad heap signature\. \(%c%c\)\\n", \(void\*\)block,' 'heap signature warning uses %p'
+check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUTReportConsole_f\("%s %p: %08x  %3d %3d  \(%p %p\)\\n", block->_isTempMemBlock\(\) \? " temp" : "alloc",' 'used block dump uses %p'
+check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUTReportConsole_f\("%s %p: %08x  %3d %3d  \(%p %p\)\\n", " free", block->getContent\(\),' 'free block dump uses %p'
 
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'u32 start;' 'legacy tail allocation start type'
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'start = \(u32\)ALIGN_PREV\(contentAddr \+ block->mAllocatedSpace - size, align\);' 'legacy tail allocation address cast'
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'newBlock = \(CMemBlock\*\)start - 1;' 'legacy tail allocation pointer reconstruction'
+check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUTWarningConsole_f\(":::addr %08x: bad heap signature\. \(%c%c\)\\n", block,' 'legacy heap signature warning'
+check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUTReportConsole_f\("%s %08x: %08x  %3d %3d  \(%08x %08x\)\\n", block->_isTempMemBlock\(\) \? " temp" : "alloc",' 'legacy used block dump'
+check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUTReportConsole_f\("%s %08x: %08x  %3d %3d  \(%08x %08x\)\\n", " free", block->getContent\(\),' 'legacy free block dump'

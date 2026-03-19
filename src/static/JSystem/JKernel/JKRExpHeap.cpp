@@ -533,23 +533,24 @@ bool JKRExpHeap::check() {
     for (CMemBlock* block = mHeadUsedList; block; block = block->mNext) {
         if (!block->isValid()) {
             ok = false;
-            JUTWarningConsole_f(":::addr %08x: bad heap signature. (%c%c)\n", block, JSUHiByte(block->mUsageHeader),
+            JUTWarningConsole_f(":::addr %p: bad heap signature. (%c%c)\n", (void*)block, JSUHiByte(block->mUsageHeader),
                                 JSULoByte(block->mUsageHeader));
         }
         if (block->mNext) {
             if (!block->mNext->isValid()) {
                 ok = false;
-                JUTWarningConsole_f(":::addr %08x: bad next pointer (%08x)\nabort\n", block, block->mNext);
+                JUTWarningConsole_f(":::addr %p: bad next pointer (%p)\nabort\n", (void*)block, (void*)block->mNext);
                 break;
             }
             if (block->mNext->mPrev != block) {
                 ok = false;
-                JUTWarningConsole_f(":::addr %08x: bad previous pointer (%08x)\n", block->mNext, block->mNext->mPrev);
+                JUTWarningConsole_f(":::addr %p: bad previous pointer (%p)\n", (void*)block->mNext,
+                                    (void*)block->mNext->mPrev);
             }
         } else {
             if (mTailUsedList != block) {
                 ok = false;
-                JUTWarningConsole_f(":::addr %08x: bad used list(REV) (%08x)\n", block, mTailUsedList);
+                JUTWarningConsole_f(":::addr %p: bad used list(REV) (%p)\n", (void*)block, (void*)mTailUsedList);
             }
         }
         totalBytes += sizeof(CMemBlock) + block->mAllocatedSpace + block->getAlignment();
@@ -559,16 +560,17 @@ bool JKRExpHeap::check() {
         if (block->mNext) {
             if (block->mNext->mPrev != block) {
                 ok = false;
-                JUTWarningConsole_f(":::addr %08x: bad previous pointer (%08x)\n", block->mNext, block->mNext->mPrev);
+                JUTWarningConsole_f(":::addr %p: bad previous pointer (%p)\n", (void*)block->mNext,
+                                    (void*)block->mNext->mPrev);
             }
             if ((uintptr_t)block + block->mAllocatedSpace + sizeof(CMemBlock) > (uintptr_t)block->mNext) {
                 ok = false;
-                JUTWarningConsole_f(":::addr %08x: bad block size (%08x)\n", block, block->mAllocatedSpace);
+                JUTWarningConsole_f(":::addr %p: bad block size (%08x)\n", (void*)block, block->mAllocatedSpace);
             }
         } else {
             if (mTail != block) {
                 ok = false;
-                JUTWarningConsole_f(":::addr %08x: bad used list(REV) (%08x)\n", block, mTail);
+                JUTWarningConsole_f(":::addr %p: bad used list(REV) (%p)\n", (void*)block, (void*)mTail);
             }
         }
     }
@@ -741,13 +743,13 @@ bool JKRExpHeap::dump() {
     }
     for (CMemBlock* block = mHeadUsedList; block; block = block->mNext) {
         if (!block->isValid()) {
-            JUTReportConsole_f("xxxxx %08x: --------  --- ---  (-------- --------)\nabort\n", block);
+            JUTReportConsole_f("xxxxx %p: --------  --- ---  (-------- --------)\nabort\n", (void*)block);
             break;
         }
 
-        JUTReportConsole_f("%s %08x: %08x  %3d %3d  (%08x %08x)\n", block->_isTempMemBlock() ? " temp" : "alloc",
+        JUTReportConsole_f("%s %p: %08x  %3d %3d  (%p %p)\n", block->_isTempMemBlock() ? " temp" : "alloc",
                            block->getContent(), block->mAllocatedSpace, block->mGroupID, block->getAlignment(),
-                           block->mPrev, block->mNext);
+                           (void*)block->mPrev, (void*)block->mNext);
         usedBytes += sizeof(CMemBlock) + block->mAllocatedSpace + block->getAlignment();
         usedCount++;
     }
@@ -756,8 +758,9 @@ bool JKRExpHeap::dump() {
         JUTReportConsole(" NONE\n");
     }
     for (CMemBlock* block = mHead; block; block = block->mNext) {
-        JUTReportConsole_f("%s %08x: %08x  %3d %3d  (%08x %08x)\n", " free", block->getContent(),
-                           block->mAllocatedSpace, block->mGroupID, block->getAlignment(), block->mPrev, block->mNext);
+        JUTReportConsole_f("%s %p: %08x  %3d %3d  (%p %p)\n", " free", block->getContent(),
+                           block->mAllocatedSpace, block->mGroupID, block->getAlignment(), (void*)block->mPrev,
+                           (void*)block->mNext);
         freeCount++;
     }
     float percent = ((float)usedBytes / (float)mSize) * 100.0f;
@@ -789,14 +792,14 @@ bool JKRExpHeap::dump_sort() {
                 break;
             }
             if (!block->isValid()) {
-                JUTReportConsole_f("xxxxx %08x: --------  --- ---  (-------- --------)\nabort\n");
+                JUTReportConsole_f("xxxxx %p: --------  --- ---  (-------- --------)\nabort\n", (void*)block);
                 break;
             }
             int offset = block->getAlignment();
             void* content = block->getContent();
             const char* type = block->_isTempMemBlock() ? " temp" : "alloc";
-            JUTReportConsole_f("%s %08x: %08x  %3d %3d  (%08x %08x)\n", type, content, block->mAllocatedSpace,
-                               block->mGroupID, offset, block->mPrev, block->mNext);
+            JUTReportConsole_f("%s %p: %08x  %3d %3d  (%p %p)\n", type, content, block->mAllocatedSpace,
+                               block->mGroupID, offset, (void*)block->mPrev, (void*)block->mNext);
             usedBytes += sizeof(CMemBlock) + block->mAllocatedSpace + block->getAlignment();
             usedCount++;
             var1 = block;
@@ -807,8 +810,9 @@ bool JKRExpHeap::dump_sort() {
         JUTReportConsole(" NONE\n");
     }
     for (CMemBlock* block = mHead; block; block = block->mNext) {
-        JUTReportConsole_f("%s %08x: %08x  %3d %3d  (%08x %08x)\n", " free", block->getContent(),
-                           block->mAllocatedSpace, block->mGroupID, block->getAlignment(), block->mPrev, block->mNext);
+        JUTReportConsole_f("%s %p: %08x  %3d %3d  (%p %p)\n", " free", block->getContent(),
+                           block->mAllocatedSpace, block->mGroupID, block->getAlignment(), (void*)block->mPrev,
+                           (void*)block->mNext);
         freeCount++;
     }
     float percent = ((float)usedBytes / (float)mSize) * 100.0f;
