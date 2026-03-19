@@ -94,6 +94,10 @@ typedef struct object_exchange_s {
     int _1954;
 } Object_Exchange_c;
 
+static inline char* mSc_align_next_bank_ram_address(char* addr, size_t size, u32 align) {
+    return (char*)ALIGN_NEXT((uintptr_t)addr + size, align);
+}
+
 enum {
     mSc_SCENE_DATA_TYPE_PLAYER_PTR,
     mSc_SCENE_DATA_TYPE_CTRL_ACTOR_PTR,
