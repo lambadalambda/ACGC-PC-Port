@@ -366,6 +366,7 @@ sh pc/tests/check_os_stack_pointer_runtime_ptr_contract.sh
 sh pc/tests/check_os_memory_runtime_ptr_contract.sh
 sh pc/tests/check_boot_runtime_ptr_contract.sh
 sh pc/tests/check_exi_uart_runtime_ptr_contract.sh
+sh pc/tests/check_os_alloc_runtime_ptr_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
