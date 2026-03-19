@@ -248,7 +248,7 @@ static void aISM_avoid(ACTOR* actorx, GAME* game) {
     }
 
     if (insect->type == aINS_INSECT_TYPE_BEE) {
-        sAdo_OngenPos((u32)actorx, NA_SE_26, &actorx->world.position);
+        sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_26, &actorx->world.position);
     }
 }
 
@@ -277,7 +277,7 @@ static void aISM_wait(ACTOR* actorx, GAME* game) {
                     int semi_idx = insect->type - aINS_INSECT_TYPE_ROBUST_CICADA;
 
                     insect->timer = 0;
-                    sAdo_OngenPos((u32)actorx, semi_sound_data[semi_idx], &actorx->world.position);
+                    sAdo_OngenPos(aINS_GetAudioToken(insect), semi_sound_data[semi_idx], &actorx->world.position);
                     actorx->world.position.x = actorx->home.position.x + RANDOM_F(0.4f);
                 }
             } else {

@@ -235,6 +235,8 @@ typedef struct ac_insect_clip_s {
 /* must include m_common_data.h to use this macro */
 #define aINS_CLIP (Common_Get(clip).insect_clip)
 
+extern u32 aINS_GetAudioToken(const aINS_INSECT_ACTOR* insect);
+
 #ifdef __cplusplus
 }
 #endif

@@ -277,7 +277,7 @@ static void aITT_avoid(ACTOR* actorx, GAME* game) {
         case aINS_INSECT_TYPE_LADYBUG:
         case aINS_INSECT_TYPE_SPOTTED_LADYBUG:
         case aINS_INSECT_TYPE_MANTIS:
-            sAdo_OngenPos((u32)actorx, NA_SE_26, &actorx->world.position);
+            sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_26, &actorx->world.position);
             break;
     }
 }

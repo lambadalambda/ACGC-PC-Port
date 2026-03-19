@@ -248,7 +248,7 @@ static void aIKR_avoid(ACTOR* actorx, GAME* game) {
         }
 
         aIKR_calc_direction_angl(actorx);
-        sAdo_OngenPos((u32)actorx, NA_SE_MOLE_CRICKET_OUT, &actorx->world.position);
+        sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_MOLE_CRICKET_OUT, &actorx->world.position);
     }
 }
 
@@ -266,7 +266,7 @@ static void aIKR_let_escape(ACTOR* actorx, GAME* game) {
         aIKR_setupAction(insect, aIKR_ACT_DIVE, game);
     } else {
         aIKR_calc_direction_angl(actorx);
-        sAdo_OngenPos((u32)actorx, NA_SE_MOLE_CRICKET_OUT, &actorx->world.position);
+        sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_MOLE_CRICKET_OUT, &actorx->world.position);
     }
 }
 
@@ -286,7 +286,7 @@ static void aIKR_hide(ACTOR* actorx, GAME* game) {
             eEC_CLIP->effect_make_proc(eEC_EFFECT_DIG_MUD, actorx->world.position, 2, actorx->shape_info.rotation.y, game, RSV_NO, 0, 0x4000 | i);
         }
     } else {
-        sAdo_OngenPos((u32)actorx, NA_SE_MOLE_CRICKET_HIDE, &actorx->world.position);
+        sAdo_OngenPos(aINS_GetAudioToken((aINS_INSECT_ACTOR*)actorx), NA_SE_MOLE_CRICKET_HIDE, &actorx->world.position);
     }
 }
 
@@ -338,7 +338,7 @@ static void aIKR_dug(ACTOR* actorx, GAME* game) {
     }
 
     chase_angle(&actorx->shape_info.rotation.x, DEG2SHORT_ANGLE2(157.5f), 0x300);
-    sAdo_OngenPos((u32)actorx, NA_SE_MOLE_CRICKET_OUT, &actorx->world.position);
+    sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_MOLE_CRICKET_OUT, &actorx->world.position);
 }
 
 /**

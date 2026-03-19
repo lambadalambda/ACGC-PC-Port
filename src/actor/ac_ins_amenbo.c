@@ -81,7 +81,7 @@ static void aIAB_let_escape(ACTOR* actorx, GAME* game) {
     }
 
     actorx->gravity = grav;
-    sAdo_OngenPos((u32)actorx, NA_SE_25, &actorx->world.position);
+    sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_25, &actorx->world.position);
 }
 
 static void aIAB_move(ACTOR* actorx, GAME* game) {

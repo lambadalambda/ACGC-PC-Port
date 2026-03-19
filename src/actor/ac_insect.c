@@ -14,6 +14,11 @@ static aINS_CTRL_ACTOR* aINS_ctrlActor = NULL;
 static aINS_overlay_c aINS_overlay;
 static aINS_Clip_c aINS_clip;
 
+enum {
+    aINS_AUDIO_TOKEN_BASE = 0x494E0000u,
+    aINS_AUDIO_TOKEN_INVALID = aINS_AUDIO_TOKEN_BASE + aINS_ACTOR_NUM,
+};
+
 /* order .bss */
 #ifdef MUST_MATCH
 BSS_ORDER_GROUP_START
@@ -27,6 +32,30 @@ static void aINS_actor_ct(ACTOR* actorx, GAME* game);
 static void aINS_actor_dt(ACTOR* actorx, GAME* game);
 static void aINS_actor_move(ACTOR* actorx, GAME* game);
 static void aINS_actor_draw(ACTOR* actorx, GAME* game);
+
+extern u32 aINS_GetAudioToken(const aINS_INSECT_ACTOR* insect) {
+    uintptr_t base;
+    uintptr_t ptr;
+    uintptr_t offset;
+
+    if (aINS_ctrlActor == NULL || insect == NULL) {
+        return aINS_AUDIO_TOKEN_INVALID;
+    }
+
+    base = (uintptr_t)&aINS_ctrlActor->insect_actor[0];
+    ptr = (uintptr_t)insect;
+
+    if (ptr < base || ptr >= base + sizeof(aINS_ctrlActor->insect_actor)) {
+        return aINS_AUDIO_TOKEN_INVALID;
+    }
+
+    offset = ptr - base;
+    if (offset % sizeof(aINS_ctrlActor->insect_actor[0]) != 0) {
+        return aINS_AUDIO_TOKEN_INVALID;
+    }
+
+    return aINS_AUDIO_TOKEN_BASE + (u32)(offset / sizeof(aINS_ctrlActor->insect_actor[0]));
+}
 
 // clang-format off
 ACTOR_PROFILE Insect_Profile = {
@@ -78,4 +107,5 @@ static void aINS_actor_ct(ACTOR* actorx, GAME* game) {
 
 static void aINS_actor_dt(ACTOR* actorx, GAME* game) {
     aINS_free_clip_area();
+    aINS_ctrlActor = NULL;
 }

@@ -224,7 +224,7 @@ static void aIGK_avoid(ACTOR* actorx, GAME* game) {
     }
 
     actorx->gravity = grav;
-    sAdo_OngenPos((u32)actorx, NA_SE_26, &actorx->world.position);
+    sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_26, &actorx->world.position);
     aIGK_anime_proc(insect);
 
     if (insect->bg_type == 0) {
@@ -268,7 +268,7 @@ static void aIGK_move_on_flower(ACTOR* actorx, GAME* game) {
         aIGK_MOVE_TIMER(insect)--;
 
         if (aIGK_MOVE_TIMER(insect) <= 0) {
-            sAdo_OngenPos((u32)actorx, NA_SE_GOKI_MOVE, &actorx->world.position);
+            sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_GOKI_MOVE, &actorx->world.position);
             insect->timer = (int)(2 * (90.0f + RANDOM_F(90.0f)));
             aIGK_setupAction(insect, aIGK_ACTION_WAIT_ON_FLOWER, game);
         } else {

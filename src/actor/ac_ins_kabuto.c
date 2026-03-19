@@ -194,7 +194,7 @@ static void aIKB_avoid(ACTOR* actorx, GAME* game) {
 
     actorx->gravity = grav;
 
-    sAdo_OngenPos((u32)actorx, NA_SE_25, &actorx->world.position);
+    sAdo_OngenPos(aINS_GetAudioToken(insect), NA_SE_25, &actorx->world.position);
 
     if (insect->bg_type != 2) {
         int h_ut_x;
