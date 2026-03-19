@@ -402,6 +402,18 @@ typedef struct voiceinfo_ {
     /* 0x08 */ voicetable** instruments;
     /* 0x0C */ perctable** percussion;
     /* 0x10 */ percvoicetable* effects;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    /* LP64 host shadow storage for serialized 32-bit bank data. */
+    /* 0x18 */ voicetable* instrument_entries;
+    /* 0x20 */ perctable* percussion_entries;
+    /* 0x28 */ smzwavetable* wavetable_entries;
+    /* 0x30 */ u32* wavetable_keys;
+    /* 0x38 */ u16 wavetable_count;
+    /* 0x3A */ u16 wavetable_capacity;
+    /* 0x3C */ u16 instrument_capacity;
+    /* 0x3E */ u16 percussion_capacity;
+    /* 0x40 */ u16 effect_capacity;
+#endif
 } voiceinfo;
 
 /* sizeof(delayparam) == 0x1C */

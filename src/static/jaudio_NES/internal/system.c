@@ -26,6 +26,12 @@
 #define BSWAP16(x) pc_bswap16(x)
 #define BSWAP32(x) pc_bswap32(x)
 
+#if UINTPTR_MAX > 0xFFFFFFFFu
+#define PC_JAUDIO_LP64_BANK_SHADOW 1
+#else
+#define PC_JAUDIO_LP64_BANK_SHADOW 0
+#endif
+
 /* Swap a u32 in-place at a given address */
 static inline void swap32_inplace(void* p) {
     u32* pp = (u32*)p;
@@ -239,6 +245,276 @@ static void pc_swap_perc_ptr_array(u32* perc_tbl, s32 n_perc) {
 }
 
 static u32 pc_swap_bank_init_count = 0;
+
+#if PC_JAUDIO_LP64_BANK_SHADOW
+typedef struct PCSmzWavetable32 {
+    u32 header_bits;
+    u32 sample;
+    u32 loop;
+    u32 book;
+} PCSmzWavetable32;
+
+typedef struct PCWtStr32 {
+    u32 wavetable;
+    u32 tuning_bits;
+} PCWtStr32;
+
+typedef struct PCVoiceTable32 {
+    u8 is_relocated;
+    u8 normal_range_low;
+    u8 normal_range_high;
+    u8 adsr_decay_idx;
+    u32 envelope;
+    PCWtStr32 low_pitch_tuned_sample;
+    PCWtStr32 normal_pitch_tuned_sample;
+    PCWtStr32 high_pitch_tuned_sample;
+} PCVoiceTable32;
+
+typedef struct PCPercTable32 {
+    u8 adsr_decay_idx;
+    u8 pan;
+    u8 is_relocated;
+    u8 pad;
+    PCWtStr32 tuned_sample;
+    u32 envelope;
+} PCPercTable32;
+
+typedef struct PCPercVoiceTable32 {
+    PCWtStr32 tuned_sample;
+} PCPercVoiceTable32;
+
+static f32 pc_bank_f32_from_be(u32 bits) {
+    u32 host_bits = BSWAP32(bits);
+    f32 value;
+
+    memcpy(&value, &host_bits, sizeof(value));
+    return value;
+}
+
+static u16 pc_bank_wavetable_capacity(const voiceinfo* vinfo) {
+    s32 n_instruments = vinfo->num_instruments > 126 ? 126 : vinfo->num_instruments;
+    s32 capacity = (n_instruments * 3) + vinfo->num_drums + vinfo->num_sfx;
+
+    return capacity > 0xFFFF ? 0xFFFF : (u16)capacity;
+}
+
+static void pc_init_voiceinfo_shadow(voiceinfo* vinfo) {
+    u16 wavetable_capacity = pc_bank_wavetable_capacity(vinfo);
+
+    if (vinfo->num_instruments != 0 && vinfo->instruments == NULL) {
+        vinfo->instruments = (voicetable**)Nas_HeapAlloc(&AG.init_heap, vinfo->num_instruments * sizeof(*vinfo->instruments));
+        if (vinfo->instruments != NULL) {
+            memset(vinfo->instruments, 0, vinfo->num_instruments * sizeof(*vinfo->instruments));
+            vinfo->instrument_capacity = vinfo->num_instruments;
+        }
+    }
+    if (vinfo->num_instruments != 0 && vinfo->instrument_entries == NULL) {
+        vinfo->instrument_entries = (voicetable*)Nas_HeapAlloc(&AG.init_heap, vinfo->num_instruments * sizeof(*vinfo->instrument_entries));
+        if (vinfo->instrument_entries != NULL) {
+            memset(vinfo->instrument_entries, 0, vinfo->num_instruments * sizeof(*vinfo->instrument_entries));
+        }
+    }
+    if (vinfo->num_drums != 0 && vinfo->percussion == NULL) {
+        vinfo->percussion = (perctable**)Nas_HeapAlloc(&AG.init_heap, vinfo->num_drums * sizeof(*vinfo->percussion));
+        if (vinfo->percussion != NULL) {
+            memset(vinfo->percussion, 0, vinfo->num_drums * sizeof(*vinfo->percussion));
+            vinfo->percussion_capacity = vinfo->num_drums;
+        }
+    }
+    if (vinfo->num_drums != 0 && vinfo->percussion_entries == NULL) {
+        vinfo->percussion_entries = (perctable*)Nas_HeapAlloc(&AG.init_heap, vinfo->num_drums * sizeof(*vinfo->percussion_entries));
+        if (vinfo->percussion_entries != NULL) {
+            memset(vinfo->percussion_entries, 0, vinfo->num_drums * sizeof(*vinfo->percussion_entries));
+        }
+    }
+    if (vinfo->num_sfx != 0 && vinfo->effects == NULL) {
+        vinfo->effects = (percvoicetable*)Nas_HeapAlloc(&AG.init_heap, vinfo->num_sfx * sizeof(*vinfo->effects));
+        if (vinfo->effects != NULL) {
+            memset(vinfo->effects, 0, vinfo->num_sfx * sizeof(*vinfo->effects));
+            vinfo->effect_capacity = vinfo->num_sfx;
+        }
+    }
+    if (wavetable_capacity != 0 && vinfo->wavetable_entries == NULL) {
+        vinfo->wavetable_entries = (smzwavetable*)Nas_HeapAlloc(&AG.init_heap, wavetable_capacity * sizeof(*vinfo->wavetable_entries));
+        if (vinfo->wavetable_entries != NULL) {
+            memset(vinfo->wavetable_entries, 0, wavetable_capacity * sizeof(*vinfo->wavetable_entries));
+        }
+    }
+    if (wavetable_capacity != 0 && vinfo->wavetable_keys == NULL) {
+        vinfo->wavetable_keys = (u32*)Nas_HeapAlloc(&AG.init_heap, wavetable_capacity * sizeof(*vinfo->wavetable_keys));
+        if (vinfo->wavetable_keys != NULL) {
+            memset(vinfo->wavetable_keys, 0, wavetable_capacity * sizeof(*vinfo->wavetable_keys));
+        }
+    }
+
+    if (vinfo->wavetable_entries != NULL && vinfo->wavetable_keys != NULL) {
+        vinfo->wavetable_capacity = wavetable_capacity;
+    }
+    vinfo->wavetable_count = 0;
+}
+
+static void pc_reset_voiceinfo_shadow(voiceinfo* vinfo) {
+    if (vinfo->instruments != NULL) {
+        memset(vinfo->instruments, 0, vinfo->instrument_capacity * sizeof(*vinfo->instruments));
+    }
+    if (vinfo->instrument_entries != NULL) {
+        memset(vinfo->instrument_entries, 0, vinfo->instrument_capacity * sizeof(*vinfo->instrument_entries));
+    }
+    if (vinfo->percussion != NULL) {
+        memset(vinfo->percussion, 0, vinfo->percussion_capacity * sizeof(*vinfo->percussion));
+    }
+    if (vinfo->percussion_entries != NULL) {
+        memset(vinfo->percussion_entries, 0, vinfo->percussion_capacity * sizeof(*vinfo->percussion_entries));
+    }
+    if (vinfo->effects != NULL) {
+        memset(vinfo->effects, 0, vinfo->effect_capacity * sizeof(*vinfo->effects));
+    }
+    if (vinfo->wavetable_entries != NULL) {
+        memset(vinfo->wavetable_entries, 0, vinfo->wavetable_capacity * sizeof(*vinfo->wavetable_entries));
+    }
+    if (vinfo->wavetable_keys != NULL) {
+        memset(vinfo->wavetable_keys, 0, vinfo->wavetable_capacity * sizeof(*vinfo->wavetable_keys));
+    }
+
+    vinfo->wavetable_count = 0;
+}
+
+static smzwavetable* pc_bank_deserialize_wavetable(voiceinfo* vinfo, u32 wt_ofs, u32 ram_addr, WaveMedia* wave_media) {
+    const PCSmzWavetable32* raw;
+    smzwavetable* wavetable;
+    u32 header_bits;
+    u32 sample_ofs;
+    u32 loop_ofs;
+    u32 book_ofs;
+    u32 wave0_base;
+    u32 wave1_base;
+    u32 i;
+
+    if (wt_ofs == 0 || vinfo->wavetable_entries == NULL || vinfo->wavetable_keys == NULL || vinfo->wavetable_capacity == 0) {
+        return NULL;
+    }
+
+    for (i = 0; i < vinfo->wavetable_count; i++) {
+        if (vinfo->wavetable_keys[i] == wt_ofs) {
+            return &vinfo->wavetable_entries[i];
+        }
+    }
+
+    if (vinfo->wavetable_count >= vinfo->wavetable_capacity) {
+        OSReport("JAUDIO LP64 wavetable shadow overflow (%08x)\n", wt_ofs);
+        return NULL;
+    }
+
+    raw = (const PCSmzWavetable32*)(uintptr_t)(ram_addr + wt_ofs);
+    wavetable = &vinfo->wavetable_entries[vinfo->wavetable_count];
+    memset(wavetable, 0, sizeof(*wavetable));
+    vinfo->wavetable_keys[vinfo->wavetable_count] = wt_ofs;
+    vinfo->wavetable_count++;
+
+    header_bits = BSWAP32(raw->header_bits);
+    memcpy(wavetable, &header_bits, sizeof(header_bits));
+
+    if (wavetable->size == 0) {
+        wavetable->is_relocated = TRUE;
+        return wavetable;
+    }
+
+    sample_ofs = BSWAP32(raw->sample);
+    loop_ofs = BSWAP32(raw->loop);
+    book_ofs = BSWAP32(raw->book);
+    wave0_base = PC_RUNTIME_U32_PTR(wave_media->wave0_p);
+    wave1_base = PC_RUNTIME_U32_PTR(wave_media->wave1_p);
+
+    if (loop_ofs != 0) {
+        wavetable->loop = (adpcmloop*)(uintptr_t)(loop_ofs + ram_addr);
+        pc_swap_adpcmloop(wavetable->loop);
+    }
+    if (book_ofs != 0) {
+        wavetable->book = (adpcmbook*)(uintptr_t)(book_ofs + ram_addr);
+        pc_swap_adpcmbook(wavetable->book);
+    }
+
+    switch (wavetable->medium) {
+        case MEDIUM_RAM:
+            wavetable->sample = (u8*)(uintptr_t)(sample_ofs + wave0_base);
+            wavetable->medium = wave_media->wave0_media;
+            break;
+        case MEDIUM_DISK:
+            wavetable->sample = (u8*)(uintptr_t)(sample_ofs + wave1_base);
+            wavetable->medium = wave_media->wave1_media;
+            break;
+        case MEDIUM_CART:
+        case MEDIUM_DISK_DRIVE:
+            wavetable->sample = (u8*)(uintptr_t)sample_ofs;
+            break;
+    }
+
+    wavetable->is_relocated = TRUE;
+    if (wavetable->bit26 && wavetable->medium != MEDIUM_RAM && AG.num_used_samples < ARRAY_COUNT(AG.used_samples)) {
+        AG.used_samples[AG.num_used_samples++] = wavetable;
+    }
+
+    return wavetable;
+}
+
+static void pc_bank_deserialize_wtstr(wtstr* dst, const PCWtStr32* raw, voiceinfo* vinfo, u32 ram_addr,
+                                      WaveMedia* wave_media) {
+    dst->wavetable = pc_bank_deserialize_wavetable(vinfo, BSWAP32(raw->wavetable), ram_addr, wave_media);
+    dst->tuning = pc_bank_f32_from_be(raw->tuning_bits);
+}
+
+static void pc_bank_deserialize_perctable(perctable* dst, const PCPercTable32* raw, voiceinfo* vinfo, u32 ram_addr,
+                                          WaveMedia* wave_media) {
+    u32 env_ofs;
+
+    memset(dst, 0, sizeof(*dst));
+    dst->adsr_decay_idx = raw->adsr_decay_idx;
+    dst->pan = raw->pan;
+    pc_bank_deserialize_wtstr(&dst->tuned_sample, &raw->tuned_sample, vinfo, ram_addr, wave_media);
+
+    env_ofs = BSWAP32(raw->envelope);
+    if (env_ofs != 0) {
+        dst->envelope = (envdat*)(uintptr_t)(ram_addr + env_ofs);
+        pc_swap_envdat(dst->envelope);
+    }
+
+    dst->is_relocated = TRUE;
+}
+
+static void pc_bank_deserialize_percvoicetable(percvoicetable* dst, const PCPercVoiceTable32* raw, voiceinfo* vinfo,
+                                               u32 ram_addr, WaveMedia* wave_media) {
+    memset(dst, 0, sizeof(*dst));
+    pc_bank_deserialize_wtstr(&dst->tuned_sample, &raw->tuned_sample, vinfo, ram_addr, wave_media);
+}
+
+static void pc_bank_deserialize_voicetable(voicetable* dst, const PCVoiceTable32* raw, voiceinfo* vinfo, u32 ram_addr,
+                                           WaveMedia* wave_media) {
+    u32 env_ofs;
+
+    memset(dst, 0, sizeof(*dst));
+    dst->normal_range_low = raw->normal_range_low;
+    dst->normal_range_high = raw->normal_range_high;
+    dst->adsr_decay_idx = raw->adsr_decay_idx;
+    if (dst->normal_range_low != 0) {
+        pc_bank_deserialize_wtstr(&dst->low_pitch_tuned_sample, &raw->low_pitch_tuned_sample, vinfo, ram_addr,
+                                  wave_media);
+    }
+    pc_bank_deserialize_wtstr(&dst->normal_pitch_tuned_sample, &raw->normal_pitch_tuned_sample, vinfo, ram_addr,
+                              wave_media);
+    if (dst->normal_range_high != 0x7F) {
+        pc_bank_deserialize_wtstr(&dst->high_pitch_tuned_sample, &raw->high_pitch_tuned_sample, vinfo, ram_addr,
+                                  wave_media);
+    }
+
+    env_ofs = BSWAP32(raw->envelope);
+    if (env_ofs != 0) {
+        dst->envelope = (envdat*)(uintptr_t)(ram_addr + env_ofs);
+        pc_swap_envdat(dst->envelope);
+    }
+
+    dst->is_relocated = TRUE;
+}
+#endif
 #endif /* TARGET_PC */
 
 static s32 Nas_GetSyncDummy(u8* param0, s32 param1);
@@ -984,6 +1260,10 @@ static u8* __Load_Bank(s32 table_type, s32 id, s32* did_alloc) {
                 vinfo->num_instruments = ((u16*)rom_addr)[0];
                 vinfo->num_drums = ((u16*)rom_addr)[1];
                 vinfo->num_sfx = ((u16*)rom_addr)[2];
+#if PC_JAUDIO_LP64_BANK_SHADOW
+                pc_init_voiceinfo_shadow(vinfo);
+                pc_reset_voiceinfo_shadow(vinfo);
+#endif
                 rom_addr += sizeof(ArcEntry);
             }
 
@@ -1065,6 +1345,7 @@ static ArcHeader* __Get_ArcHeader(s32 table_type) {
 #define BANK_ENTRY(ctrl_base, idx) (U32_ADDR_PTR(u32, (ctrl_base)) + (idx))
 
 static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_media) {
+    voiceinfo* vinfo = &AG.voice_info[bank_id];
     u32 ctrl_base = PC_RUNTIME_U32_PTR(ctrl_p);
     u32 ofs;
     u32 inst_ofs;
@@ -1073,9 +1354,9 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
     percvoicetable* sfx;
     s32 i;
     s32 n_perc_inst, n_voice_inst, n_sfx_inst;
-    n_voice_inst = AG.voice_info[bank_id].num_instruments;
-    n_perc_inst = AG.voice_info[bank_id].num_drums;
-    n_sfx_inst = AG.voice_info[bank_id].num_sfx;
+    n_voice_inst = vinfo->num_instruments;
+    n_perc_inst = vinfo->num_drums;
+    n_sfx_inst = vinfo->num_sfx;
     // u32* data_p = (u32*)ctrl_p;
 
 #ifdef TARGET_PC
@@ -1088,6 +1369,73 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
     }
 #endif
 
+#if PC_JAUDIO_LP64_BANK_SHADOW
+    pc_init_voiceinfo_shadow(vinfo);
+    pc_reset_voiceinfo_shadow(vinfo);
+
+    if (n_perc_inst > vinfo->percussion_capacity) {
+        n_perc_inst = vinfo->percussion_capacity;
+    }
+    if (n_sfx_inst > vinfo->effect_capacity) {
+        n_sfx_inst = vinfo->effect_capacity;
+    }
+    if (n_voice_inst > vinfo->instrument_capacity) {
+        n_voice_inst = vinfo->instrument_capacity;
+    }
+
+    ofs = *BANK_ENTRY(ctrl_base, 0);
+    if (ofs != 0 && n_perc_inst != 0 && vinfo->percussion != NULL && vinfo->percussion_entries != NULL) {
+        u32* percussion_table;
+
+        *BANK_ENTRY(ctrl_base, 0) = OFS2RAM(ctrl_base, ofs);
+        percussion_table = U32_ADDR_PTR(u32, *BANK_ENTRY(ctrl_base, 0));
+        pc_swap_perc_ptr_array(percussion_table, n_perc_inst);
+
+        for (i = 0; i < n_perc_inst; i++) {
+            inst_ofs = percussion_table[i];
+            if (inst_ofs == 0) {
+                vinfo->percussion[i] = NULL;
+                continue;
+            }
+
+            percvt = &vinfo->percussion_entries[i];
+            pc_bank_deserialize_perctable(percvt, U32_ADDR_PTR(PCPercTable32, ctrl_base + inst_ofs), vinfo, ctrl_base,
+                                          wave_media);
+            vinfo->percussion[i] = percvt;
+        }
+    }
+
+    ofs = *BANK_ENTRY(ctrl_base, 1);
+    if (ofs != 0 && n_sfx_inst != 0 && vinfo->effects != NULL) {
+        const PCPercVoiceTable32* sfx_table;
+
+        *BANK_ENTRY(ctrl_base, 1) = OFS2RAM(ctrl_base, ofs);
+        sfx_table = U32_ADDR_PTR(PCPercVoiceTable32, *BANK_ENTRY(ctrl_base, 1));
+        for (i = 0; i < n_sfx_inst; i++) {
+            pc_bank_deserialize_percvoicetable(&vinfo->effects[i], &sfx_table[i], vinfo, ctrl_base, wave_media);
+        }
+    }
+
+    if (n_voice_inst > 126) {
+        n_voice_inst = 126;
+    }
+
+    if (vinfo->instruments != NULL && vinfo->instrument_entries != NULL) {
+        for (i = 2; i <= 2 + n_voice_inst - 1; i++) {
+            ofs = *BANK_ENTRY(ctrl_base, i);
+            if (ofs == 0) {
+                vinfo->instruments[i - 2] = NULL;
+                continue;
+            }
+
+            *BANK_ENTRY(ctrl_base, i) = OFS2RAM(ctrl_base, ofs);
+            inst = &vinfo->instrument_entries[i - 2];
+            pc_bank_deserialize_voicetable(inst, U32_ADDR_PTR(PCVoiceTable32, *BANK_ENTRY(ctrl_base, i)), vinfo,
+                                           ctrl_base, wave_media);
+            vinfo->instruments[i - 2] = inst;
+        }
+    }
+#else
     ofs = *BANK_ENTRY(ctrl_base, 0);
     if (ofs != 0 && n_perc_inst != 0) {
         *BANK_ENTRY(ctrl_base, 0) = OFS2RAM(ctrl_base, ofs);
@@ -1194,6 +1542,7 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
     AG.voice_info[bank_id].percussion = U32_ADDR_PTR(perctable*, *BANK_ENTRY(ctrl_base, 0));
     AG.voice_info[bank_id].effects = U32_ADDR_PTR(percvoicetable, *BANK_ENTRY(ctrl_base, 1));
     AG.voice_info[bank_id].instruments = U32_ADDR_PTR(voicetable*, BANK_ENTRY(ctrl_base, 2));
+#endif
 }
 
 #undef OFS2RAM
@@ -1596,8 +1945,12 @@ void Nas_InitAudio(u64* heap_p, s32 heap_size) {
 
     bank_count = AG.bank_header->numEntries;
     AG.voice_info = (voiceinfo*)Nas_HeapAlloc(&AG.init_heap, bank_count * sizeof(voiceinfo));
+    bzero(AG.voice_info, bank_count * sizeof(voiceinfo));
     for (i = 0; i < bank_count; i++) {
         __SetVlute(i);
+#if PC_JAUDIO_LP64_BANK_SHADOW
+        pc_init_voiceinfo_shadow(&AG.voice_info[i]);
+#endif
     }
 
     emem_heap = (u8*)Nas_HeapAlloc(&AG.init_heap, AGC.ememSize);
