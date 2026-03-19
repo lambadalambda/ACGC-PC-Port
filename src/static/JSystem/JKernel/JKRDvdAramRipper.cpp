@@ -349,8 +349,11 @@ int decompSZS_subroutine(u8* src, u32 dmaAddr) {
 u8* firstSrcData() {
     srcLimit = szpEnd - 0x19;
     u8* buf = szpBuf;
-    u32 max = (szpEnd - szpBuf);
-    u32 transSize = MIN(transLeft, max);
+    uintptr_t max = (uintptr_t)(szpEnd - szpBuf);
+    u32 transSize = transLeft;
+
+    if (max < transSize)
+        transSize = PC_RUNTIME_U32_PTR(max);
 
     while (true) {
         if (0 <= DVDReadPrio(srcFile->getFileInfo(), buf, transSize, 0, 2))
@@ -365,7 +368,7 @@ u8* firstSrcData() {
 }
 
 u8* nextSrcData(u8* src) {
-    u32 limit = szpEnd - src;
+    uintptr_t limit = (uintptr_t)(szpEnd - src);
     u8* buf;
     if (IS_NOT_ALIGNED(limit, 0x20))
         buf = szpBuf + 0x20 - (limit & (0x20 - 1));
@@ -373,9 +376,11 @@ u8* nextSrcData(u8* src) {
         buf = szpBuf;
 
     memcpy(buf, src, limit);
-    u32 transSize = (u32)(szpEnd - (buf + limit));
-    if (transSize > transLeft)
-        transSize = transLeft;
+    uintptr_t maxTransSize = (uintptr_t)(szpEnd - (buf + limit));
+    u32 transSize = transLeft;
+
+    if (maxTransSize < transSize)
+        transSize = PC_RUNTIME_U32_PTR(maxTransSize);
 
     JUT_ASSERT(transSize > 0);
     while (true) {

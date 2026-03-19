@@ -456,8 +456,11 @@ int decompSZS_subroutine(u8* src, u8* dest) {
 static u8* firstSrcData() {
     srcLimit = szpEnd - 0x19;
     u8* buf = szpBuf;
-    u32 maxSize = (szpEnd - szpBuf);
-    u32 transSize = MIN(transLeft, maxSize);
+    uintptr_t maxSize = (uintptr_t)(szpEnd - szpBuf);
+    u32 transSize = transLeft;
+
+    if (maxSize < transSize)
+        transSize = PC_RUNTIME_U32_PTR(maxSize);
 
     JKRAramPcs(1, srcAddress + srcOffset, JKR_ARAM_HOST_ADDR(buf), ALIGN_NEXT(transSize, 32), nullptr);
 
@@ -469,16 +472,19 @@ static u8* firstSrcData() {
 
 u8* nextSrcData(u8* current) {
     u8* dest;
-    u32 left = (u32)(szpEnd - current);
+    uintptr_t left = (uintptr_t)(szpEnd - current);
     if (IS_NOT_ALIGNED(left, 0x20))
         dest = szpBuf + 0x20 - (left & (0x20 - 1));
     else
         dest = szpBuf;
 
     memcpy(dest, current, left);
-    u32 transSize = (u32)(szpEnd - (dest + left));
-    if (transSize > transLeft)
-        transSize = transLeft;
+    uintptr_t maxTransSize = (uintptr_t)(szpEnd - (dest + left));
+    u32 transSize = transLeft;
+
+    if (maxTransSize < transSize)
+        transSize = PC_RUNTIME_U32_PTR(maxTransSize);
+
     JUT_ASSERT(transSize > 0);
 
     JKRAramPcs(1, srcAddress + srcOffset, JKR_ARAM_HOST_ADDR(dest + left), ALIGN_NEXT(transSize, 0x20), nullptr);

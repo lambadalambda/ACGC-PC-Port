@@ -20,6 +20,16 @@ check_contains "src/static/JSystem/JKernel/JKRAram.cpp" '#define JKR_ARAM_HOST_A
 check_contains "src/static/JSystem/JKernel/JKRAramStream.cpp" '#define JKR_ARAM_STREAM_HOST_ADDR\(ptr\) PC_RUNTIME_U32_PTR\(ptr\)' 'JKRAramStream host address'
 check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" '#define JKR_DVD_ARAM_HOST_ADDR\(ptr\) PC_RUNTIME_U32_PTR\(ptr\)' 'JKRDvdAramRipper host address'
 check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" '#define JKR_DVD_ARAM_CALLBACK_ARG\(ptr\) PC_RUNTIME_U32_PTR\(ptr\)' 'JKRDvdAramRipper callback argument'
+check_contains "src/static/JSystem/JKernel/JKRAram.cpp" 'uintptr_t maxSize = \(uintptr_t\)\(szpEnd - szpBuf\);' 'JKRAram first chunk keeps max size at host width'
+check_contains "src/static/JSystem/JKernel/JKRAram.cpp" 'transSize = PC_RUNTIME_U32_PTR\(maxSize\);' 'JKRAram first chunk narrows max size through runtime guard'
+check_contains "src/static/JSystem/JKernel/JKRAram.cpp" 'uintptr_t left = \(uintptr_t\)\(szpEnd - current\);' 'JKRAram next chunk keeps left span at host width'
+check_contains "src/static/JSystem/JKernel/JKRAram.cpp" 'uintptr_t maxTransSize = \(uintptr_t\)\(szpEnd - \(dest \+ left\)\);' 'JKRAram next chunk keeps transfer span at host width'
+check_contains "src/static/JSystem/JKernel/JKRAram.cpp" 'transSize = PC_RUNTIME_U32_PTR\(maxTransSize\);' 'JKRAram next chunk narrows transfer span through runtime guard'
+check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'uintptr_t max = \(uintptr_t\)\(szpEnd - szpBuf\);' 'JKRDvdAramRipper first chunk keeps max size at host width'
+check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'transSize = PC_RUNTIME_U32_PTR\(max\);' 'JKRDvdAramRipper first chunk narrows max size through runtime guard'
+check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'uintptr_t limit = \(uintptr_t\)\(szpEnd - src\);' 'JKRDvdAramRipper next chunk keeps limit at host width'
+check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'uintptr_t maxTransSize = \(uintptr_t\)\(szpEnd - \(buf \+ limit\)\);' 'JKRDvdAramRipper next chunk keeps transfer span at host width'
+check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'transSize = PC_RUNTIME_U32_PTR\(maxTransSize\);' 'JKRDvdAramRipper next chunk narrows transfer span through runtime guard'
 check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'u32 length = \(u32\)ALIGN_NEXT\(\(uintptr_t\)\(dmaCurrent - dmaBuf\), 32\);' 'JKRDvdAramRipper keeps DMA length math host-width until final narrow'
 check_contains "src/static/JSystem/JKernel/JKRHeap.cpp" '#include "pc_runtime_ptr.h"' 'JKRHeap includes runtime pointer guard helper'
 check_contains "src/static/JSystem/JKernel/JKRHeap.cpp" 'uintptr_t userRamSize = \(uintptr_t\)\(\(u8\*\)arenaHi - \(u8\*\)arenaLo\);' 'JKRHeap keeps user RAM size math at host width'
@@ -31,6 +41,36 @@ check_contains "src/static/JSystem/JKernel/JKRDecomp.cpp" '#define JKR_DECOMP_CA
 
 if rg -q 'u32 length = ALIGN_NEXT\(\(u32\)\(dmaCurrent - dmaBuf\), 32\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRDvdAramRipper.cpp"; then
     printf '%s\n' 'unexpected legacy JKR DVD ARAM DMA length truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 maxSize = \(szpEnd - szpBuf\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRAram.cpp"; then
+    printf '%s\n' 'unexpected legacy JKRAram first chunk size truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 left = \(u32\)\(szpEnd - current\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRAram.cpp"; then
+    printf '%s\n' 'unexpected legacy JKRAram left span truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 transSize = \(u32\)\(szpEnd - \(dest \+ left\)\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRAram.cpp"; then
+    printf '%s\n' 'unexpected legacy JKRAram transfer span truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 max = \(szpEnd - szpBuf\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRDvdAramRipper.cpp"; then
+    printf '%s\n' 'unexpected legacy JKRDvdAramRipper first chunk size truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 limit = szpEnd - src;' "$REPO_ROOT/src/static/JSystem/JKernel/JKRDvdAramRipper.cpp"; then
+    printf '%s\n' 'unexpected legacy JKRDvdAramRipper limit truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 transSize = \(u32\)\(szpEnd - \(buf \+ limit\)\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRDvdAramRipper.cpp"; then
+    printf '%s\n' 'unexpected legacy JKRDvdAramRipper transfer span truncation' >&2
     exit 1
 fi
 
