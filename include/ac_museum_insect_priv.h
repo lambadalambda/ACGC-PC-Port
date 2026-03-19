@@ -80,6 +80,9 @@ typedef struct _MUSEUM_INSECT_PRIVATE_DATA {
     int _90;
 } MUSEUM_INSECT_PRIVATE_DATA;
 
+#define mMI_AUDIO_TOKEN_BASE 0x4D490000u
+#define mMI_AUDIO_TOKEN(actor) (mMI_AUDIO_TOKEN_BASE + (u32)((actor)->_00))
+
 typedef struct _INSECT_DISPLAY_MSG_INFO {
     s16 insectName;
     s16 insectInfo;
