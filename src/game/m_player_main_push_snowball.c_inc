@@ -11,13 +11,22 @@ static int Player_actor_request_main_push_snowball_all(GAME* game, void* label, 
         mPlayer_main_wade_snowball_c* wade_snowball_p = &player->main_data.wade_snowball;
 
         /* When wading between acres, check the snowball label is the same as the one pushed */
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        if (player->wade_snowball_label_shadow != label) {
+#else
         if (wade_snowball_p->snowball_label != (u32)label) {
+#endif
             return FALSE;
         }
     }
 
     if (Player_actor_check_request_main_able(game, mPlayer_INDEX_PUSH_SNOWBALL, prio)) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        req_push_snowball_p->label = 0;
+        player->push_snowball_label_shadow = (ACTOR*)label;
+#else
         req_push_snowball_p->label = (u32)label;
+#endif
         req_push_snowball_p->wade_flag = wade_flag;
 
         Player_actor_request_main_index(game, mPlayer_INDEX_PUSH_SNOWBALL, prio);
@@ -34,7 +43,11 @@ static void Player_actor_setup_main_Push_snowball(ACTOR* actorx, GAME* game) {
     int anim1_idx;
     int part_table_idx;
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    push_snowball_p->label = 0;
+#else
     push_snowball_p->label = req_push_snowball_p->label;
+#endif
 
     if (req_push_snowball_p->wade_flag == FALSE) {
         player->crash_snowball_for_wade = FALSE;

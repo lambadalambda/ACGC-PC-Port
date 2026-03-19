@@ -2315,6 +2315,10 @@ struct player_actor_s {
     ACTOR* able_force_speak_label_shadow;
     ACTOR* door_label_shadow;
     ACTOR* demo_wait_label_shadow;
+    ACTOR* push_snowball_label_shadow;
+    ACTOR* wade_snowball_label_shadow;
+    ACTOR* stung_mosquito_label_shadow;
+    ACTOR* notice_mosquito_label_shadow;
 #endif
 };
 

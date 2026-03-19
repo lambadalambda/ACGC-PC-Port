@@ -5,7 +5,12 @@ static int Player_actor_request_main_wade_snowball_all(GAME* game, int dir, cons
         if (Player_actor_check_request_main_able(game, mPlayer_INDEX_WADE_SNOWBALL, priority)) {
             player->requested_main_index_data.wade_snowball.dir = dir;
             player->requested_main_index_data.wade_snowball.snowball_dist = *snowball_dist_p;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+            player->requested_main_index_data.wade_snowball.label = 0;
+            player->wade_snowball_label_shadow = player->push_snowball_label_shadow;
+#else
             player->requested_main_index_data.wade_snowball.label = player->main_data.push_snowball.label;
+#endif
 
             Player_actor_request_main_index(game, mPlayer_INDEX_WADE_SNOWBALL, priority);
 
@@ -40,7 +45,11 @@ static void Player_actor_setup_main_Wade_snowball(ACTOR* actor, GAME* game) {
     player->main_data.wade_snowball.timer = 0.0f;
 
     player->main_data.wade_snowball.snowball_dist = player->requested_main_index_data.wade_snowball.snowball_dist;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    player->main_data.wade_snowball.snowball_label = 0;
+#else
     player->main_data.wade_snowball.snowball_label = player->requested_main_index_data.wade_snowball.label;
+#endif
 
     Player_actor_setup_main_Base(actor, game);
     camera_pos = player->main_data.wade_snowball.end_pos;
@@ -120,8 +129,13 @@ static void Player_actor_request_proc_index_fromWade_snowball(ACTOR* actor, GAME
         Player_actor_SettleRequestMainIndexPriority(actor);
 
         if (anim_idx != mPlayer_ANIM_WAIT1 && player->crash_snowball_for_wade == FALSE) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+            Player_actor_request_main_push_snowball_all(game, player->wade_snowball_label_shadow, 1,
+                                                        mPlayer_REQUEST_PRIORITY_2);
+#else
             Player_actor_request_main_push_snowball_all(game, (void*)player->main_data.wade_snowball.snowball_label, 1,
                                                         mPlayer_REQUEST_PRIORITY_2);
+#endif
         } else {
             Player_actor_request_main_walk_all(game, &player->main_data.wade_snowball.end_pos, -5.0f, 6, 1);
         }

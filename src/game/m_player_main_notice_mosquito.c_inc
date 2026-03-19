@@ -1,9 +1,14 @@
-static int Player_actor_request_main_notice_mosquito(GAME* game, u32 label, int prio) {
+static int Player_actor_request_main_notice_mosquito(GAME* game, void* label, int prio) {
     if (Player_actor_check_request_main_able(game, mPlayer_INDEX_NOTICE_MOSQUITO, prio)) {
         PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
         mPlayer_request_notice_mosquito_c* req_notice_mosquito_p = &player->requested_main_index_data.notice_mosquito;
 
-        req_notice_mosquito_p->label = label;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        req_notice_mosquito_p->label = 0;
+        player->notice_mosquito_label_shadow = (ACTOR*)label;
+#else
+        req_notice_mosquito_p->label = (u32)label;
+#endif
         Player_actor_request_main_index(game, mPlayer_INDEX_NOTICE_MOSQUITO, prio);
         return TRUE;
     }
@@ -19,7 +24,11 @@ static void Player_actor_setup_main_Notice_mosquito(ACTOR* actorx, GAME* game) {
     int anim1_idx;
     int part_table_idx;
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    notice_mosquito_p->label = 0;
+#else
     notice_mosquito_p->label = req_notice_mosquito_p->label;
+#endif
     notice_mosquito_p->timer = 0.0f;
     notice_mosquito_p->msg_mode = 0;
     Player_actor_SetupItem_Base1(actorx, mPlayer_ANIM_MOSQUITO2, -5.0f, &anim1_idx, &part_table_idx);

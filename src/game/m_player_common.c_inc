@@ -7026,7 +7026,11 @@ static void Player_actor_Set_bgm_volume(ACTOR* actorx, int main_index) {
 static int Player_actor_Check_Label_main_push_snowball(GAME* game, void* label) {
     PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    if (player->now_main_index == mPlayer_INDEX_PUSH_SNOWBALL && player->push_snowball_label_shadow == label) {
+#else
     if (player->now_main_index == mPlayer_INDEX_PUSH_SNOWBALL && player->main_data.push_snowball.label == (u32)label) {
+#endif
         return TRUE;
     }
 
@@ -7036,8 +7040,12 @@ static int Player_actor_Check_Label_main_push_snowball(GAME* game, void* label) 
 static int Player_actor_Check_Label_main_wade_snowball(GAME* game, void* label) {
     PLAYER_ACTOR* player = GET_PLAYER_ACTOR_GAME(game);
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    if (player->now_main_index == mPlayer_INDEX_WADE_SNOWBALL && player->wade_snowball_label_shadow == label) {
+#else
     if (player->now_main_index == mPlayer_INDEX_WADE_SNOWBALL &&
         player->main_data.wade_snowball.snowball_label == (u32)label) {
+#endif
         return TRUE;
     }
 
@@ -7838,19 +7846,35 @@ static int Player_actor_Check_stung_mosquito(GAME* game, void* label) {
 
     switch (main_index) {
         case mPlayer_INDEX_STUNG_MOSQUITO: {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+            ACTOR* stung_label = GET_PLAYER_ACTOR_GAME(game)->stung_mosquito_label_shadow;
+
+            if (stung_label == label) {
+                return TRUE;
+            }
+#else
             u32 stung_label = GET_PLAYER_ACTOR_GAME(game)->requested_main_index_data.stung_mosquito.label;
 
             if (stung_label == (u32)label) {
                 return TRUE;
             }
+#endif
             break;
         }
         case mPlayer_INDEX_NOTICE_MOSQUITO: {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+            ACTOR* notice_label = GET_PLAYER_ACTOR_GAME(game)->notice_mosquito_label_shadow;
+
+            if (notice_label == label) {
+                return TRUE;
+            }
+#else
             u32 notice_label = GET_PLAYER_ACTOR_GAME(game)->requested_main_index_data.notice_mosquito.label;
 
             if (notice_label == (u32)label) {
                 return TRUE;
             }
+#endif
             break;
         }
     }
