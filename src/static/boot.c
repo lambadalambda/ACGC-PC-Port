@@ -251,7 +251,7 @@ OSModuleHeader* LoadLink(const char* module_name) {
   }
   
   OSReport("モジュール(%s)の読み込み完了\n", module_name); /* Module (%s) load complete */
-  OSReport("module=%08x\n", module);
+  OSReport("module=%p\n", (void*)module);
   result = !!module;
   OSReport("result=%08x\n", result);
   length = JW_GetMemBlockSize(module);
@@ -262,7 +262,7 @@ OSModuleHeader* LoadLink(const char* module_name) {
 
     /* This case will never happen because soundArenaAlloc() was stubbed to always return nullptr. */
     if (bss != nullptr) {
-      OSReport("サウンドアリーナ %08x 使用 bss=%08x\n", module->bssSize, bss);  /* Sound Arena %08x used bss=%08x */
+      OSReport("サウンドアリーナ %08x 使用 bss=%p\n", module->bssSize, (void*)bss);  /* Sound Arena %08x used bss=%p */
       emu64_texture_cache_data_entry_set((u8*)module, (u8*)module + length);
     }
     else {
@@ -511,7 +511,7 @@ void adjustOSArena() {
   void* arenalo = OSGetArenaLo();
   void* arenahi = OSGetArenaHi();
 
-  OSReport("ARENA %08x-%08x" VT_RST "\n", arenalo, arenahi);
+  OSReport("ARENA %p-%p" VT_RST "\n", arenalo, arenahi);
 
 #ifndef TARGET_PC
   if (arenahi > (void*)0x81800000) {
@@ -530,7 +530,7 @@ void adjustOSArena() {
 #endif
 
   OSSetArenaHi(arenahi);
-  OSReport("ARENA %08x-%08x" VT_RST "\n", arenalo, arenahi);
+  OSReport("ARENA %p-%p" VT_RST "\n", arenalo, arenahi);
 
 #ifdef TARGET_PC
   /* Use pointer arithmetic instead of u32 casts (which truncate on 64-bit) */
@@ -620,7 +620,7 @@ int main(int argc, const char** argv) {
     case OS_RESETCODE_RESTART:
       OSReport("リスタート\n"); /* restart */
       OSGetSaveRegion(&start, &end);
-      OSReport("OSGetSaveRegion %08x %08x\n", start, end);
+      OSReport("OSGetSaveRegion %p %p\n", start, end);
       bcopy(NMISaveArea, osAppNMIBuffer, 16 * sizeof(s32));
       break;
     default:
@@ -761,10 +761,10 @@ int main(int argc, const char** argv) {
   pc_bswap_raw_display_lists();
   mFM_InitActableEndian();
   pc_bswap_u8_tlut_palettes();
-  OSReport("[PC] boot: entering HotStartEntry loop (entry=%08x)...\n", (u32)HotStartEntry);
+  OSReport("[PC] boot: entering HotStartEntry loop (entry=%p)...\n", HotStartEntry);
 #endif
   while (HotStartEntry != nullptr) {
-    OSReport("ホットスタート(%08x)\n", HotStartEntry);
+    OSReport("ホットスタート(%p)\n", HotStartEntry);
     HotStartEntry = (*(void* (*)())HotStartEntry)();
   }
 

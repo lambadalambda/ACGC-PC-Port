@@ -32,7 +32,7 @@ __declspec(weak) void OSPanic(char* file, int line, char* msg, ...) {
 
     OSReport("\nAddress:      Back Chain    LR Save\n");
     for (i = 0, p = (u32*)OSGetStackPointer(); p && (uintptr_t)p != (uintptr_t)0xffffffffu && i++ < 16; p = (u32*)*p) {
-        OSReport("0x%08x:   0x%08x    0x%08x\n", p, p[0], p[1]);
+        OSReport("%p:   0x%08x    0x%08x\n", (void*)p, p[0], p[1]);
     }
 
     PPCHalt();
