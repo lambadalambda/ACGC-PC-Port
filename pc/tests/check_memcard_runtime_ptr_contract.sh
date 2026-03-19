@@ -28,4 +28,6 @@ check_absent() {
 }
 
 check_contains "src/game/m_card.c" 'bg_info->data = \(void\*\)\(\(char\*\)data \+ ofs\);' 'memcard background transfer uses char pointer arithmetic'
+check_contains "src/game/m_card.c" 'if \(buf != NULL && IS_ALIGNED\(\(uintptr_t\)buf, 32\)\) \{' 'memcard foreground buffer alignment uses uintptr_t'
 check_absent "src/game/m_card.c" 'bg_info->data = \(void\*\)\(\(u32\)data \+ ofs\);' 'legacy memcard background transfer cast'
+check_absent "src/game/m_card.c" 'if \(buf != NULL && IS_ALIGNED\(\(u32\)buf, 32\)\) \{' 'legacy memcard foreground buffer cast'

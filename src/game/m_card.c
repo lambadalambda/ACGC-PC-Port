@@ -825,7 +825,7 @@ static int mCD_read_fg(void* buf, const char* filename, s32 length, s32 offset, 
     void* workArea;
     int res = mCD_RESULT_ERROR;
 
-    if (buf != NULL && IS_ALIGNED((u32)buf, 32)) {
+    if (buf != NULL && IS_ALIGNED((uintptr_t)buf, 32)) {
         int card_res = mCD_check_card(result, mCD_MEMCARD_SECTORSIZE, chan);
 
         if (card_res == mCD_RESULT_SUCCESS) {
