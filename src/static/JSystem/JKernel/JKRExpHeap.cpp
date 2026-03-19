@@ -714,12 +714,13 @@ void JKRExpHeap::joinTwoBlocks(CMemBlock* block) {
     CMemBlock* next = block->mNext;
     uintptr_t nextAddr = (uintptr_t)next - (next->mFlags & 0x7f);
     if (endAddr > nextAddr) {
-        JUTWarningConsole_f(":::Heap may be broken. (block = %x)", block);
-        JREPORTF(":::block = %x\n", block);
-        JREPORTF(":::joinTwoBlocks [%x %x %x][%x %x %x]\n", block, block->mFlags, block->mAllocatedSpace, block->mNext,
+        JUTWarningConsole_f(":::Heap may be broken. (block = %p)", (void*)block);
+        JREPORTF(":::block = %p\n", (void*)block);
+        JREPORTF(":::joinTwoBlocks [%p %x %x][%p %x %x]\n", (void*)block, block->mFlags, block->mAllocatedSpace,
+                 (void*)block->mNext,
                  block->mNext->mFlags, block->mNext->mAllocatedSpace);
-        JREPORTF(":::: endAddr = %x\n", endAddr);
-        JREPORTF(":::: nextAddr = %x\n", nextAddr);
+        JREPORTF(":::: endAddr = %p\n", (void*)endAddr);
+        JREPORTF(":::: nextAddr = %p\n", (void*)nextAddr);
         JKRGetCurrentHeap()->dump();
         JPANIC(1824, ":::: Bad Block\n");
     }
