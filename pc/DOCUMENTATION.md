@@ -357,6 +357,7 @@ sh pc/tests/check_audio_bank_runtime_ptr_contract.sh
 sh pc/tests/check_audio_command_payload_contract.sh
 sh pc/tests/check_jkr_exp_heap_runtime_ptr_contract.sh
 sh pc/tests/check_object_exchange_runtime_ptr_contract.sh
+sh pc/tests/check_memcard_runtime_ptr_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
