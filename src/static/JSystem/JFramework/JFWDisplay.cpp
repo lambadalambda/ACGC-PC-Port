@@ -22,6 +22,10 @@ extern void JFWGXAbortAlarmHandler(OSAlarm*, OSContext*);
 void waitForTick(u32, u16);
 void diagnoseGpHang();
 
+static u32 JFWDisplay_retrace_message_count(OSMessage msg) {
+    return (u32)(uintptr_t)msg;
+}
+
 inline void JFWDrawDoneAlarm() {
     OSAlarm alarm;
     OSCreateAlarm(&alarm);
@@ -328,8 +332,8 @@ void waitForTick(u32 p1, u16 p2) {
             if (!OSReceiveMessage(JUTVideo::getManager()->getMessageQueue(), &msg, OS_MESSAGE_BLOCK)) {
                 msg = 0;
             }
-        } while (((intptr_t)msg - (intptr_t)nextCount) < 0);
-        nextCount = (u32)((uintptr_t)msg + uVar1);
+        } while ((s32)(JFWDisplay_retrace_message_count(msg) - nextCount) < 0);
+        nextCount = JFWDisplay_retrace_message_count(msg) + uVar1;
     }
 }
 

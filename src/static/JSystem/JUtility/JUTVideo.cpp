@@ -9,6 +9,10 @@ OSTick JUTVideo::sVideoInterval;
 
 bool sDrawWaiting;
 
+static OSMessage JUTVideo_retrace_message(u32 retraceCount) {
+    return (OSMessage)(uintptr_t)retraceCount;
+}
+
 JUTVideo* JUTVideo::createManager(const GXRenderModeObj* renderModeObj) {
     if (sManager == nullptr) {
         sManager = new JUTVideo(renderModeObj);
@@ -158,7 +162,7 @@ void JUTVideo::postRetraceProc(u32 p1) {
         sManager->mPostRetraceCallback(p1);
     }
     u32 retraceCount = VIGetRetraceCount();
-    OSSendMessage(&sManager->mMessageQueue, (void*)retraceCount, OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&sManager->mMessageQueue, JUTVideo_retrace_message(retraceCount), OS_MESSAGE_NOBLOCK);
 }
 
 void JUTVideo::setRenderMode(const GXRenderModeObj* newRenderModeObj) {
