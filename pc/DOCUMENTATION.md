@@ -359,6 +359,7 @@ sh pc/tests/check_audio_command_payload_contract.sh
 sh pc/tests/check_initial_menu_message_contract.sh
 sh pc/tests/check_irqmgr_message_contract.sh
 sh pc/tests/check_jfw_retrace_message_contract.sh
+sh pc/tests/check_jut_console_runtime_ptr_contract.sh
 sh pc/tests/check_jkr_exp_heap_runtime_ptr_contract.sh
 sh pc/tests/check_jsyswrap_system_heap_size_contract.sh
 sh pc/tests/check_object_exchange_runtime_ptr_contract.sh
