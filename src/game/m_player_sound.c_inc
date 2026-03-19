@@ -5,6 +5,10 @@ typedef enum player_status_level_s {
     mPlayer_DASH,
 } mPlayer_STATUS_LEVEL;
 
+enum {
+    mPlayer_KAZAGURUMA_AUDIO_TOKEN = 0x504C0000u,
+};
+
 static void Player_actor_sound_SetStatus(ACTOR* actor) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     int main_index = player->now_main_index;
@@ -333,6 +337,6 @@ static void Player_actor_sound_move_temochi_kazaguruma(ACTOR* actor) {
     }
     if (speed != 0.0f) {
         sAdo_kazagurumaLevel(speed);
-        sAdo_OngenPos((u32)player, NA_SE_TEMOCHI_KAZAGURUMA, &actor->world.position);
+        sAdo_OngenPos(mPlayer_KAZAGURUMA_AUDIO_TOKEN, NA_SE_TEMOCHI_KAZAGURUMA, &actor->world.position);
     }
 }
