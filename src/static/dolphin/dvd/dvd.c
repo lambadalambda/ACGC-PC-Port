@@ -72,6 +72,8 @@ static void stateTimeout(void);
 static void cbForUnrecoveredError(u32 intType);
 static void cbForUnrecoveredErrorRetry(u32 intType);
 
+#define DVD_PTR_IS_ALIGNED(ptr, align) ((((uintptr_t)(ptr)) & ((uintptr_t)(align) - 1U)) == 0)
+
 void DVDInit() {
     if (DVDInitialized == FALSE) {
         OSInitAlarm();
@@ -101,7 +103,7 @@ void DVDInit() {
 
 static void stateReadingFST() {
     LastState = stateReadingFST;
-    ASSERTLINE(0x23A, ((u32)(bootInfo->FSTLocation) & (32 - 1)) == 0);
+    ASSERTLINE(0x23A, DVD_PTR_IS_ALIGNED(bootInfo->FSTLocation, 32));
     DVDLowRead(bootInfo->FSTLocation, (u32)(tmpBuffer[2] + 0x1F) & 0xFFFFFFE0, (u32)tmpBuffer[1], cbForStateReadingFST);
 }
 
@@ -845,7 +847,7 @@ int DVDReadAbsAsyncPrio(struct DVDCommandBlock * block, void * addr, long length
 
     ASSERTMSGLINE(0x7A9, block, "DVDReadAbsAsync(): null pointer is specified to command block address.");
     ASSERTMSGLINE(0x7AA, addr, "DVDReadAbsAsync(): null pointer is specified to addr.");
-    ASSERTMSGLINE(0x7AC, !OFFSET(addr, 32), "DVDReadAbsAsync(): address must be aligned with 32 byte boundary.");
+    ASSERTMSGLINE(0x7AC, DVD_PTR_IS_ALIGNED(addr, 32), "DVDReadAbsAsync(): address must be aligned with 32 byte boundary.");
     ASSERTMSGLINE(0x7AE, !(length & (32-1)), "DVDReadAbsAsync(): length must be a multiple of 32.");
     ASSERTMSGLINE(0x7B0, !(offset & (4-1)), "DVDReadAbsAsync(): offset must be a multiple of 4.");
     ASSERTMSGLINE(0x7B2, length > 0, "DVD read: 0 or negative value was specified to length of the read\n");
@@ -878,7 +880,7 @@ int DVDReadAbsAsyncForBS(struct DVDCommandBlock * block, void * addr, long lengt
 
     ASSERTMSGLINE(0x7FA, block, "DVDReadAbsAsyncForBS(): null pointer is specified to command block address.");
     ASSERTMSGLINE(0x7FB, addr, "DVDReadAbsAsyncForBS(): null pointer is specified to addr.");
-    ASSERTMSGLINE(0x7FD, !OFFSET(addr, 32), "DVDReadAbsAsyncForBS(): address must be aligned with 32 byte boundary.");
+    ASSERTMSGLINE(0x7FD, DVD_PTR_IS_ALIGNED(addr, 32), "DVDReadAbsAsyncForBS(): address must be aligned with 32 byte boundary.");
     ASSERTMSGLINE(0x7FF, !(length & (32-1)), "DVDReadAbsAsyncForBS(): length must be a multiple of 32.");
     ASSERTMSGLINE(0x801, !(offset & (4-1)), "DVDReadAbsAsyncForBS(): offset must be a multiple of 4.");
     block->command = DVD_COMMAND_BSREAD;
@@ -897,7 +899,7 @@ int DVDReadDiskID(struct DVDCommandBlock * block, struct DVDDiskID * diskID, voi
 
     ASSERTMSGLINE(0x822, block, "DVDReadDiskID(): null pointer is specified to command block address.");
     ASSERTMSGLINE(0x823, diskID, "DVDReadDiskID(): null pointer is specified to id address.");
-    ASSERTMSGLINE(0x825, !OFFSET(diskID, 32), "DVDReadDiskID(): id must be aligned with 32 byte boundary.");
+    ASSERTMSGLINE(0x825, DVD_PTR_IS_ALIGNED(diskID, 32), "DVDReadDiskID(): id must be aligned with 32 byte boundary.");
 
     block->command = DVD_COMMAND_READID;
     block->addr = diskID;
@@ -1229,7 +1231,7 @@ int DVDInquiryAsync(struct DVDCommandBlock * block, struct DVDDriveInfo * info, 
 
     ASSERTMSGLINE(0xAC9, block, "DVDInquiry(): Null address was specified for block");
     ASSERTMSGLINE(0xACA, info, "DVDInquiry(): Null address was specified for info");
-    ASSERTMSGLINE(0xACC, !OFFSET(info, 32), "DVDInquiry(): Address for info is not 32 bytes aligned");
+    ASSERTMSGLINE(0xACC, DVD_PTR_IS_ALIGNED(info, 32), "DVDInquiry(): Address for info is not 32 bytes aligned");
 
     block->command = 0xE;
     block->addr = info;

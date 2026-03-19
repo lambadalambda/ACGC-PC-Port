@@ -293,7 +293,7 @@ BOOL DVDLowRead(void* addr, u32 length, u32 offset, DVDLowCallback callback)
     u32 blockNumOfCurrStart;
 	OSTime diff;
 
-    ASSERTMSGLINE(0x341, (((u32)addr) & 31) == 0, "DVDLowRead(): address must be aligned with 32 byte boundary.");
+    ASSERTMSGLINE(0x341, (((uintptr_t)addr) & 31) == 0, "DVDLowRead(): address must be aligned with 32 byte boundary.");
     ASSERTMSGLINE(0x342, (length & 31) == 0, "DVDLowRead(): length must be a multiple of 32.");
     ASSERTMSGLINE(0x343, (offset & 3) == 0, "DVDLowRead(): offset must be a multiple of 4.");
     ASSERTMSGLINE(0x345, length != 0, "DVD read: 0 was specified to length of the read\n");

@@ -301,7 +301,7 @@ BOOL DVDReadAsyncPrio(DVDFileInfo* fileInfo, void* addr, s32 length, s32 offset,
 
         ASSERTMSGLINE(0x2D5, fileInfo, "DVDReadAsync(): null pointer is specified to file info address  ");
         ASSERTMSGLINE(0x2D6, addr, "DVDReadAsync(): null pointer is specified to addr  ");
-        ASSERTMSGLINE(0x2DA, !OFFSET(addr, 32), "DVDReadAsync(): address must be aligned with 32 byte boundaries  ");
+        ASSERTMSGLINE(0x2DA, (((uintptr_t)addr) & (32 - 1)) == 0, "DVDReadAsync(): address must be aligned with 32 byte boundaries  ");
         ASSERTMSGLINE(0x2DC, !(length & 0x1F), "DVDReadAsync(): length must be  multiple of 32 byte  ");
         ASSERTMSGLINE(0x2DE, !(offset & 3), "DVDReadAsync(): offset must be multiple of 4 byte  ");
         
@@ -342,7 +342,7 @@ long DVDReadPrio(struct DVDFileInfo * fileInfo, void * addr, long length, long o
 
     ASSERTMSGLINE(0x31B, fileInfo, "DVDRead(): null pointer is specified to file info address  ");
     ASSERTMSGLINE(0x31C, addr, "DVDRead(): null pointer is specified to addr  ");
-    ASSERTMSGLINE(0x320, !OFFSET(addr, 32), "DVDRead(): address must be aligned with 32 byte boundaries  ");
+    ASSERTMSGLINE(0x320, (((uintptr_t)addr) & (32 - 1)) == 0, "DVDRead(): address must be aligned with 32 byte boundaries  ");
     ASSERTMSGLINE(0x322, !(length & 0x1F), "DVDRead(): length must be  multiple of 32 byte  ");
     ASSERTMSGLINE(0x324, !(offset & 3), "DVDRead(): offset must be multiple of 4 byte  ");
 
