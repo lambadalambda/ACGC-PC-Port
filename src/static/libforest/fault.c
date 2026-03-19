@@ -50,7 +50,7 @@ extern void fault_AddClientEx(fault_client* client, FaultCallback callback, cons
 exit:
     OSRestoreInterrupts(enable);
     if (client_exists != FALSE) {
-        OSReport(VT_COL(RED, WHITE) "fault_AddClient: %08x は既にリスト中にある\n" VT_RST, client);
+        OSReport(VT_COL(RED, WHITE) "fault_AddClient: %p は既にリスト中にある\n" VT_RST, (void*)client);
     }
 }
 
@@ -110,7 +110,8 @@ static void fault_CallBackFunc(int stage) {
                 }
 
                 if ((client->flags & FAULT_FLAG_SKIP_DRAW_CALLBACK_INFO) == 0) {
-                    fault_Printf("CallBack (%d/%d) %08x %08x %08x\n", index++, this->num_clients, client, client->msg, client->param);
+                    fault_Printf("CallBack (%d/%d) %p %p %08x\n", index++, this->num_clients, (void*)client,
+                                 (void*)client->msg, client->param);
                     fault_DrawUpdate();
                 }
 
