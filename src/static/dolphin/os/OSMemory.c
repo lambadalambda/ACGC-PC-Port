@@ -5,8 +5,8 @@
 #include "dolphin/hw_regs.h"
 #include "dolphin/os/OSReset.h"
 
-#define TRUNC(n, a) (((u32)(n)) & ~((a)-1))
-#define ROUND(n, a) (((u32)(n) + (a)-1) & ~((a)-1))
+#define TRUNC(n, a) (((uintptr_t)(n)) & ~((uintptr_t)(a)-1))
+#define ROUND(n, a) (((uintptr_t)(n) + (uintptr_t)(a)-1) & ~((uintptr_t)(a)-1))
 
 u32 OSGetConsoleSimulatedMemSize(void){
 	return(SIM_MEM);
@@ -42,8 +42,8 @@ static void MEMIntrruptHandler(__OSInterrupt interrupt, OSContext* ctx){
 void OSProtectRange(u32 chan, void* addr, u32 nBytes, u32 control)
 {
 	BOOL enabled;
-	u32 start;
-	u32 end;
+	uintptr_t start;
+	uintptr_t end;
 	u16 reg;
 	if (4 <= chan) {
 		return;
@@ -51,11 +51,11 @@ void OSProtectRange(u32 chan, void* addr, u32 nBytes, u32 control)
 
 	control &= OS_PROTECT_CONTROL_RDWR;
 
-	end   = (u32)addr + nBytes;
+	end   = (uintptr_t)addr + nBytes;
 	start = TRUNC(addr, 1u << 10);
 	end   = ROUND(end, 1u << 10);
 
-	DCFlushRange((void*)start, end - start);
+	DCFlushRange((void*)start, (u32)(end - start));
 
 	enabled = OSDisableInterrupts();
 
