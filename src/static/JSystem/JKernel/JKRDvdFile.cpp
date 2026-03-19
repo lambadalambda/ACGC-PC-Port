@@ -1,5 +1,13 @@
 #include "JSystem/JKernel/JKRDvdFile.h"
 
+static OSMessage JKRDvdFile_ResultMessage(s32 result) {
+    return (OSMessage)(intptr_t)result;
+}
+
+static s32 JKRDvdFile_ResultValue(OSMessage msg) {
+    return (s32)(intptr_t)msg;
+}
+
 JSUList<JKRDvdFile> JKRDvdFile::sDvdList;
 
 JKRDvdFile::JKRDvdFile() : JKRFile(), mLink(this) {
@@ -111,9 +119,10 @@ s32 JKRDvdFile::sync() {
     OSReceiveMessage(&this->mDvdMessageQueue, &m, OS_MESSAGE_BLOCK);
     this->mDvdThread = nullptr;
     OSUnlockMutex(&this->mDvdMutex);
-    return (s32)(intptr_t)m;
+    return JKRDvdFile_ResultValue(m);
 }
 
 void JKRDvdFile::doneProcess(s32 result, DVDFileInfo* info) {
-    OSSendMessage(&static_cast<JKRDvdFileInfo*>(info)->mFile->mDvdMessageQueue, (OSMessage)result, OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&static_cast<JKRDvdFileInfo*>(info)->mFile->mDvdMessageQueue, JKRDvdFile_ResultMessage(result),
+                  OS_MESSAGE_NOBLOCK);
 }
