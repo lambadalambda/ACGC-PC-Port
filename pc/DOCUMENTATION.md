@@ -376,6 +376,7 @@ sh pc/tests/check_player_stung_mosquito_runtime_ptr_contract.sh
 sh pc/tests/check_player_snowball_runtime_ptr_contract.sh
 sh pc/tests/check_field_make_runtime_ptr_contract.sh
 sh pc/tests/check_field_draw_audio_id_contract.sh
+sh pc/tests/check_effect_audio_id_contract.sh
 sh pc/tests/check_npc_actor_runtime_ptr_contract.sh
 sh pc/tests/check_famicom_runtime_ptr_contract.sh
 sh pc/tests/check_fault_pointer_format_contract.sh
