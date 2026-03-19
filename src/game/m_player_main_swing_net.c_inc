@@ -32,7 +32,7 @@ static void Player_actor_setup_main_Swing_net(ACTOR* actor, GAME* game) {
     Player_actor_setup_main_Base(actor, game);
     Player_actor_Reset_Item_net_catch_request_table(actor);
 
-    player->item_net_catch_label = 0;
+    Player_actor_Set_Item_net_catch_label_p(player, NULL);
     player->item_net_catch_type = 0;
     player->item_net_has_catch = FALSE;
 
@@ -162,11 +162,11 @@ static int Player_actor_Item_CheckLocalCapture_forNet(const xyz_t* net_top_col, 
     return TRUE;
 }
 
-static int Player_actor_CheckCaptureForce_forNet(ACTOR* actor, u32* label_req, s8* type_req) {
+static int Player_actor_CheckCaptureForce_forNet(ACTOR* actor, void** label_req, s8* type_req) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
 
-    if (player->item_net_catch_label_request_force != 0) {
-        *label_req = player->item_net_catch_label_request_force;
+    if (Player_actor_Get_Item_net_catch_force_label_p(player) != NULL) {
+        *label_req = Player_actor_Get_Item_net_catch_force_label_p(player);
         *type_req = player->item_net_catch_type_request_force;
 
         return TRUE;
@@ -175,10 +175,9 @@ static int Player_actor_CheckCaptureForce_forNet(ACTOR* actor, u32* label_req, s
     }
 }
 
-static int Player_actor_CheckCapture_forNet(ACTOR* actor, u32* label_req, s8* type_req) {
+static int Player_actor_CheckCapture_forNet(ACTOR* actor, void** label_req, s8* type_req) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     int catch_num;
-    u32* req_label_table;
     s8* type_table;
     xyz_t* catch_pos_table;
     f32* rad_req;
@@ -197,7 +196,6 @@ static int Player_actor_CheckCapture_forNet(ACTOR* actor, u32* label_req, s8* ty
         xyz_t arg1;
         xyz_t arg2;
 
-        req_label_table = player->item_net_catch_label_request_table;
         type_table = player->item_net_catch_type_request_table;
         catch_pos_table = player->item_net_catch_pos_request_table;
         rad_req = player->item_net_catch_radius_request_table;
@@ -221,11 +219,10 @@ static int Player_actor_CheckCapture_forNet(ACTOR* actor, u32* label_req, s8* ty
 
         for (i = 0; i < catch_num; i++) {
             if (Player_actor_Item_CheckLocalCapture_forNet(top_col, &arg1, &arg2, catch_pos_table, SQ(len), *rad_req)) {
-                *label_req = *req_label_table;
+                *label_req = Player_actor_Get_Item_net_catch_request_label_p(player, i);
                 *type_req = *type_table;
                 return TRUE;
             }
-            req_label_table++;
             type_table++;
             catch_pos_table++;
             rad_req++;
@@ -240,20 +237,20 @@ static int Player_actor_CatchSomethingCheck_common(ACTOR* actor, f32 frame) {
 
     if (player->keyframe0.frame_control.current_frame > frame) {
         mPlayer_main_swing_net_c* main_swing = &player->main_data.swing_net;
-        u32 label;
+        void* label;
         s8 type;
-        u32 pl_label = player->item_net_catch_label;
+        void* pl_label = Player_actor_Get_Item_net_catch_label_p(player);
 
         main_swing->swing_timer += 0.5f;
 
-        if (pl_label == 0) {
+        if (pl_label == NULL) {
             if (Player_actor_CheckCapture_forNet(actor, &label, &type)) {
-                player->item_net_catch_label = label;
+                Player_actor_Set_Item_net_catch_label_p(player, label);
                 player->item_net_catch_type = type;
 
-                if (type == 0 && label != 0) {
+                if (type == 0 && label != NULL) {
                     player->item_net_catch_insect_idx = ((aINS_INSECT_ACTOR*)label)->type;
-                } else if (label != 0) {
+                } else if (label != NULL) {
                     if (((ACTOR*)label)->id == mAc_PROFILE_BEE) {
                         player->item_net_catch_insect_idx = aINS_INSECT_TYPE_BEE;
                     } else {
@@ -281,9 +278,9 @@ static int Player_actor_CatchSomethingCheck_Swing_net(ACTOR* actor) {
 static void Player_actor_CorrectSomething_Swing_net(ACTOR* actor) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     xyz_t* pos = &player->net_pos;
-    u32 label = player->item_net_catch_label;
+    void* label = Player_actor_Get_Item_net_catch_label_p(player);
 
-    if (label != 0 && player->item_net_catch_type == 0) {
+    if (label != NULL && player->item_net_catch_type == 0) {
         ((ACTOR*)label)->drawn = FALSE;
     }
 
@@ -343,8 +340,8 @@ static void Player_actor_request_proc_index_fromSwing_net(ACTOR* actor, GAME* ga
 static void Player_actor_main_Swing_net(ACTOR* actor, GAME* game) {
     int end_flag;
     f32 frame_calc;
-    u32 label;
-    int hit_check = Player_actor_HitBGCheck_Swing_net(actor, game, (ACTOR**)&label);
+    ACTOR* hit_actor = NULL;
+    int hit_check = Player_actor_HitBGCheck_Swing_net(actor, game, &hit_actor);
     int check_type = Player_actor_CatchSomethingCheck_Swing_net(actor);
 
     Player_actor_CorrectSomething_Swing_net(actor);
@@ -357,5 +354,5 @@ static void Player_actor_main_Swing_net(ACTOR* actor, GAME* game) {
     Player_actor_ObjCheck_Swing_net(actor, game);
     Player_actor_BGcheck_Swing_net(actor);
     Player_actor_Item_main(actor, game);
-    Player_actor_request_proc_index_fromSwing_net(actor, game, end_flag, hit_check, check_type, (ACTOR*)label);
+    Player_actor_request_proc_index_fromSwing_net(actor, game, end_flag, hit_check, check_type, hit_actor);
 }

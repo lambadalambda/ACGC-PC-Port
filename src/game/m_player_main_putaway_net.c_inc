@@ -38,9 +38,9 @@ static int Player_actor_CulcAnimation_Putaway_net(ACTOR* actor, f32* frame_calc)
 
 static void Player_actor_CorrectSomething_Putaway_net(ACTOR* actor, GAME* game) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
-    u32 label = player->item_net_catch_label;
+    void* label = Player_actor_Get_Item_net_catch_label_p(player);
 
-    if (label != 0) {
+    if (label != NULL) {
         cKF_FrameControl_c* fc = &player->keyframe0.frame_control;
 
         if (Player_actor_Check_AnimationFrame(fc, 17.0f)) {
@@ -82,7 +82,9 @@ static void Player_actor_request_proc_index_fromPutaway_net(ACTOR* actor, GAME* 
             if (player->item_net_catch_type == 0) {
                 mSM_open_submenu_new2(
                     &play->submenu, mSM_OVL_INVENTORY, mSM_IV_OPEN_EXCHANGE,
-                    (mActor_name_t)(((aINS_INSECT_ACTOR*)player->item_net_catch_label)->type + ITM_INSECT_START), NULL,
+                    (mActor_name_t)(((aINS_INSECT_ACTOR*)Player_actor_Get_Item_net_catch_label_p(player))->type +
+                                    ITM_INSECT_START),
+                    NULL,
                     actor->shape_info.rotation.y);
             }
         } else {

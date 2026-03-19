@@ -29,7 +29,7 @@ static void Player_actor_setup_main_Pull_net(ACTOR* actor, GAME* game) {
     Player_actor_InitAnimation_Base2(actor, game, mPlayer_ANIM_GET_M1, mPlayer_ANIM_GET_M1, 1.0f, 1.0f, 0.5f, 10.0f, 0,
                                      0);
 
-    if (player->item_net_catch_label != 0) {
+    if (Player_actor_Get_Item_net_catch_label_p(player) != NULL) {
         int idx = player->item_net_catch_insect_idx;
 
         if (idx == aINS_INSECT_TYPE_SPIRIT) {
@@ -59,9 +59,9 @@ static void Player_actor_CorrectSomething_Pull_net(ACTOR* actor) {
     xyz_t* pos;
 
     if (player->keyframe0.frame_control.current_frame > 15.0f) {
-        u32 label = player->item_net_catch_label;
+        void* label = Player_actor_Get_Item_net_catch_label_p(player);
 
-        if (label != 0 && player->item_net_catch_type == 0) {
+        if (label != NULL && player->item_net_catch_type == 0) {
             ((ACTOR*)label)->drawn = TRUE;
         }
         pos = &player->left_hand_pos;
@@ -105,11 +105,11 @@ static void Player_actor_Pull_net_demo_ct(ACTOR* actor) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actor;
     rgba_t color;
     mMsg_Window_c* win = mMsg_Get_base_window_p();
-    u32 label = player->item_net_catch_label;
+    void* label = Player_actor_Get_Item_net_catch_label_p(player);
     s8 type = player->item_net_catch_type;
     int msg_no = 0xA2C;
 
-    if (label != 0) {
+    if (label != NULL) {
         int idx = player->item_net_catch_insect_idx;
         int main_index = player->now_main_index;
 

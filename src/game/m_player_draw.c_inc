@@ -377,7 +377,7 @@ static void Player_actor_draw_Normal(ACTOR* actorx, GAME* game) {
 
 #if VERSION >= VER_GAFU01_00
     if (player->item_net_catch_correct_pos_set) {
-        TOOLS_ACTOR* label = (TOOLS_ACTOR*)player->item_net_catch_label;
+        TOOLS_ACTOR* label = (TOOLS_ACTOR*)Player_actor_Get_Item_net_catch_label_p(player);
         
         if (label != NULL && player->item_net_catch_type == mPlayer_NET_CATCH_TYPE_INSECT) {
             Matrix_push();

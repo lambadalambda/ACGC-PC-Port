@@ -2271,9 +2271,9 @@ struct player_actor_s {
     /* 0x12F8 */ int (*request_main_demo_get_golden_axe_wait_all_proc)(GAME*, int);
     /* 0x12FC */ int (*check_request_main_priority_proc)(GAME*, int);
     /* 0x1300 */ void* (*get_door_label_proc)(GAME*);
-    /* 0x1304 */ int (*Set_Item_net_catch_request_table_proc)(ACTOR*, GAME*, u32, s8, const xyz_t*, f32);
+    /* 0x1304 */ int (*Set_Item_net_catch_request_table_proc)(ACTOR*, GAME*, void*, s8, const xyz_t*, f32);
     /* 0x1308 */ f32 (*Get_Item_net_catch_swing_timer_proc)(ACTOR*, GAME*);
-    /* 0x130C */ int (*Set_Item_net_catch_request_force_proc)(ACTOR*, GAME*, u32, s8);
+    /* 0x130C */ int (*Set_Item_net_catch_request_force_proc)(ACTOR*, GAME*, void*, s8);
     /* 0x1310 */ void (*Set_force_position_angle_proc)(GAME*, const xyz_t*, const s_xyz*, u8);
     /* 0x1314 */ u8 (*Get_force_position_angle_proc)(GAME*, xyz_t*, s_xyz*);
     /* 0x1318 */ int (*Get_WadeEndPos_proc)(GAME*, xyz_t*);
@@ -2283,8 +2283,8 @@ struct player_actor_s {
     /* 0x1328 */ int (*check_able_change_camera_normal_index_proc)(ACTOR*);
     /* 0x132C */ int (*Check_able_force_speak_label_proc)(GAME*, void*);
     /* 0x1330 */ int (*check_cancel_request_change_proc_index_proc)(int);
-    /* 0x1334 */ u32 (*Get_item_net_catch_label_proc)(ACTOR*);
-    /* 0x1338 */ int (*Change_item_net_catch_label_proc)(ACTOR*, u32, s8);
+    /* 0x1334 */ void* (*Get_item_net_catch_label_proc)(ACTOR*);
+    /* 0x1338 */ int (*Change_item_net_catch_label_proc)(ACTOR*, void*, s8);
     /* 0x133C */ int (*Check_StopNet_proc)(ACTOR*, xyz_t*);
     /* 0x1340 */ int (*Check_HitAxe_proc)(ACTOR*, xyz_t*);
     /* 0x1344 */ int (*Check_VibUnit_OneFrame_proc)(ACTOR*, const xyz_t*);
@@ -2319,6 +2319,9 @@ struct player_actor_s {
     ACTOR* wade_snowball_label_shadow;
     ACTOR* stung_mosquito_label_shadow;
     ACTOR* notice_mosquito_label_shadow;
+    void* item_net_catch_label_shadow;
+    void* item_net_catch_label_request_table_shadow[mPlayer_NET_CATCH_TABLE_COUNT];
+    void* item_net_catch_label_request_force_shadow;
 #endif
 };
 

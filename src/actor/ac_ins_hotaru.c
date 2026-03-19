@@ -465,7 +465,7 @@ static void aIHT_actor_move(ACTOR* actorx, GAME* game) {
         aIHT_anime_proc(insect);
     }
 
-    if ((ACTOR*)mPlib_Get_item_net_catch_label() == actorx) {
+    if (mPlib_Get_item_net_catch_label() == actorx) {
         aIHT_setupAction(insect, aIHT_ACT_LET_ESCAPE, game);
     } else if (insect->insect_flags.bit_3 == TRUE && insect->insect_flags.bit_2 == FALSE) {
         aIHT_setupAction(insect, aIHT_ACT_LET_ESCAPE, game);

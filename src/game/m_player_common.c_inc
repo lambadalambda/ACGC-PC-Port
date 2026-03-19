@@ -2455,14 +2455,69 @@ static void Player_actor_Set_OldAngle(ACTOR* actorx) {
     *old_shape_angle_p = *shape_rot_p;
 }
 
-static void Player_actor_Reset_Item_net_catch_request_table(ACTOR* actorx) {
-    PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
-
-    player->item_net_catch_request_use_count = 0;
-    player->item_net_catch_label_request_force = 0;
+static void* Player_actor_Get_Item_net_catch_label_p(PLAYER_ACTOR* player) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    return player->item_net_catch_label_shadow;
+#else
+    return (void*)player->item_net_catch_label;
+#endif
 }
 
-static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* game, u32 label, s8 type,
+static void Player_actor_Set_Item_net_catch_label_p(PLAYER_ACTOR* player, void* label) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    player->item_net_catch_label = 0;
+    player->item_net_catch_label_shadow = label;
+#else
+    player->item_net_catch_label = (u32)label;
+#endif
+}
+
+static void* Player_actor_Get_Item_net_catch_request_label_p(PLAYER_ACTOR* player, int idx) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    return player->item_net_catch_label_request_table_shadow[idx];
+#else
+    return (void*)player->item_net_catch_label_request_table[idx];
+#endif
+}
+
+static void Player_actor_Set_Item_net_catch_request_label_p(PLAYER_ACTOR* player, int idx, void* label) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    player->item_net_catch_label_request_table[idx] = 0;
+    player->item_net_catch_label_request_table_shadow[idx] = label;
+#else
+    player->item_net_catch_label_request_table[idx] = (u32)label;
+#endif
+}
+
+static void* Player_actor_Get_Item_net_catch_force_label_p(PLAYER_ACTOR* player) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    return player->item_net_catch_label_request_force_shadow;
+#else
+    return (void*)player->item_net_catch_label_request_force;
+#endif
+}
+
+static void Player_actor_Set_Item_net_catch_force_label_p(PLAYER_ACTOR* player, void* label) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    player->item_net_catch_label_request_force = 0;
+    player->item_net_catch_label_request_force_shadow = label;
+#else
+    player->item_net_catch_label_request_force = (u32)label;
+#endif
+}
+
+static void Player_actor_Reset_Item_net_catch_request_table(ACTOR* actorx) {
+    PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
+    int i;
+
+    player->item_net_catch_request_use_count = 0;
+    for (i = 0; i < mPlayer_NET_CATCH_TABLE_COUNT; i++) {
+        Player_actor_Set_Item_net_catch_request_label_p(player, i, NULL);
+    }
+    Player_actor_Set_Item_net_catch_force_label_p(player, NULL);
+}
+
+static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* game, void* label, s8 type,
                                                          const xyz_t* pos_p, f32 radius) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
@@ -2471,7 +2526,7 @@ static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* ga
 
         if ((catch_num >= 0 && catch_num < mPlayer_NET_CATCH_TABLE_COUNT) &&
             (type >= 0 && type < mPlayer_NET_CATCH_TYPE_NUM) && pos_p != NULL && 0.0f <= radius) {
-            player->item_net_catch_label_request_table[catch_num] = label;
+            Player_actor_Set_Item_net_catch_request_label_p(player, catch_num, label);
             player->item_net_catch_type_request_table[catch_num] = type;
             player->item_net_catch_pos_request_table[catch_num] = *pos_p;
             player->item_net_catch_radius_request_table[catch_num] = radius;
@@ -2483,12 +2538,12 @@ static int Player_actor_Set_Item_net_catch_request_table(ACTOR* actorx, GAME* ga
     return FALSE;
 }
 
-static int Player_actor_Set_Item_net_catch_request_force(ACTOR* actorx, GAME* game, u32 label, s8 type) {
+static int Player_actor_Set_Item_net_catch_request_force(ACTOR* actorx, GAME* game, void* label, s8 type) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
     if (mPlib_get_player_actor_main_index(game) == mPlayer_INDEX_SWING_NET &&
-        player->item_net_catch_label_request_force == 0) {
-        player->item_net_catch_label_request_force = label;
+        Player_actor_Get_Item_net_catch_force_label_p(player) == NULL) {
+        Player_actor_Set_Item_net_catch_force_label_p(player, label);
         player->item_net_catch_type_request_force = type;
         return TRUE;
     }
@@ -4495,7 +4550,7 @@ static void Player_actor_cancel_request_change_proc_index_by_A_btn(ACTOR* actorx
     }
 }
 
-static u32 Player_actor_Get_item_net_catch_label(ACTOR* actorx) {
+static void* Player_actor_Get_item_net_catch_label(ACTOR* actorx) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
 
     switch (player->now_main_index) {
@@ -4503,13 +4558,13 @@ static u32 Player_actor_Get_item_net_catch_label(ACTOR* actorx) {
         case mPlayer_INDEX_PULL_NET:
         case mPlayer_INDEX_NOTICE_NET:
         case mPlayer_INDEX_PUTAWAY_NET:
-            return player->item_net_catch_label;
+            return Player_actor_Get_Item_net_catch_label_p(player);
         default:
-            return 0;
+            return NULL;
     }
 }
 
-static int Player_actor_Change_item_net_catch_label(ACTOR* actorx, u32 label, s8 insect_type) {
+static int Player_actor_Change_item_net_catch_label(ACTOR* actorx, void* label, s8 insect_type) {
     PLAYER_ACTOR* player = (PLAYER_ACTOR*)actorx;
     aINS_INSECT_ACTOR* insect_actor = (aINS_INSECT_ACTOR*)label;
 
@@ -4519,7 +4574,7 @@ static int Player_actor_Change_item_net_catch_label(ACTOR* actorx, u32 label, s8
             case mPlayer_INDEX_PULL_NET:
             case mPlayer_INDEX_NOTICE_NET:
             case mPlayer_INDEX_PUTAWAY_NET:
-                player->item_net_catch_label = label;
+                Player_actor_Set_Item_net_catch_label_p(player, label);
                 player->item_net_catch_type = insect_type;
                 if (insect_type == 0 && insect_actor != NULL) {
                     player->item_net_catch_insect_idx = insect_actor->type;
