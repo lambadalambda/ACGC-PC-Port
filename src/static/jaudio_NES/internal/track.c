@@ -468,15 +468,15 @@ extern void Nas_AddList(link* root, link* list) {
         static BOOL first = TRUE;
 
         if (first) {
-            OSReport("GLOBAL USE %x\n", &AG.channel_node.useList);
-            OSReport("GLOBAL FREE %x\n", &AG.channel_node.freeList);
-            OSReport("GLOBAL RELEASE %x\n", &AG.channel_node.releaseList);
-            OSReport("GLOBAL RELWAIT %x\n", &AG.channel_node.relwaitList);
+            OSReport("GLOBAL USE %p\n", (void*)&AG.channel_node.useList);
+            OSReport("GLOBAL FREE %p\n", (void*)&AG.channel_node.freeList);
+            OSReport("GLOBAL RELEASE %p\n", (void*)&AG.channel_node.releaseList);
+            OSReport("GLOBAL RELWAIT %p\n", (void*)&AG.channel_node.relwaitList);
             first = FALSE;
         }
 
-        OSReport("List %x\n", list);
-        OSReport("Root %x\n", root);
+        OSReport("List %p\n", (void*)list);
+        OSReport("Root %p\n", (void*)root);
     } else {
         root->prev->next = list;
         list->prev = root->prev;

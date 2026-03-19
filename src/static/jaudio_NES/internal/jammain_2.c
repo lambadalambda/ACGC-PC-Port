@@ -2813,7 +2813,7 @@ u32 Cmd_Process(seqp_* track, u8 cmd, u16 param_3)
 	function = CMDP_LIST[cmd - 0xC0];
 	if (!function) {
         OSReport("Error: NULL Command Pointer (cmd. %x ) \n", cmd);
-        OSReport("SEQP %x  Access Offset %d\n", track, track->programCounter);
+        OSReport("SEQP %p  Access Offset %d\n", (void*)track, track->programCounter);
 		return 0;
 	}
 	return function();
