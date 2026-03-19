@@ -5,6 +5,7 @@
 #include "m_common_data.h"
 #include "jsyswrap.h"
 #include "libultra/libultra.h"
+#include "pc_runtime_ptr.h"
 #include "ac_t_umbrella.h"
 #include "ac_snowman.h"
 #include "ac_uki.h"
@@ -1030,7 +1031,7 @@ static int mPlib_Object_Exchange_keep_new(GAME_PLAY* play, s16 bank, uintptr_t s
 
     if (src != 0) {
         if (aram_flag) {
-            _JW_GetResourceAram((u32)src, (u8*)bank_p->dma_start, size);
+            _JW_GetResourceAram(PC_RUNTIME_U32_PTR(src), (u8*)bank_p->dma_start, size);
         } else {
             bcopy((const void*)src, bank_p->dma_start, size);
         }
@@ -1235,7 +1236,7 @@ extern void mPlib_change_player_cloth(GAME* game, u16 cloth_idx) {
         uintptr_t player_tex_rom_p = mPlib_Get_PlayerTexRom_p(idx);
 
         if (in_aram) {
-            _JW_GetResourceAram((u32)player_tex_rom_p, player_tex_p, mNW_DESIGN_TEX_SIZE);
+            _JW_GetResourceAram(PC_RUNTIME_U32_PTR(player_tex_rom_p), player_tex_p, mNW_DESIGN_TEX_SIZE);
         } else {
             bcopy((const void*)player_tex_rom_p, player_tex_p, mNW_DESIGN_TEX_SIZE);
         }
@@ -1248,7 +1249,7 @@ extern void mPlib_change_player_cloth(GAME* game, u16 cloth_idx) {
         uintptr_t player_pallet_rom_p = mPlib_Get_PlayerPalletRom_p(idx);
 
         if (in_aram) {
-            _JW_GetResourceAram((u32)player_pallet_rom_p, (u8*)player_pallet_p, mNW_PALETTE_SIZE);
+            _JW_GetResourceAram(PC_RUNTIME_U32_PTR(player_pallet_rom_p), (u8*)player_pallet_p, mNW_PALETTE_SIZE);
         } else {
             bcopy((const void*)player_pallet_rom_p, player_pallet_p, mNW_PALETTE_SIZE);
         }
@@ -1356,8 +1357,8 @@ extern void mPlib_Load_PlayerTexAndPallet(void* tex_p, void* pal_p, int idx) {
         int in_aram = mPlib_Check_PlayerClothInAram(idx);
 
         if (in_aram) {
-            _JW_GetResourceAram((u32)tex_rom_p, (u8*)tex_p, mNW_DESIGN_TEX_SIZE);
-            _JW_GetResourceAram((u32)pal_rom_p, (u8*)pal_p, mNW_PALETTE_SIZE);
+            _JW_GetResourceAram(PC_RUNTIME_U32_PTR(tex_rom_p), (u8*)tex_p, mNW_DESIGN_TEX_SIZE);
+            _JW_GetResourceAram(PC_RUNTIME_U32_PTR(pal_rom_p), (u8*)pal_p, mNW_PALETTE_SIZE);
         } else {
             bcopy((const void*)tex_rom_p, tex_p, mNW_DESIGN_TEX_SIZE);
             bcopy((const void*)pal_rom_p, pal_p, mNW_PALETTE_SIZE);
