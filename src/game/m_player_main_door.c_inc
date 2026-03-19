@@ -7,7 +7,12 @@ static int Player_actor_request_main_door(GAME* game, const xyz_t* pos, s16 angl
         player->requested_main_index_data.door.player_pos.y = player->actor_class.world.position.y;
         player->requested_main_index_data.door.angle_y = angle_y;
         player->requested_main_index_data.door.type = type;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        player->requested_main_index_data.door.label = 0;
+        player->door_label_shadow = (ACTOR*)label;
+#else
         player->requested_main_index_data.door.label = (u32)label;
+#endif
 
         Player_actor_request_main_index(game, mPlayer_INDEX_DOOR, priority);
 
@@ -25,7 +30,11 @@ static void Player_actor_setup_main_Door(ACTOR* actor, GAME* game) {
     if (player->requested_main_index_data.door.type == 0) {
         anim_idx = mPlayer_ANIM_OPEN1;
     }
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    player->main_data.door.label = 0;
+#else
     player->main_data.door.label = player->requested_main_index_data.door.label;
+#endif
     actor->world.angle.y = player->requested_main_index_data.door.angle_y;
     cKF_SkeletonInfo_R_Animation_Set_base_shape_trs(keyf, 0.0f, 1000.0f, 0.0f, 0, 0, 0x4000);
     cKF_SkeletonInfo_R_AnimationMove_ct_base(&actor->world.position, &player->requested_main_index_data.door.player_pos,

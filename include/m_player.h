@@ -2309,6 +2309,7 @@ struct player_actor_s {
 #if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
     /* LP64 host shadow storage for runtime-only pointer labels. */
     ACTOR* able_force_speak_label_shadow;
+    ACTOR* door_label_shadow;
 #endif
 };
 

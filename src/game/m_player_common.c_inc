@@ -2560,7 +2560,11 @@ static void Player_actor_AppearShadow_fromAnimationFrame(ACTOR* actorx, f32 appe
 
 static void* Player_actor_get_door_label(GAME* game) {
     if (mPlib_get_player_actor_main_index(game) == mPlayer_INDEX_DOOR) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        return GET_PLAYER_ACTOR_GAME(game)->door_label_shadow;
+#else
         return (void*)GET_PLAYER_ACTOR_GAME(game)->main_data.door.label;
+#endif
     }
 
     return 0;
