@@ -344,6 +344,7 @@ sh pc/tests/check_type_widths.sh
 sh pc/tests/check_static_ptr_contract.sh
 sh pc/tests/check_gbi_runtime_ptrs.sh
 sh pc/tests/check_jkr_runtime_ptr_contract.sh
+sh pc/tests/check_jkr_macro_runtime_ptr_contract.sh
 sh pc/tests/check_pc_aram_callback_overflow.sh
 sh pc/tests/check_pc_aram_host_pointer_guard.sh
 sh pc/tests/check_audio_ptr_overflow.sh
@@ -362,11 +363,14 @@ sh pc/tests/check_submenu_overlay_runtime_ptr_contract.sh
 sh pc/tests/check_tha_runtime_ptr_contract.sh
 sh pc/tests/check_player_original_runtime_ptr_contract.sh
 sh pc/tests/check_field_make_runtime_ptr_contract.sh
+sh pc/tests/check_npc_actor_runtime_ptr_contract.sh
+sh pc/tests/check_famicom_runtime_ptr_contract.sh
 sh pc/tests/check_os_stack_pointer_runtime_ptr_contract.sh
 sh pc/tests/check_os_memory_runtime_ptr_contract.sh
 sh pc/tests/check_boot_runtime_ptr_contract.sh
 sh pc/tests/check_exi_uart_runtime_ptr_contract.sh
 sh pc/tests/check_os_alloc_runtime_ptr_contract.sh
+sh pc/tests/check_dvd_runtime_ptr_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
