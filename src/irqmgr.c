@@ -22,6 +22,14 @@ irqmgr_t irqmgr_class;
 #define IRQ_PRENMI480_MSG 672
 #define IRQ_PRENMI500_MSG 673
 
+static OSMessage irqmgr_MessageToken(u32 token) {
+  return (OSMessage)(uintptr_t)token;
+}
+
+static u32 irqmgr_MessageTokenValue(OSMessage msg) {
+  return (u32)(uintptr_t)msg;
+}
+
 /**
  * @brief Adds anew client to the IRQ manager with a callback message queue.
  * 
@@ -86,7 +94,7 @@ static void irqmgr_HandlePreNMI() {
   this->prenmi = 1;
   ResetTime = this->prenmi_time = osGetTime();
 
-  osSetTimer(&this->timer, MSEC(400), 0, &this->_msgQueue, (OSMessage)IRQ_PRENMI450_MSG);
+  osSetTimer(&this->timer, MSEC(400), 0, &this->_msgQueue, irqmgr_MessageToken(IRQ_PRENMI450_MSG));
   irqmgr_JamMesgForClient(&this->msgPreNMI);
 }
 
@@ -96,7 +104,7 @@ static void irqmgr_HandlePreNMI() {
 static void irqmgr_HandlePreNMI450() {
   ResetStatus = 2;
   this->prenmi = 2;
-  osSetTimer(&this->timer, MSEC(50), 0, &this->_msgQueue, (OSMessage)IRQ_PRENMI480_MSG);
+  osSetTimer(&this->timer, MSEC(50), 0, &this->_msgQueue, irqmgr_MessageToken(IRQ_PRENMI480_MSG));
   irqmgr_SendMesgForClient(&this->msgDelayPreNMI);
 }
 
@@ -104,7 +112,7 @@ static void irqmgr_HandlePreNMI450() {
  * @brief Handler for pre-NMI message (post 450ms).
  **/
 static void irqmgr_HandlePreNMI480() {
-  osSetTimer(&this->timer, MSEC(50), 0, &this->_msgQueue, (OSMessage)IRQ_PRENMI500_MSG);
+  osSetTimer(&this->timer, MSEC(50), 0, &this->_msgQueue, irqmgr_MessageToken(IRQ_PRENMI500_MSG));
 }
 
 /**
@@ -142,7 +150,7 @@ static void irqmgr_Main(void* arg) {
 
   while (TRUE) {
     osRecvMesg(&this->_msgQueue, &msg, 1);
-    switch ((u32)msg) {
+    switch (irqmgr_MessageTokenValue(msg)) {
       case IRQ_RETRACE_MSG:
         irqmgr_HandleRetrace();
         break;
@@ -182,7 +190,7 @@ extern void CreateIRQManager(void* stack, size_t stack_size, int priority, u8 re
   this->prenmi_time = 0;
 
   osCreateMesgQueue(&this->_msgQueue, this->_msgBuf, 8);
-  osViSetEvent(&this->_msgQueue, (OSMessage)IRQ_RETRACE_MSG, retracecount);
+  osViSetEvent(&this->_msgQueue, irqmgr_MessageToken(IRQ_RETRACE_MSG), retracecount);
   osCreateThread2(&this->thread, 9, irqmgr_Main, NULL, stack, stack_size, priority);
   osStartThread(&this->thread);
 }
