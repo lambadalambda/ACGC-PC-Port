@@ -29,6 +29,9 @@ check_absent() {
 
 check_contains "src/game/m_field_make.c" 'fg_data_p = \(mFM_fg_data_c\*\)\(ALIGN_NEXT\(\(uintptr_t\)gamealloc_data_p, 32\)\);' 'field data alignment uses uintptr_t'
 check_contains "src/game/m_field_make.c" 'fgnpc_data_p = \(mFM_fg_data_c\*\)\(ALIGN_NEXT\(\(uintptr_t\)gamealloc_data_p, 32\)\);' 'field npc data alignment uses uintptr_t'
+check_contains "src/game/m_field_make.c" 'field_info->bg_display_list_p\[i\] = \(u8\*\)ALIGN_NEXT\(\(uintptr_t\)field_info->bg_display_list_p\[i\], 16\);' 'background display list alignment uses uintptr_t'
 
 check_absent "src/game/m_field_make.c" 'fg_data_p = \(mFM_fg_data_c\*\)\(ALIGN_NEXT\(\(u32\)gamealloc_data_p, 32\)\);' 'legacy field data alignment cast'
 check_absent "src/game/m_field_make.c" 'fgnpc_data_p = \(mFM_fg_data_c\*\)\(ALIGN_NEXT\(\(u32\)gamealloc_data_p, 32\)\);' 'legacy field npc data alignment cast'
+check_absent "src/game/m_field_make.c" 'field_info->bg_display_list_p\[i\] = \(u8\*\)\(\(u32\)\(field_info->bg_display_list_p\[i\]\) \+ \(16 - 1\)\);' 'legacy background display list alignment add cast'
+check_absent "src/game/m_field_make.c" 'field_info->bg_display_list_p\[i\] = \(u8\*\)\(\(u32\)\(field_info->bg_display_list_p\[i\]\) & \(~\(16 - 1\)\)\);' 'legacy background display list alignment mask cast'
