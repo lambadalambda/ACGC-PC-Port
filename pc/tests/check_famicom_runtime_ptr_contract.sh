@@ -31,8 +31,10 @@ check_contains "src/static/Famicom/famicom.cpp" 'famicomCommon\.memcard_game_hea
 check_contains "src/static/Famicom/famicom.cpp" 'FamicomSaveDataHeader\* read_save_header = \(FamicomSaveDataHeader\*\)\(\(u8\*\)buf \+ status\.offsetData\);' 'save header lookup uses byte-pointer arithmetic'
 check_contains "src/static/Famicom/famicom.cpp" '\*size = \(u32\)\(data_p - dst\);' 'banner size uses byte-pointer diff'
 check_contains "src/static/Famicom/famicom.cpp" '\*size_p = \(u32\)\(data_p - dst\);' 'icon size uses byte-pointer diff'
+check_contains "src/static/Famicom/famicom.cpp" 'OSReport\("err code=%d \(0x%x\), %p,%p,%p,%p,%p,%p\\n", reset_res, reset_res, \(void\*\)famicomCommon\.wp,' 'reset failure report uses %p for pointer fields'
 
 check_absent "src/static/Famicom/famicom.cpp" 'famicomCommon\.memcard_game_header\.comment_img_size = \(u32\)data - \(u32\)data_p;' 'legacy comment image size cast'
 check_absent "src/static/Famicom/famicom.cpp" 'FamicomSaveDataHeader\* read_save_header = \(FamicomSaveDataHeader\*\)\(\(u32\)buf \+ status\.offsetData\);' 'legacy save header cast'
 check_absent "src/static/Famicom/famicom.cpp" '\*size = \(u32\)data_p - \(u32\)dst;' 'legacy banner size cast'
 check_absent "src/static/Famicom/famicom.cpp" '\*size_p = \(u32\)data_p - \(u32\)dst;' 'legacy icon size cast'
+check_absent "src/static/Famicom/famicom.cpp" 'OSReport\("err code=%d \(0x%x\), %x,%x,%x,%x,%x,%x\\n",' 'legacy reset failure pointer formatting'

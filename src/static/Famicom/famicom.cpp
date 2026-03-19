@@ -2132,11 +2132,10 @@ static int famicom_rom_load() {
     int reset_res = ksNesReset(wp, famicomCommon.sp, flags | 0x10, famicomCommon.chrramp, famicomCommon.bbramp);
 
     if (reset_res != 0) {
-        OSReport("err code=%d (0x%x), %x,%x,%x,%x,%x,%x\n",
-            reset_res, reset_res, famicomCommon.wp, famicomCommon.sp,
-            famicomCommon.wp->draw_ctx.sprite_scanline_limit, famicomCommon.wp->draw_ctx.ppu_scanline_regs,
-            famicomCommon.wp->draw_ctx.post_process_lut, famicomCommon.sp->ppu_chr_banks
-        );
+        OSReport("err code=%d (0x%x), %p,%p,%p,%p,%p,%p\n", reset_res, reset_res, (void*)famicomCommon.wp,
+                 (void*)famicomCommon.sp, (void*)famicomCommon.wp->draw_ctx.sprite_scanline_limit,
+                 (void*)famicomCommon.wp->draw_ctx.ppu_scanline_regs,
+                 (void*)famicomCommon.wp->draw_ctx.post_process_lut, (void*)famicomCommon.sp->ppu_chr_banks);
         OSReport("NES emu reset failed!!");
     }
     else {
