@@ -130,6 +130,7 @@ int WriteUARTN(void *buf, u32 len) {
     long xLen;
     int qLen;
     char* ptr;
+    char* start;
     int locked;
     int error;
 
@@ -142,10 +143,11 @@ int WriteUARTN(void *buf, u32 len) {
         return 0;
     }
     else {
-        ptr = (char*)buf;
+        start = (char*)buf;
+        ptr = start;
     }
 
-    while ((u32)ptr - (u32)buf < len) {
+    while (ptr - start < len) {
         if (*(s8*)ptr == 0xA) {
             *ptr = 0xD;
         }
