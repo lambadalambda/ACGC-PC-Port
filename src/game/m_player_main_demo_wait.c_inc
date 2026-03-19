@@ -4,7 +4,12 @@ static int Player_actor_request_main_demo_wait_all(GAME* game, int umbrella_flag
         mPlayer_request_demo_wait_c* req_demo_wait_p = &player->requested_main_index_data.demo_wait;
 
         req_demo_wait_p->umbrella_flag = umbrella_flag;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        req_demo_wait_p->label = 0;
+        player->demo_wait_label_shadow = (ACTOR*)label;
+#else
         req_demo_wait_p->label = (u32)label;
+#endif
         Player_actor_request_main_index(game, mPlayer_INDEX_DEMO_WAIT, prio);
         return TRUE;
     }
@@ -17,8 +22,13 @@ static void Player_actor_request_main_demo_wait_from_submenu(ACTOR* actorx, GAME
     mPlayer_change_data_from_submenu_c* change_data_p = mPlib_Get_change_data_from_submenu_p();
     mPlayer_request_demo_wait_c* req_demo_wait_p = &change_data_p->request_main_data.demo_wait;
 
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    Player_actor_request_main_demo_wait_all(game, req_demo_wait_p->umbrella_flag, change_data_p->demo_wait_label_shadow,
+                                            mPlayer_REQUEST_PRIORITY_31);
+#else
     Player_actor_request_main_demo_wait_all(game, req_demo_wait_p->umbrella_flag, (void*)req_demo_wait_p->label,
                                             mPlayer_REQUEST_PRIORITY_31);
+#endif
 }
 
 static void Player_actor_setup_main_Demo_wait(ACTOR* actorx, GAME* game) {
@@ -33,7 +43,11 @@ static void Player_actor_setup_main_Demo_wait(ACTOR* actorx, GAME* game) {
     }
 
     demo_wait_p->effect_id = 0;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    demo_wait_p->label = 0;
+#else
     demo_wait_p->label = req_demo_wait_p->label;
+#endif
 
     Player_actor_SetupItem_Base1(actorx, mPlayer_ANIM_WAIT1, -5.0f, &anim1_idx, &part_table_idx);
     Player_actor_InitAnimation_Base1(actorx, game, mPlayer_ANIM_WAIT1, anim1_idx, 1.0f, 1.0f, 0.5f, -5.0f,

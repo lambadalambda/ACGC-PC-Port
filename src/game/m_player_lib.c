@@ -1667,7 +1667,12 @@ extern void mPlib_request_main_demo_wait_from_submenu(ACTOR* speak_actor_p) {
     change_data_from_submenu_p->requested_index_pending = TRUE;
 
     req_demo_wait_p->umbrella_flag = FALSE;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    req_demo_wait_p->label = 0;
+    change_data_from_submenu_p->demo_wait_label_shadow = speak_actor_p;
+#else
     req_demo_wait_p->label = (u32)speak_actor_p;
+#endif
 
     if (speak_actor_p != NULL) {
         mPlib_Set_able_force_speak_label(speak_actor_p);
@@ -2622,11 +2627,15 @@ extern int mPlib_check_player_outdoor_start(GAME* game) {
 
 extern int mPlib_check_label_player_demo_wait(GAME* game, void* label) {
     if (mPlib_get_player_actor_main_index(game) == mPlayer_INDEX_DEMO_WAIT) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        return GET_PLAYER_ACTOR_GAME(game)->demo_wait_label_shadow == label;
+#else
         mPlayer_main_demo_wait_c* demo_wait_p = &GET_PLAYER_ACTOR_GAME(game)->main_data.demo_wait;
 
         if (demo_wait_p->label == (u32)label) {
             return TRUE;
         }
+#endif
     }
 
     return FALSE;

@@ -2062,6 +2062,10 @@ typedef struct {
     int requested_main_index;
     int requested_index_pending;
     mPlayer_request_main_data request_main_data;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    /* LP64 host shadow storage for submenu-carried pointer labels. */
+    ACTOR* demo_wait_label_shadow;
+#endif
 } mPlayer_change_data_from_submenu_c;
 
 typedef struct controller_data_s {
@@ -2310,6 +2314,7 @@ struct player_actor_s {
     /* LP64 host shadow storage for runtime-only pointer labels. */
     ACTOR* able_force_speak_label_shadow;
     ACTOR* door_label_shadow;
+    ACTOR* demo_wait_label_shadow;
 #endif
 };
 
