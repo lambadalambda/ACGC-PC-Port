@@ -6,6 +6,7 @@
 #include "dolphin/os/OSMemory.h"
 #include "dolphin/os/OSUtil.h"
 #include "dolphin/os.h"
+#include "pc_runtime_ptr.h"
 
 JKRHeap* JKRHeap::sSystemHeap;
 JKRHeap* JKRHeap::sCurrentHeap;
@@ -70,7 +71,8 @@ bool JKRHeap::initArena(char** outUserRamStart, u32* outUserRamSize, int numHeap
     OSSetArenaLo(arenaHi);
     OSSetArenaHi(arenaHi);
     *outUserRamStart = (char*)arenaLo;
-    *outUserRamSize = (u32)((u8*)arenaHi - (u8*)arenaLo);
+    uintptr_t userRamSize = (uintptr_t)((u8*)arenaHi - (u8*)arenaLo);
+    *outUserRamSize = PC_RUNTIME_U32_PTR(userRamSize);
     return true;
 }
 

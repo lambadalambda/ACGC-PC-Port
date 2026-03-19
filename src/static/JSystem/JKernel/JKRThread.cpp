@@ -2,6 +2,7 @@
 #include "JSystem/JKernel/JKRMacro.h"
 #include "JSystem/JKernel/JKRThread.h"
 #include "JSystem/JKernel/JKRHeap.h"
+#include "pc_runtime_ptr.h"
 
 JSUList<JKRThread> JKRThread::sThreadList;
 
@@ -25,7 +26,8 @@ JKRThread::JKRThread(u32 stackSize, int msgCount, int threadPrio) : mLink(this) 
 JKRThread::JKRThread(OSThread* threadRecord, int msgCount) : mLink(this) {
     this->mHeap = nullptr;
     this->mThreadRecord = threadRecord;
-    this->mStackSize = (u32)((uintptr_t)threadRecord->stackEnd - (uintptr_t)threadRecord->stackBase);
+    uintptr_t stackSize = (uintptr_t)threadRecord->stackEnd - (uintptr_t)threadRecord->stackBase;
+    this->mStackSize = PC_RUNTIME_U32_PTR(stackSize);
     this->mStackMemory = threadRecord->stackBase;
     this->mMesgCount = msgCount;
     this->mMesgBuffer = (OSMessage*)JKRHeap::sSystemHeap->alloc(mMesgCount * sizeof(OSMessage), 4);
