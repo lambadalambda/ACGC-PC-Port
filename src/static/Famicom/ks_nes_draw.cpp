@@ -18,6 +18,18 @@ u8 ksNesPaletteNormal[] = {
     0xe7, 0x93, 0xd7, 0xb6, 0xd7, 0xdd, 0xdb, 0xbf, 0xef, 0x7b, 0x80, 0x00, 0x80, 0x00,
 };
 
+static bool ksNesNametablePointerIsFillToken(const u8* nametable_p) {
+    return (uintptr_t)nametable_p <= UINT16_MAX;
+}
+
+static u32 ksNesNametableFillPaletteBits(const u8* nametable_p) {
+    return (u32)((uintptr_t)nametable_p & 0x3u);
+}
+
+static u32 ksNesNametableFillTileByte(const u8* nametable_p) {
+    return (u32)(((uintptr_t)nametable_p >> 8) & 0xFFu);
+}
+
 void ksNesDrawInit(ksNesCommonWorkObj* wp) {
     Mtx44 mtx;
     Vec v1 = { 0.f, 0.f, 800.f };
@@ -123,9 +135,9 @@ void ksNesDrawMakeBGIndTex(ksNesCommonWorkObj* wp, u32 mmc3) {
             }
 
             nametable_p = wp->draw_ctx.ppu_scanline_regs[row].nametable_ptrs[((scanline_ctrl1 >> 8) & 1)];
-            if (((s32)nametable_p) >= 0) {
-                nibble_acc = (((u32)nametable_p) & 3) | (nibble_acc << 4);
-                tile_byte = (((u32)nametable_p) >> 8) & 0xFF;
+            if (ksNesNametablePointerIsFillToken(nametable_p)) {
+                nibble_acc = ksNesNametableFillPaletteBits(nametable_p) | (nibble_acc << 4);
+                tile_byte = ksNesNametableFillTileByte(nametable_p);
             } else {
                 nibble_acc = (((nametable_p[0x3C0 + ((scanline_ctrl0 & 0xE0) >> 2) + ((scanline_ctrl1 & 0xE0) >> 5)] >> ((((scanline_ctrl1 & 0x10) >> 3) | (scanline_ctrl0 & 0x10) >> 2))) & 3) & 0x0F) | ((nibble_acc << 4));
                 tile_byte = nametable_p[((scanline_ctrl0 & 0xF8) << 2) + ((scanline_ctrl1 & 0xF8) >> 3)];
@@ -166,9 +178,9 @@ void ksNesDrawMakeBGIndTexMMC5(ksNesCommonWorkObj* wp, ksNesStateObj* sp) {
 
         for (col = 0; col < 34; col++) {
             nametable_p = wp->draw_ctx.ppu_scanline_regs[row].nametable_ptrs[((scanline_ctrl1 >> 8) & 1)];
-            if (((s32)nametable_p) >= 0) {
-                nibble_acc = (((u32)nametable_p) & 3) | (nibble_acc << 4);
-                tile_byte = (((u32)nametable_p) >> 8) & 0xFF;
+            if (ksNesNametablePointerIsFillToken(nametable_p)) {
+                nibble_acc = ksNesNametableFillPaletteBits(nametable_p) | (nibble_acc << 4);
+                tile_byte = ksNesNametableFillTileByte(nametable_p);
             } else {
                 nibble_acc = ((nametable_p[0x3C0 + ((scanline_ctrl0 & 0xE0) >> 2) + ((scanline_ctrl1 & 0xE0) >> 5)] >> ((((scanline_ctrl1 & 0x10) >> 3) | (scanline_ctrl0 & 0x10) >> 2))) & 3) | (nibble_acc << 4);
                 tile_byte = nametable_p[((scanline_ctrl0 & 0xF8) << 2) + ((scanline_ctrl1 & 0xF8) >> 3)];
@@ -266,9 +278,9 @@ void ksNesDrawMakeBGIndTexMMC2(ksNesCommonWorkObj* wp, u32 default_bank) {
 
         for (col = 0; col < 34; col++) {
             nametable_p = wp->draw_ctx.ppu_scanline_regs[row].nametable_ptrs[((scanline_ctrl1 >> 8) & 1)];
-            if (((s32)nametable_p) >= 0) {
-                nibble_acc = (((u32)nametable_p) & 3) | (nibble_acc << 4);
-                tile_byte = (((u32)nametable_p) >> 8) & 0xFF;
+            if (ksNesNametablePointerIsFillToken(nametable_p)) {
+                nibble_acc = ksNesNametableFillPaletteBits(nametable_p) | (nibble_acc << 4);
+                tile_byte = ksNesNametableFillTileByte(nametable_p);
             } else {
                 nibble_acc = (((nametable_p[0x3C0 + ((scanline_ctrl0 & 0xE0) >> 2) + ((scanline_ctrl1 & 0xE0) >> 5)] >> ((((scanline_ctrl1 & 0x10) >> 3) | (scanline_ctrl0 & 0x10) >> 2))) & 3) & 0x0F) | ((nibble_acc << 4));
                 tile_byte = nametable_p[((scanline_ctrl0 & 0xF8) << 2) + ((scanline_ctrl1 & 0xF8) >> 3)];
