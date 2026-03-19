@@ -336,7 +336,7 @@ misc:
     // clang-format on
 }
 
-asm u32 OSGetStackPointer() {
+asm uintptr_t OSGetStackPointer() {
     // clang-format off
   nofralloc 
   mr r3, r1 

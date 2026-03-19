@@ -211,7 +211,7 @@ void osStartThread(void* thread) {
 
 void osSetThreadPri(void* thread, int pri) { (void)thread; (void)pri; }
 void* OSGetCurrentThread(void) { return current_thread; }
-void* OSGetStackPointer(void) { return &arena_memory; /* dummy */ }
+uintptr_t OSGetStackPointer(void) { return (uintptr_t)&arena_memory; /* dummy */ }
 
 /* --- Interrupts --- */
 BOOL OSDisableInterrupts(void) { return 0; }

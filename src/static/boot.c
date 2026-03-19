@@ -562,7 +562,7 @@ int main(int argc, const char** argv) {
     PAD_BUTTON_START
   };
 
-  u32 var1;
+  uintptr_t var1;
   OSThread* var2;
   void* start;
   void* end;
@@ -598,14 +598,14 @@ int main(int argc, const char** argv) {
   OSInitAlarm();
 
   /* Initialize stack */
-  var1 = ((u32)OSGetStackPointer() - 0x100);
+  var1 = OSGetStackPointer() - 0x100;
   var2 = OSGetCurrentThread();
   base = (u32*)var1;
 
   if ((u8*)base < var2->stackBase) {
     basenext = (u32*)var2->stackEnd + 1;
     if (base > basenext) {
-      memset(basenext, 0xfd, (u32)base - (u32)basenext);
+      memset(basenext, 0xfd, (size_t)((u8*)base - (u8*)basenext));
     }
   }
 

@@ -31,7 +31,7 @@ __declspec(weak) void OSPanic(char* file, int line, char* msg, ...) {
     OSReport(" in \"%s\" on line %d.\n", file, line);
 
     OSReport("\nAddress:      Back Chain    LR Save\n");
-    for (i = 0, p = (u32*)OSGetStackPointer(); p && (u32)p != 0xffffffff && i++ < 16; p = (u32*)*p) {
+    for (i = 0, p = (u32*)OSGetStackPointer(); p && (uintptr_t)p != (uintptr_t)0xffffffffu && i++ < 16; p = (u32*)*p) {
         OSReport("0x%08x:   0x%08x    0x%08x\n", p, p[0], p[1]);
     }
 

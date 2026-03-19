@@ -362,6 +362,7 @@ sh pc/tests/check_submenu_overlay_runtime_ptr_contract.sh
 sh pc/tests/check_tha_runtime_ptr_contract.sh
 sh pc/tests/check_player_original_runtime_ptr_contract.sh
 sh pc/tests/check_field_make_runtime_ptr_contract.sh
+sh pc/tests/check_os_stack_pointer_runtime_ptr_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
