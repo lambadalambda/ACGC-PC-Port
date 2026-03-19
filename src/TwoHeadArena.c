@@ -54,24 +54,34 @@ extern void* THA_alloc(TwoHeadArena* this, size_t siz) {
     mask = ~0;
   }
 
-  this->tail_p = (char*)((((u32)this->tail_p & mask) - siz) & mask);
+  this->tail_p = (char*)((((uintptr_t)this->tail_p & (uintptr_t)mask) - siz) & (uintptr_t)mask);
   return this->tail_p;
 }
 */
 
+static uintptr_t THA_alloc_tail_addr(TwoHeadArena* this, size_t siz, int mask) {
+  uintptr_t tail_addr = (uintptr_t)this->tail_p & (uintptr_t)mask;
+  return ((tail_addr - siz) & (uintptr_t)mask);
+}
+
+static uintptr_t THA_align_head_addr(TwoHeadArena* this, int mask) {
+  uintptr_t head_addr = (uintptr_t)this->head_p;
+  return ((head_addr + (uintptr_t)~mask) & (uintptr_t)mask);
+}
+
 extern void* THA_alloc16(TwoHeadArena* this, size_t siz) {
   const int mask = ~(16 - 1);
-  this->tail_p = (char*)((((u32)this->tail_p & mask) - siz) & mask);
+  this->tail_p = (char*)THA_alloc_tail_addr(this, siz, mask);
   return this->tail_p;
 }
 
 extern void* THA_allocAlign(TwoHeadArena* this, size_t siz, int mask) {
-  this->tail_p = (char*)((((u32)this->tail_p & mask) - siz) & mask);
+  this->tail_p = (char*)THA_alloc_tail_addr(this, siz, mask);
   return this->tail_p;
 }
 
 extern int THA_getFreeBytesAlign(TwoHeadArena* this, int mask) {
-  return (int)this->tail_p - (mask & (int)(this->head_p + ~mask));
+  return (int)((intptr_t)this->tail_p - (intptr_t)THA_align_head_addr(this, mask));
 }
 
 extern int THA_getFreeBytes16(TwoHeadArena* this) {
