@@ -365,6 +365,8 @@ sh pc/tests/check_player_original_runtime_ptr_contract.sh
 sh pc/tests/check_player_force_speak_runtime_ptr_contract.sh
 sh pc/tests/check_player_door_runtime_ptr_contract.sh
 sh pc/tests/check_player_demo_wait_runtime_ptr_contract.sh
+sh pc/tests/check_player_stung_mosquito_runtime_ptr_contract.sh
+sh pc/tests/check_player_snowball_runtime_ptr_contract.sh
 sh pc/tests/check_field_make_runtime_ptr_contract.sh
 sh pc/tests/check_npc_actor_runtime_ptr_contract.sh
 sh pc/tests/check_famicom_runtime_ptr_contract.sh
