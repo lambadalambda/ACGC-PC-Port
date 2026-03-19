@@ -1692,7 +1692,14 @@ extern int mPlib_Check_able_force_speak_label(GAME* game, ACTOR* label) {
 
 extern void mPlib_Set_able_force_speak_label(ACTOR* label) {
     if (Common_Get(player_actor_exists)) {
-        GET_PLAYER_ACTOR_NOW()->able_force_speak_label = (u32)label;
+        PLAYER_ACTOR* player = GET_PLAYER_ACTOR_NOW();
+
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        player->able_force_speak_label = 0;
+        player->able_force_speak_label_shadow = label;
+#else
+        player->able_force_speak_label = (u32)label;
+#endif
     }
 }
 

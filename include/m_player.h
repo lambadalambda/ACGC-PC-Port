@@ -2306,6 +2306,10 @@ struct player_actor_s {
     /* 0x1394 */ mActor_name_t item_in_front; /* item directly in front of the player */
     /* 0x1398 */ xyz_t forward_ut_pos;        /* wpos of unit in front of player */
     /* 0x13A4 */ s8 update_scene_bg_mode;
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    /* LP64 host shadow storage for runtime-only pointer labels. */
+    ACTOR* able_force_speak_label_shadow;
+#endif
 };
 
 extern void Player_actor_ct(ACTOR*, GAME*);
