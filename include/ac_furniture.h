@@ -255,6 +255,9 @@ struct furniture_actor_s {
     int _854;
 };
 
+#define aFTR_AUDIO_TOKEN_BASE 0x46540000u
+#define aFTR_AUDIO_TOKEN(ftr_actor) (aFTR_AUDIO_TOKEN_BASE + (u32)((ftr_actor)->id))
+
 #ifdef __cplusplus
 }
 #endif
