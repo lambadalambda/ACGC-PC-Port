@@ -424,6 +424,7 @@ struct effect_control_s {
 extern int eMH_special_point_light_num;
 
 extern ACTOR_PROFILE Effect_Control_Profile;
+extern u32 eEC_EffectAudioToken(const eEC_Effect_c* effect);
 
 /* NOTE: you must include 'm_common_data.h' to use this macro */
 #define eEC_CLIP (Common_Get(clip).effect_clip)

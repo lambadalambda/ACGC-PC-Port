@@ -167,6 +167,16 @@ ACTOR_PROFILE Effect_Control_Profile = {
 
 static eEC_work_c eEC_ctrl_work;
 
+enum {
+    eEC_ONGEN_TOKEN_BASE = 0x45430000,
+};
+
+u32 eEC_EffectAudioToken(const eEC_Effect_c* effect) {
+    size_t effect_idx = (size_t)(effect - eEC_ctrl_work.effects);
+
+    return eEC_ONGEN_TOKEN_BASE + (u32)effect_idx;
+}
+
 #include "../src/effect/ef_effect_lib.c"
 
 static void eEC_Name2EffectMake(int effect_id, xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0,
