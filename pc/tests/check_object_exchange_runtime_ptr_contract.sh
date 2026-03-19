@@ -35,6 +35,7 @@ check_contains "src/game/m_scene.c" 'mSc_align_next_bank_ram_address\(play->obje
 check_contains "src/game/m_scene.c" 'char\* area = mSc_align_next_bank_ram_address\(exchange->next_bank_ram_address, bank->size, 32\);' 'exchange bank dma copy uses helper'
 check_contains "src/game/m_scene_ftr.c" 'exchange->next_bank_ram_address = mSc_align_next_bank_ram_address\(exchange->next_bank_ram_address, size, 16\);' 'room bank allocator uses helper'
 check_contains "src/game/m_player_lib.c" 'obj_ex->next_bank_ram_address = mSc_align_next_bank_ram_address\(obj_ex->next_bank_ram_address, size, 32\);' 'player bank allocator uses helper'
+check_contains "src/game/m_submenu.c" 'exchange->next_bank_ram_address = mSc_align_next_bank_ram_address\(exchange->next_bank_ram_address, size, 16\);' 'submenu bank allocator uses helper'
 
 check_absent "src/game/m_scene.c" 'area = \(char\*\)ALIGN_NEXT\(\(u32\)exchange->next_bank_ram_address \+ size, 32\);' 'legacy secure exchange cast'
 check_absent "src/game/m_scene.c" 'size = \(u32\)\(play->object_exchange.max_ram_address - play->object_exchange.next_bank_ram_address\) / 2;' 'legacy initial exchange pointer diff'
@@ -42,3 +43,4 @@ check_absent "src/game/m_scene.c" '\(char\*\)ALIGN_NEXT\(\(u32\)play->object_exc
 check_absent "src/game/m_scene.c" 'char\* area = \(char\*\)ALIGN_NEXT\(\(u32\)exchange->next_bank_ram_address \+ bank->size, 32\);' 'legacy exchange dma copy cast'
 check_absent "src/game/m_scene_ftr.c" 'exchange->next_bank_ram_address = \(char\*\)ALIGN_NEXT\(\(u32\)exchange->next_bank_ram_address \+ size, 16\);' 'legacy room bank cast'
 check_absent "src/game/m_player_lib.c" 'obj_ex->next_bank_ram_address = \(char\*\)ALIGN_NEXT\(\(u32\)obj_ex->next_bank_ram_address \+ size, 32\);' 'legacy player bank cast'
+check_absent "src/game/m_submenu.c" 'exchange->next_bank_ram_address = \(char\*\)ALIGN_NEXT\(\(u32\)\(exchange->next_bank_ram_address \+ size\), 16\);' 'legacy submenu bank cast'

@@ -6,6 +6,7 @@
 #include "m_player_lib.h"
 #include "m_msg.h"
 #include "m_quest.h"
+#include "m_scene.h"
 #include "libultra/libultra.h"
 
 static mSM_dlftbl_c SubmenuArea_dlftbl[mSM_DLF_NUM] = { { NULL, 0, 0, 0, 0, 0, "submenu_ovl" },
@@ -620,7 +621,7 @@ static char* mSM_Object_Exchange_keep_new(GAME_PLAY* play, s16 bank_id, size_t s
     bank->size = size;
 
     if (exchange->bank_idx < mSc_OBJECT_BANK_NUM - 1) {
-        exchange->next_bank_ram_address = (char*)ALIGN_NEXT((u32)(exchange->next_bank_ram_address + size), 16);
+        exchange->next_bank_ram_address = mSc_align_next_bank_ram_address(exchange->next_bank_ram_address, size, 16);
         exchange->bank_idx++;
     }
 
