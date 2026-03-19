@@ -17,6 +17,11 @@
 #define mTRC_RTC_TIME_SECONDS(rtc_time) \
     (rtc_time->sec + (rtc_time->min + rtc_time->hour * mTM_MINUTES_IN_HOUR) * mTM_SECONDS_IN_MINUTE)
 
+enum {
+    mTRC_KISHA_ONGEN_COMING = 0x54524301,
+    mTRC_KISHA_ONGEN_EXISTS = 0x54524302,
+};
+
 static void mTRC_SetMicPos(GAME_PLAY* play, xyz_t* mic_pos) {
     xyz_t pos;
     PLAYER_ACTOR* player = get_player_actor_withoutCheck(play);
@@ -68,8 +73,8 @@ static void mTRC_KishaStatusLevel(GAME_PLAY* play, f32 speed, xyz_t pos) {
     distance2 = sqrtf(SQ(x) + SQ(y) + SQ(z));
     unsigned_angle2 = (int)angle;
 
-    ongen = (u32)Common_GetPointer(train_coming_flag);
-    ongen2 = (u32)Common_GetPointer(train_exists_flag);
+    ongen = mTRC_KISHA_ONGEN_COMING;
+    ongen2 = mTRC_KISHA_ONGEN_EXISTS;
     sAdos_KishaStatusLevel(speed, ongen, distance, unsigned_angle,
                            ongen2, distance2, unsigned_angle2);
 }
