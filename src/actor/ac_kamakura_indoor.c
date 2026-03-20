@@ -30,6 +30,10 @@ ACTOR_PROFILE Kamakura_Indoor_Profile = {
 
 static mCoBG_bg_size_c aKI_mochi_collision_info = { 25.0f, 25.0f, 25.0f, 25.0f };
 
+enum {
+    aKI_AUDIO_TOKEN = 0x4B490000u,
+};
+
 static void Kamakura_Indoor_Actor_ct(ACTOR* actorx, GAME* game) {
     static xyz_t mochi_pos = { 160.0f, 40.0f, 160.0f };
     KAMAKURA_INDOOR_ACTOR* k_indoor = (KAMAKURA_INDOOR_ACTOR*)actorx;
@@ -320,7 +324,7 @@ static void Kamakura_Indoor_Actor_move(ACTOR* actorx, GAME* game) {
     int i;
     s16 timer;
 
-    sAdo_OngenPos((u32)actorx, NA_SE_KOKORO_TOGURU, &k_indoor->mochi.pos);
+    sAdo_OngenPos(aKI_AUDIO_TOKEN, NA_SE_KOKORO_TOGURU, &k_indoor->mochi.pos);
     if ((play->game_frame & 7) == 0) {
         xyz_t soba_yuge_pos = k_indoor->mochi.pos;
 

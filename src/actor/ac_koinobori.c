@@ -11,6 +11,10 @@ enum {
   aKOI_ACTION_WAIT,
 };
 
+enum {
+  aKOI_AUDIO_TOKEN = 0x4B4F0000u,
+};
+
 static void aKOI_actor_ct(ACTOR* actor, GAME* game);
 static void aKOI_actor_dt(ACTOR* actor, GAME* game);
 static void aKOI_actor_init(ACTOR* actor, GAME* game);

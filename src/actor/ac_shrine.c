@@ -37,6 +37,10 @@ enum {
 };
 
 enum {
+  aSHR_AUDIO_TOKEN = 0x53480000u,
+};
+
+enum {
   aSHR_LEAF_TYPE_SUMMER,
   aSHR_LEAF_TYPE_WINTER,
   aSHR_LEAF_TYPE_CHRISTMAS,
