@@ -18,6 +18,27 @@ enum {
     aHG_ACT_NUM
 };
 
+enum {
+    aHG_AUDIO_TOKEN_BASE = 0x48470000u,
+    aHG_AUDIO_TOKEN_INVALID = 0xFFFFu,
+};
+
+_Static_assert(BLOCK_X_NUM * UT_X_NUM * BLOCK_Z_NUM * UT_Z_NUM <= aHG_AUDIO_TOKEN_INVALID,
+               "house goki audio token field must fit in 16 bits");
+
+static u32 aHG_GetAudioToken(const ACTOR* actorx) {
+    int ut_x;
+    int ut_z;
+
+    if (mFI_Wpos2UtNum(&ut_x, &ut_z, actorx->home.position)) {
+        u32 ut_index = (u32)(ut_z * (BLOCK_X_NUM * UT_X_NUM) + ut_x);
+
+        return aHG_AUDIO_TOKEN_BASE | ut_index;
+    }
+
+    return aHG_AUDIO_TOKEN_BASE | aHG_AUDIO_TOKEN_INVALID;
+}
+
 static void aHG_actor_ct(ACTOR* actorx, GAME* game);
 static void aHG_actor_move(ACTOR* actorx, GAME* game);
 static void aHG_actor_draw(ACTOR* actorx, GAME* game);
@@ -255,7 +276,7 @@ static void aHG_away(ACTOR* actorx, GAME* game) {
             }
         }
 
-        sAdo_OngenPos((u32)goki, NA_SE_GOKI_MOVE, &actorx->world.position);
+        sAdo_OngenPos(aHG_GetAudioToken(actorx), NA_SE_GOKI_MOVE, &actorx->world.position);
     }
 }
 
@@ -314,7 +335,7 @@ static void aHG_move(ACTOR* actorx, GAME* game) {
         if (goki->timer <= 0.0f) {
             aHG_decide_next_act_idx_wait_move(goki, game);
         } else {
-            sAdo_OngenPos((u32)goki, NA_SE_GOKI_MOVE, &actorx->world.position);
+            sAdo_OngenPos(aHG_GetAudioToken(actorx), NA_SE_GOKI_MOVE, &actorx->world.position);
         }
     }
 }
