@@ -2,10 +2,11 @@
 #define _JAUDIO_CMDSTACK_H
 
 #include "types.h"
+#include <stdint.h>
 
 typedef struct JPorthead_ {
-	u32 _00; // _00
-	u32 _04; // _04
+	uintptr_t _00; // _00
+	uintptr_t _04; // _04
 } JPorthead_;
 
 #ifdef __cplusplus
@@ -30,7 +31,7 @@ void JP_Stop1Shot(void);  // UNUSED but we know it's extern "C"
 }
 #endif // ifdef __cplusplus
 
-static int Get_Portcmd(JPorthead_* port);
+static uintptr_t Get_Portcmd(JPorthead_* port);
 static s32 Portcmd_Main(void* a);
 
 #endif
