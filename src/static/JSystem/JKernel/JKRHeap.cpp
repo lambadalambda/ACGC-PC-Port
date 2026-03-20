@@ -104,7 +104,7 @@ void* JKRHeap::alloc(u32 byteCount, int padding, JKRHeap* heap) {
 }
 
 void* JKRHeap::alloc(u32 byteCount, int padding) {
-    JUT_WARNING_F(!mInitFlag, "alloc %x byte in heap %x", byteCount, this);
+    JUT_WARNING_F(!mInitFlag, "alloc %x byte in heap %p", byteCount, (void*)this);
     return do_alloc(byteCount, padding);
 }
 
@@ -115,7 +115,7 @@ void JKRHeap::free(void* memory, JKRHeap* heap) {
 }
 
 void JKRHeap::free(void* memory) {
-    JUT_WARNING_F(!mInitFlag, "free %x in heap %x", memory, this);
+    JUT_WARNING_F(!mInitFlag, "free %p in heap %p", memory, (void*)this);
     do_free(memory);
 }
 
@@ -127,17 +127,17 @@ void JKRHeap::callAllDisposer() {
 }
 
 void JKRHeap::freeAll() {
-    JUT_WARNING_F(!mInitFlag, "freeAll in heap %x", this);
+    JUT_WARNING_F(!mInitFlag, "freeAll in heap %p", (void*)this);
     do_freeAll();
 }
 
 void JKRHeap::freeTail() {
-    JUT_WARNING_F(!mInitFlag, "freeTail in heap %x", this);
+    JUT_WARNING_F(!mInitFlag, "freeTail in heap %p", (void*)this);
     do_freeTail();
 }
 
 s32 JKRHeap::resize(void* memoryBlock, u32 newSize) {
-    JUT_WARNING_F(!mInitFlag, "resize block %x into %x in heap %x", memoryBlock, newSize, this);
+    JUT_WARNING_F(!mInitFlag, "resize block %p into %x in heap %p", memoryBlock, newSize, (void*)this);
     return do_resize(memoryBlock, newSize);
 }
 
@@ -159,7 +159,7 @@ s32 JKRHeap::getTotalFreeSize() {
 }
 
 s32 JKRHeap::changeGroupID(u8 newGroupID) {
-    JUT_WARNING_F(!mInitFlag, "change heap ID into %x in heap %x", newGroupID, this);
+    JUT_WARNING_F(!mInitFlag, "change heap ID into %x in heap %p", newGroupID, (void*)this);
     return do_changeGroupID(newGroupID);
 }
 
