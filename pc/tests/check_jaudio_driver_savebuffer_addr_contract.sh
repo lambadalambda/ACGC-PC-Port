@@ -36,6 +36,16 @@ if ! rg -q 'static void Nas_PCM8dec\(Acmd\* cmd, s32 flags, u32 state\) \{' "$FI
     exit 1
 fi
 
+if ! rg -q '#define JAUDIO_CALLBACK_TAG\(value\) \(\(u32\)\(\(uintptr_t\)\(value\) & 0xFFu\)\)' "$FILE"; then
+    printf '%s\n' 'missing jaudio callback tag u32 narrowing contract' >&2
+    exit 1
+fi
+
+if ! rg -q 'u32 reverbAddrTag;' "$FILE"; then
+    printf '%s\n' 'missing jaudio reverb callback tag width contract' >&2
+    exit 1
+fi
+
 if rg -q '\(s32\)PC_RUNTIME_U32_PTR\(&del_p->left_reverb_buf' "$FILE"; then
     printf '%s\n' 'legacy jaudio driver left reverb address signed cast still present' >&2
     exit 1
@@ -63,5 +73,10 @@ fi
 
 if rg -q '\(s32\)reverbAddrTag' "$FILE"; then
     printf '%s\n' 'legacy jaudio driver reverb tag signed cast still present' >&2
+    exit 1
+fi
+
+if rg -q 'uintptr_t reverbAddrTag;' "$FILE"; then
+    printf '%s\n' 'legacy jaudio reverb callback tag uintptr_t type still present' >&2
     exit 1
 fi

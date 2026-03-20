@@ -19,7 +19,7 @@
 #define DMEM_WET_LEFT_CH 0xC40
 #define DMEM_WET_RIGHT_CH 0xDE0
 
-#define JAUDIO_CALLBACK_TAG(value) ((uintptr_t)(value) & 0xFFu)
+#define JAUDIO_CALLBACK_TAG(value) ((u32)((uintptr_t)(value) & 0xFFu))
 #define DMEM_UNCOMPRESSED_NOTE 0x540
 #define DMEM_COMPRESSED_ADPCM_DATA 0x900
 #define DMEM_HAAS_TEMP 0x580
@@ -669,7 +669,7 @@ extern Acmd* Nas_DriveRsp(s16* aiBuf, s32 aiBufLen, Acmd* cmd, s32 updateIndex) 
 extern Acmd* Nas_SynthMain(s32 chan_id, commonch* common, driverch* driver, s16* samples, s32 samples_per_update, Acmd* cmd, s32 update_idx) {
     s32 pad1[1];
     s32 size;
-    uintptr_t reverbAddrTag;
+    u32 reverbAddrTag;
     smzwavetable* sample;
     adpcmloop* loopInfo;
     s32 numSamplesUntilEnd;
