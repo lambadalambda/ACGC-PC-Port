@@ -229,13 +229,13 @@ void JUTException::showStack(OSContext* context) {
     sConsole->print_f("Address:   BackChain   LR save\n");
 
     for (i = 0, stackPointer = (u32*)context->gpr[1];
-         (stackPointer != nullptr) && (stackPointer != (u32*)0xFFFFFFFF) && (i++ < 0x10);) {
+         (stackPointer != nullptr) && ((uintptr_t)stackPointer != (uintptr_t)0xFFFFFFFFu) && (i++ < 0x10);) {
         if (i > mTraceSuppress) {
             sConsole->print("Suppress trace.\n");
             return;
         }
 
-        sConsole->print_f("%08X:  %08X    %08X\n", stackPointer, stackPointer[0], stackPointer[1]);
+        sConsole->print_f("%p:  %08X    %08X\n", (void*)stackPointer, stackPointer[0], stackPointer[1]);
         showMapInfo_subroutine(stackPointer[1], false);
         JUTConsoleManager* manager = JUTConsoleManager::sManager;
         manager->drawDirect(true);
@@ -249,7 +249,7 @@ void JUTException::showMainInfo(u16 error, OSContext* context, u32 dsisr, u32 da
         return;
     }
 
-    sConsole->print_f("CONTEXT:%08XH  (%s EXCEPTION)\n", context, sCpuExpName[error]);
+    sConsole->print_f("CONTEXT:%p  (%s EXCEPTION)\n", (void*)context, sCpuExpName[error]);
     sConsole->print_f("SRR0:   %08XH   SRR1:%08XH\n", context->srr0, context->srr1);
     sConsole->print_f("DSISR:  %08XH   DAR: %08XH\n", dsisr, dar);
 }

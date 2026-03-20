@@ -415,7 +415,7 @@ void OSDumpContext(OSContext* context) {
     u32 i;
     u32* p;
 
-    OSReport("------------------------- Context 0x%08x -------------------------\n", context);
+    OSReport("------------------------- Context %p -------------------------\n", (void*)context);
 
     for (i = 0; i < 16; ++i) {
         OSReport("r%-2d  = 0x%08x (%14d)  r%-2d  = 0x%08x (%14d)\n", i, context->gpr[i], context->gpr[i], i + 16,
@@ -455,8 +455,8 @@ void OSDumpContext(OSContext* context) {
     }
 
     OSReport("\nAddress:      Back Chain    LR Save\n");
-    for (i = 0, p = (u32*)context->gpr[1]; p && (u32)p != 0xffffffff && i++ < 16; p = (u32*)*p) {
-        OSReport("0x%08x:   0x%08x    0x%08x\n", p, p[0], p[1]);
+    for (i = 0, p = (u32*)context->gpr[1]; p && (uintptr_t)p != (uintptr_t)0xffffffffu && i++ < 16; p = (u32*)*p) {
+        OSReport("%p:   0x%08x    0x%08x\n", (void*)p, p[0], p[1]);
     }
 }
 
