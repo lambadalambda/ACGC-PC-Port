@@ -1560,6 +1560,7 @@ static void bIT_actor_drop_wait_bee(bg_item_drop_c* drop) {
     if (drop->_90 == 0) {
         if (drop->actorx_p != NULL) {
             xyz_t_move(&drop->actorx_p->world.position, &drop->position);
+            xyz_t_move(&drop->actorx_p->home.position, &drop->position);
         }
 
         drop->_88 = 120;

@@ -19,6 +19,27 @@ enum {
     aBEE_ACT_NUM
 };
 
+enum {
+    aBEE_AUDIO_TOKEN_BASE = 0x42450000u,
+    aBEE_AUDIO_TOKEN_INVALID = 0xFFFFu,
+};
+
+_Static_assert(BLOCK_X_NUM * UT_X_NUM * BLOCK_Z_NUM * UT_Z_NUM <= aBEE_AUDIO_TOKEN_INVALID,
+               "bee audio token field must fit in 16 bits");
+
+static u32 aBEE_GetAudioToken(const ACTOR* actorx) {
+    int ut_x;
+    int ut_z;
+
+    if (mFI_Wpos2UtNum(&ut_x, &ut_z, actorx->home.position)) {
+        u32 ut_index = (u32)(ut_z * (BLOCK_X_NUM * UT_X_NUM) + ut_x);
+
+        return aBEE_AUDIO_TOKEN_BASE | ut_index;
+    }
+
+    return aBEE_AUDIO_TOKEN_BASE | aBEE_AUDIO_TOKEN_INVALID;
+}
+
 static void aBEE_actor_ct(ACTOR* actorx, GAME* game);
 static void aBEE_actor_move(ACTOR* actorx, GAME* game);
 static void aBEE_actor_draw(ACTOR* actorx, GAME* game);
@@ -345,11 +366,12 @@ static void aBEE_setupAction(BEE_ACTOR* bee, int action, GAME* game) {
 
 static void aBEE_actor_move(ACTOR* actorx, GAME* game) {
     BEE_ACTOR* bee = (BEE_ACTOR*)actorx;
-    
-    sAdo_OngenPos((u32)actorx, NA_SE_B0, &actorx->world.position);
+
     if ((actorx->world.position.x < 0.0f && actorx->world.position.z < 0.0f)) {
         // empty block, maybe for debug?
     } else {
+        sAdo_OngenPos(aBEE_GetAudioToken(actorx), NA_SE_B0, &actorx->world.position);
+
         if (bee->action == aBEE_ACT_ATTACK || mFI_GetPlayerWade() == mFI_WADE_NONE) {
             Actor_position_moveF(actorx);
         }
