@@ -360,7 +360,7 @@ void JUTException::printDebugInfo(JUTException::EInfoPage page, OSError error, O
 }
 
 bool JUTException::isEnablePad() const {
-    if (mGamePad == (JUTGamePad*)0xFFFFFFFF)
+    if (mGamePad == (JUTGamePad*)-1)
         return true;
 
     if (mPadPort >= JUTGamePad::Port1)
@@ -382,7 +382,7 @@ bool JUTException::readPad(u32* out_trigger, u32* out_button) {
         ms = ticks / (OS_TIMER_CLOCK / 1000);
     } while (ms < 0x32);
 
-    if (mGamePad == (JUTGamePad*)0xffffffff) {
+    if (mGamePad == (JUTGamePad*)-1) {
         JUTGamePad gamePad0(JUTGamePad::Port1);
         JUTGamePad gamePad1(JUTGamePad::Port2);
         JUTGamePad gamePad2(JUTGamePad::Port3);
