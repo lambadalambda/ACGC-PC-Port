@@ -34,6 +34,7 @@ check_contains "src/static/dolphin/os/OSContext.c" 'OSReport\("%p:   0x%08x    0
 check_contains "src/static/JSystem/JUtility/JUTException.cpp" '\(stackPointer != nullptr\) && \(\(uintptr_t\)stackPointer != \(uintptr_t\)0xFFFFFFFFu\) && \(i\+\+ < 0x10\)' 'JUTException stack walk uses uintptr_t sentinel compare'
 check_contains "src/static/JSystem/JUtility/JUTException.cpp" 'sConsole->print_f\("%p:  %08X    %08X\\n", \(void\*\)stackPointer, stackPointer\[0\], stackPointer\[1\]\);' 'JUTException stack trace uses %p'
 check_contains "src/static/JSystem/JUtility/JUTException.cpp" 'sConsole->print_f\("CONTEXT:%p  \(%s EXCEPTION\)\\n", \(void\*\)context, sCpuExpName\[error\]\);' 'JUTException main info uses %p for context'
+check_contains "src/static/JSystem/JUtility/JUTException.cpp" 'sConsole->print_f\("\*\*\*\*\*\*\*\* EXCEPTION OCCURRED! \*\*\*\*\*\*\*\*\\nFrameMemory:%p\\n", \(void\*\)getFrameMemory\(\)\);' 'JUTException frame memory uses %p'
 
 check_absent "src/static/dolphin/os/OSContext.c" 'OSReport\("------------------------- Context 0x%08x -------------------------\\n", context\);' 'legacy OSDumpContext header format'
 check_absent "src/static/dolphin/os/OSContext.c" '\(u32\)p != 0xffffffff' 'legacy OSDumpContext stack walk cast'
@@ -42,3 +43,4 @@ check_absent "src/static/dolphin/os/OSContext.c" 'OSReport\("0x%08x:   0x%08x   
 check_absent "src/static/JSystem/JUtility/JUTException.cpp" '\(stackPointer != \(u32\*\)0xFFFFFFFF\)' 'legacy JUTException stack walk sentinel'
 check_absent "src/static/JSystem/JUtility/JUTException.cpp" 'sConsole->print_f\("%08X:  %08X    %08X\\n", stackPointer, stackPointer\[0\], stackPointer\[1\]\);' 'legacy JUTException stack trace format'
 check_absent "src/static/JSystem/JUtility/JUTException.cpp" 'sConsole->print_f\("CONTEXT:%08XH  \(%s EXCEPTION\)\\n", context, sCpuExpName\[error\]\);' 'legacy JUTException context format'
+check_absent "src/static/JSystem/JUtility/JUTException.cpp" 'sConsole->print_f\("\*\*\*\*\*\*\*\* EXCEPTION OCCURRED! \*\*\*\*\*\*\*\*\\nFrameMemory:%XH\\n", getFrameMemory\(\)\);' 'legacy JUTException frame memory format'

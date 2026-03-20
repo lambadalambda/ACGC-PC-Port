@@ -455,7 +455,7 @@ void JUTException::printContext(OSError error, OSContext* context, u32 dsisr, u3
         return;
     }
 
-    sConsole->print_f("******** EXCEPTION OCCURRED! ********\nFrameMemory:%XH\n", getFrameMemory());
+    sConsole->print_f("******** EXCEPTION OCCURRED! ********\nFrameMemory:%p\n", (void*)getFrameMemory());
 
     int post_callback_executed = false;
     while (true) {
