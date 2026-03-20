@@ -12,6 +12,27 @@ extern Gfx obj_fallS_model[];
 extern Gfx obj_fallS_rainbowT_model[];
 extern EVW_ANIME_DATA obj_fallS_evw_anime;
 
+enum {
+    aFLS_AUDIO_TOKEN_BASE = 0x46530000u,
+    aFLS_AUDIO_TOKEN_INVALID = 0xFFFFu,
+};
+
+_Static_assert(BLOCK_X_NUM * UT_X_NUM * BLOCK_Z_NUM * UT_Z_NUM <= aFLS_AUDIO_TOKEN_INVALID,
+               "south waterfall audio token field must fit in 16 bits");
+
+static u32 aFLS_GetAudioToken(const ACTOR* actor) {
+    int ut_x;
+    int ut_z;
+
+    if (mFI_Wpos2UtNum(&ut_x, &ut_z, actor->home.position)) {
+        u32 ut_index = (u32)(ut_z * (BLOCK_X_NUM * UT_X_NUM) + ut_x);
+
+        return aFLS_AUDIO_TOKEN_BASE | ut_index;
+    }
+
+    return aFLS_AUDIO_TOKEN_BASE | aFLS_AUDIO_TOKEN_INVALID;
+}
+
 static void aFLS_actor_move(ACTOR* actor, GAME* game);
 static void aFLS_actor_draw(ACTOR* actor, GAME* game);
 
