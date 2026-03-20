@@ -382,6 +382,7 @@ sh pc/tests/check_furniture_audio_id_contract.sh
 sh pc/tests/check_insect_audio_id_contract.sh
 sh pc/tests/check_museum_insect_audio_id_contract.sh
 sh pc/tests/check_environment_audio_id_contract.sh
+sh pc/tests/check_waterfall_audio_id_contract.sh
 sh pc/tests/check_singleton_audio_id_contract.sh
 sh pc/tests/check_npc_actor_runtime_ptr_contract.sh
 sh pc/tests/check_famicom_runtime_ptr_contract.sh
