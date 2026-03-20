@@ -380,6 +380,7 @@ sh pc/tests/check_field_draw_audio_id_contract.sh
 sh pc/tests/check_effect_audio_id_contract.sh
 sh pc/tests/check_furniture_audio_id_contract.sh
 sh pc/tests/check_gyoei_audio_id_contract.sh
+sh pc/tests/check_house_goki_audio_id_contract.sh
 sh pc/tests/check_insect_audio_id_contract.sh
 sh pc/tests/check_museum_insect_audio_id_contract.sh
 sh pc/tests/check_environment_audio_id_contract.sh
