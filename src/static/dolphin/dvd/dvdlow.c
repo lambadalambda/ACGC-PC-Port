@@ -1,5 +1,6 @@
 #include <dolphin.h>
 #include <dolphin/dvd.h>
+#include "pc_runtime_ptr.h"
 
 #include "dvd/__dvd.h"
 #include "os/__os.h"
@@ -210,7 +211,7 @@ static void Read(void* addr, u32 length, u32 offset, DVDLowCallback callback)
 	__DIRegs[2] = 0xa8000000;
 	__DIRegs[3] = offset / 4;
 	__DIRegs[4] = length;
-	__DIRegs[5] = (u32)addr;
+	__DIRegs[5] = PC_RUNTIME_U32_PTR(addr);
 	__DIRegs[6] = length;
 	LastLength  = length;
 	__DIRegs[7] = 3;
@@ -357,14 +358,14 @@ BOOL DVDLowWaitCoverClose(DVDLowCallback callback)
 
 BOOL DVDLowReadDiskID(DVDDiskID* diskID, DVDLowCallback callback)
 {
-    ASSERTMSGLINE(0x3d2, (((u32)diskID) & 31) == 0, "DVDLowReadID(): id must be aligned with 32 byte boundary.");
+    ASSERTMSGLINE(0x3d2, (((uintptr_t)diskID) & 31) == 0, "DVDLowReadID(): id must be aligned with 32 byte boundary.");
 
 	Callback      = callback;
 	StopAtNextInt = FALSE;
 	__DIRegs[2]   = 0xa8000040;
 	__DIRegs[3]   = 0;
 	__DIRegs[4]   = sizeof(DVDDiskID);
-	__DIRegs[5]   = (u32)diskID;
+	__DIRegs[5]   = PC_RUNTIME_U32_PTR(diskID);
 	__DIRegs[6]   = sizeof(DVDDiskID);
 	__DIRegs[7]   = 3;
 	SetTimeoutAlarm(OSSecondsToTicks(10));
@@ -397,7 +398,7 @@ BOOL DVDLowInquiry(DVDDriveInfo* info, DVDLowCallback callback)
 	StopAtNextInt = FALSE;
 	__DIRegs[2]   = 0x12000000;
 	__DIRegs[4]   = sizeof(DVDDriveInfo);
-	__DIRegs[5]   = (u32)info;
+	__DIRegs[5]   = PC_RUNTIME_U32_PTR(info);
 	__DIRegs[6]   = sizeof(DVDDriveInfo);
 	__DIRegs[7]   = 3;
 	SetTimeoutAlarm(OSSecondsToTicks(10));
