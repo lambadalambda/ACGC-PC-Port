@@ -414,10 +414,14 @@ sh pc/tests/check_dvd_queue_pointer_format_contract.sh
 sh pc/tests/check_jaudio_connect_wave_sentinel_contract.sh
 sh pc/tests/check_jaudio_audio_heap_pointer_format_contract.sh
 sh pc/tests/check_jaudio_fastcopy_pointer_format_contract.sh
+sh pc/tests/check_jaudio_cmdstack_queue_pointer_contract.sh
 sh pc/tests/check_jaudio_driver_savebuffer_addr_contract.sh
 sh pc/tests/check_jaudio_driver_aux_buffer_addr_contract.sh
 sh pc/tests/check_ins_goki_item_slot_contract.sh
 sh pc/tests/check_house_animal_slot_contract.sh
+sh pc/tests/check_train0_engineer_lookup_contract.sh
+sh pc/tests/check_mail_strlen_pointer_arithmetic_contract.sh
+sh pc/tests/check_emu64_segment_cast_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 sh pc/tests/check_pc_crash_and_image_addr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
