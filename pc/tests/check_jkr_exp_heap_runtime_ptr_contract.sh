@@ -39,6 +39,7 @@ check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::block 
 check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::joinTwoBlocks \[%p %x %x\]\[%p %x %x\]\\n", \(void\*\)block, block->mFlags, block->mAllocatedSpace,' 'joinTwoBlocks report uses %p'
 check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::: endAddr = %p\\n", \(void\*\)endAddr\);' 'joinTwoBlocks end address report uses %p'
 check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::: nextAddr = %p\\n", \(void\*\)nextAddr\);' 'joinTwoBlocks next address report uses %p'
+check_contains "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUT_WARNING_F\("free: memblock %p not in heap %p", memblock, \(void\*\)this\);' 'do_free warning uses %p for pointers'
 
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'u32 start;' 'legacy tail allocation start type'
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'start = \(u32\)ALIGN_PREV\(contentAddr \+ block->mAllocatedSpace - size, align\);' 'legacy tail allocation address cast'
@@ -51,3 +52,4 @@ check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::block = 
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::joinTwoBlocks \[%x %x %x\]\[%x %x %x\]\\n", block, block->mFlags, block->mAllocatedSpace, block->mNext,' 'legacy joinTwoBlocks report'
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::: endAddr = %x\\n", endAddr\);' 'legacy joinTwoBlocks end address report'
 check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JREPORTF\(":::: nextAddr = %x\\n", nextAddr\);' 'legacy joinTwoBlocks next address report'
+check_absent "src/static/JSystem/JKernel/JKRExpHeap.cpp" 'JUT_WARNING_F\("free: memblock %x not in heap %x", memblock, this\);' 'legacy do_free warning pointer format'

@@ -376,7 +376,7 @@ void JKRExpHeap::do_free(void* memblock) {
             block->free(this);
         }
     } else {
-        JUT_WARNING_F("free: memblock %x not in heap %x", memblock, this);
+        JUT_WARNING_F("free: memblock %p not in heap %p", memblock, (void*)this);
     }
     unlock();
 }
