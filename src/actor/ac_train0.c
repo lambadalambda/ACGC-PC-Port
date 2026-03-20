@@ -42,20 +42,22 @@ static void aTR0_actor_ct(ACTOR* actor, GAME* GAME) {
     train0->actor_class.cull_width = 600.0f;
     train0->actor_class.world.angle.y = DEG2SHORT_ANGLE2(90.0f);
     train0->action = 5;
+    train0->arg3 = FALSE;
 }
 
 static void aTR0_actor_dt(ACTOR* actor, GAME* game) {
     TRAIN0_ACTOR* train0 = (TRAIN0_ACTOR*)actor;
     xyz_t tr_home_pos;
+    GAME_PLAY* play = (GAME_PLAY*)game;
     ACTOR* engineer_p;
 
     tr_home_pos = train0->actor_class.home.position;
     mFI_SetFG_common(EMPTY_NO, tr_home_pos, FALSE);
 
-    engineer_p = (ACTOR*)train0->arg3;
-    if (engineer_p != NULL) {
+    engineer_p = Actor_info_fgName_search(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC);
+    if (train0->arg3 && engineer_p != NULL) {
         Actor_delete(engineer_p);
-        train0->arg3 = (int)NULL;
+        train0->arg3 = FALSE;
     }
 
     cKF_SkeletonInfo_R_dt(&train0->keyframe);
