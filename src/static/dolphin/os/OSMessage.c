@@ -26,7 +26,7 @@ int OSSendMessage(struct OSMessageQueue* mq, OSMessage msg, int flags)
 		OSSleepThread(&mq->queueSend);
 	}
 	lastIndex = (mq->firstIndex + mq->usedCount) % mq->msgCount;
-	((u32*)mq->msgArray)[lastIndex] = (u32)msg;
+	mq->msgArray[lastIndex] = msg;
 	mq->usedCount++;
 	OSWakeupThread(&mq->queueReceive);
 	OSRestoreInterrupts(enabled);
@@ -45,7 +45,7 @@ int OSReceiveMessage(struct OSMessageQueue* mq, OSMessage* msg, int flags)
 		OSSleepThread(&mq->queueReceive);
 	}
 	if (msg != NULL) {
-		*(u32*)msg = ((u32*)mq->msgArray)[mq->firstIndex];
+		*msg = mq->msgArray[mq->firstIndex];
 	}
 
 	mq->firstIndex = (mq->firstIndex + 1) % mq->msgCount;
@@ -63,12 +63,12 @@ int OSJamMessage(struct OSMessageQueue * mq, OSMessage msg, int flags) {
             OSRestoreInterrupts(enabled);
             return 0;
         }
-        OSSleepThread(&mq->queueSend);
-    }
-    mq->firstIndex = (mq->firstIndex + mq->msgCount - 1) % mq->msgCount;
-    ((u32*)mq->msgArray)[mq->firstIndex] = (u32)msg;
-    mq->usedCount++;
-    OSWakeupThread(&mq->queueReceive);
-    OSRestoreInterrupts(enabled);
+		OSSleepThread(&mq->queueSend);
+	}
+	mq->firstIndex = (mq->firstIndex + mq->msgCount - 1) % mq->msgCount;
+	mq->msgArray[mq->firstIndex] = msg;
+	mq->usedCount++;
+	OSWakeupThread(&mq->queueReceive);
+	OSRestoreInterrupts(enabled);
     return 1;
 }
