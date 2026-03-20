@@ -8,6 +8,7 @@
 #include "JSystem/JUtility/JUTVideo.h"
 #include "JSystem/JUtility/JUTProcBar.h"
 #include "JSystem/JFramework/JFWDisplay.h"
+#include "pc_runtime_ptr.h"
 
 // Sources: https://github.com/zeldaret/tp/blob/master/libs/JSystem/JFramework/JFWDisplay.cpp
 // https://github.com/kiwi515/ogws/blob/master/src/egg/core/eggAsyncDisplay.cpp
@@ -23,7 +24,7 @@ void waitForTick(u32, u16);
 void diagnoseGpHang();
 
 static u32 JFWDisplay_retrace_message_count(OSMessage msg) {
-    return (u32)(uintptr_t)msg;
+    return PC_RUNTIME_U32_PTR(msg);
 }
 
 inline void JFWDrawDoneAlarm() {
