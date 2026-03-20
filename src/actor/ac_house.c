@@ -34,12 +34,11 @@ enum {
 };
 
 #define aHUS_GET_LOOKS(h) ((h)->arg0)
-#define aHUS_GET_ANIMAL_P(h) ((Animal_c*)(h)->arg1)
 #define aHUS_GET_ANIMAL_IDX(h) ((h)->arg2)
+#define aHUS_GET_ANIMAL_P(h) (Save_GetPointer(animals[aHUS_GET_ANIMAL_IDX(h)]))
 #define aHUS_GET_LIGHT_PERCENT(h) ((h)->arg1_f)
 
 #define aHUS_SET_LOOKS(h, v) ((h)->arg0 = (v))
-#define aHUS_SET_ANIMAL_P(h, v) ((h)->arg1 = (int)(v))
 #define aHUS_SET_ANIMAL_IDX(h, v) ((h)->arg2 = (v))
 #define aHUS_SET_LIGHT_PERCENT(h, v) ((h)->arg1_f = (v))
 
@@ -212,7 +211,6 @@ static void aHUS_actor_ct(ACTOR* actorx, GAME* game) {
 
     if (idx >= 0) {
         aHUS_SET_LOOKS(house, mNpc_GetLooks(Common_Get(npclist[idx]).name));
-        aHUS_SET_ANIMAL_P(house, Save_GetPointer(animals[idx]));
         aHUS_SET_ANIMAL_IDX(house, idx);
         house->season = Common_Get(time.season);
         season = house->season == mTM_SEASON_WINTER;
@@ -222,7 +220,6 @@ static void aHUS_actor_ct(ACTOR* actorx, GAME* game) {
         house->structure_pal = aSTR_PAL_HOUSE1_A + (s16)(pal + (shape * 5));
     } else {
         aHUS_SET_LOOKS(house, mNpc_LOOKS_GIRL);
-        aHUS_SET_ANIMAL_P(house, Save_GetPointer(animals[0]));
         aHUS_SET_ANIMAL_IDX(house, 0);
         house->season = Common_Get(time.season);
         shape = 0;

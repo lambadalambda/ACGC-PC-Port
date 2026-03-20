@@ -42,8 +42,10 @@ enum {
 #define aIGK_TARGET_ANGLE(insect) ((insect)->s32_work0)
 #define aIGK_CHANGE_WAIT_TIMER(insect) ((insect)->s32_work1)
 #define aIGK_MOVE_TIMER(insect) ((insect)->s32_work2)
-#define aIGK_GET_ITEM_P(insect) ((insect)->s32_work3)
-#define aIGK_SET_ITEM_P(insect, item_p) ((insect)->s32_work3 = (int)item_p)
+
+static mActor_name_t* aIGK_get_item_slot(aINS_INSECT_ACTOR* insect) {
+    return mFI_GetUnitFG(insect->tools_actor.actor_class.home.position);
+}
 
 static void aIGK_actor_move(ACTOR* actorx, GAME* game);
 static void aIGK_setupAction(aINS_INSECT_ACTOR* insect, int action, GAME* game);
@@ -94,14 +96,16 @@ extern void aIGK_actor_init(ACTOR* actorx, GAME* game) {
         }
         case aSOI_SPAWN_ITEM: {
             /* Spawn insect on ground item */
+            mActor_name_t* item_p;
+
             actorx->world.position.y = 5.0f + mCoBG_GetBgY_OnlyCenter_FromWpos2(actorx->world.position, -2.0f);
             xyz_t_move(&actorx->home.position, &actorx->world.position);
             actorx->shape_info.draw_shadow = FALSE;
             insect->flag = aIGK_PLACE_ITEM;
             actorx->actor_specific = 0;
 
-            aIGK_SET_ITEM_P(insect, mFI_GetUnitFG(actorx->world.position));
-            if (aIGK_GET_ITEM_P(insect) == 0) {
+            item_p = aIGK_get_item_slot(insect);
+            if (item_p == NULL) {
                 Actor_delete(actorx);
                 return;
             }
@@ -202,8 +206,12 @@ static int aIGK_check_patience(aINS_INSECT_ACTOR* insect) {
         insect->patience = 100.0f;
     } else if (aIGK_check_player_scoop(insect) == TRUE) {
         insect->patience = 100.0f;
-    } else if (insect->flag == aIGK_PLACE_ITEM && *(mActor_name_t*)aIGK_GET_ITEM_P(insect) != ITM_KABU_SPOILED) {
-        insect->patience = 100.0f;
+    } else if (insect->flag == aIGK_PLACE_ITEM) {
+        mActor_name_t* item_p = aIGK_get_item_slot(insect);
+
+        if (item_p == NULL || *item_p != ITM_KABU_SPOILED) {
+            insect->patience = 100.0f;
+        }
     }
 
     if (insect->patience >= aIGK_MAX_PATIENCE) {
