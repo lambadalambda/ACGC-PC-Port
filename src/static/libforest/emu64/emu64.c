@@ -5801,7 +5801,7 @@ u32 emu64::emu64_taskstart_r(Gfx* dl_p) {
 
     while (!this->end_dl && !FrameCansel) {
         this->cmds_processed++;
-        EMU64_INFOF("%08x:", this->gfx_p);
+        EMU64_INFOF("%p:", (void*)this->gfx_p);
         this->gfx = *this->gfx_p;
         this->gfx_cmd = this->gfx.dma.cmd;
         this->dl_history[this->dl_history_start++] = this->gfx_p;
