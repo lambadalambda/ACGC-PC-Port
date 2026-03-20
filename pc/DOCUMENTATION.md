@@ -383,6 +383,7 @@ sh pc/tests/check_gyoei_audio_id_contract.sh
 sh pc/tests/check_insect_audio_id_contract.sh
 sh pc/tests/check_museum_insect_audio_id_contract.sh
 sh pc/tests/check_environment_audio_id_contract.sh
+sh pc/tests/check_snowman_audio_id_contract.sh
 sh pc/tests/check_waterfall_audio_id_contract.sh
 sh pc/tests/check_singleton_audio_id_contract.sh
 sh pc/tests/check_npc_actor_runtime_ptr_contract.sh
