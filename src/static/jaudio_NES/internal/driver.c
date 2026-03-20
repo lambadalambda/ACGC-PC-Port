@@ -42,7 +42,7 @@ static u32 Env_Data_L3 = 0x90AAC4DE;
 
 static Acmd* __LoadAuxBuf(Acmd* cmd, u16 ofs, u16 startPos, s32 size, delay* del_p);
 static Acmd* __SaveAuxBuf(Acmd* cmd, u16 ofs, u16 startPos, s32 size, delay* del_p);
-static Acmd* Nas_SaveBufferAuto(Acmd* cmd, u16 ofs, u16 size, s32 startAddr);
+static Acmd* Nas_SaveBufferAuto(Acmd* cmd, u16 ofs, u16 size, u32 startAddr);
 
 static void Nas_CpuFX(s32 chunkLen, s32 updateIdx, s32 reverbIdx) {
     delayparam* param_p;
@@ -271,11 +271,11 @@ static void Nas_SetEnvParam(Acmd* cmd, s32 reverbVol, s32 rampReverb, s32 rampL,
     aSetEnvParam(cmd, reverbVol, rampReverb, rampL, rampR);
 }
 
-static void Nas_LoadBuffer2(Acmd* cmd, s32 dst, s32 len, s32 src) {
+static void Nas_LoadBuffer2(Acmd* cmd, s32 dst, s32 len, u32 src) {
     aLoadBuffer2(cmd, src, dst, len);
 }
 
-static void Nas_SaveBuffer2(Acmd* cmd, s32 src, s32 len, s32 dst) {
+static void Nas_SaveBuffer2(Acmd* cmd, s32 src, s32 len, u32 dst) {
     aSaveBuffer2(cmd, dst, src, len);
 }
 
@@ -283,7 +283,7 @@ static void Nas_SetEnvParam2(Acmd* cmd, s32 volL, s32 volR) {
     aSetEnvParam2(cmd, volL, volR);
 }
 
-static void Nas_PCM8dec(Acmd* cmd, s32 flags, s32 state) {
+static void Nas_PCM8dec(Acmd* cmd, s32 flags, u32 state) {
     aPCM8dec(cmd, flags, state);
 }
 
@@ -338,20 +338,20 @@ static Acmd* Nas_SaveAuxBufferCH(Acmd* cmd, delay* del_p, s16 update_idx) {
     aSetBuffer(cmd++, 0, 0x3A0, 0x6E0, param->save_resample_num_samples * SAMPLE_SIZE);
     aResample(cmd++, del_p->resample_flags, param->save_resample_pitch, del_p->left_save_resample_buf);
     cmd = Nas_SaveBufferAuto(cmd, 0x6E0, param->size,
-                             (s32)PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[param->start_pos]));
+                             PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[param->start_pos]));
     if (param->wrapped_size != 0) {
         cmd = Nas_SaveBufferAuto(cmd, 0x6E0 + param->size, param->wrapped_size,
-                                 (s32)PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[0]));
+                                 PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[0]));
     }
 
     aDMEMMove(cmd++, 0xDE0, 0x3A0, size);
     aSetBuffer(cmd++, 0, 0x3A0, 0x6E0, param->save_resample_num_samples * SAMPLE_SIZE);
     aResample(cmd++, del_p->resample_flags, param->save_resample_pitch, del_p->right_save_resample_buf);
     cmd = Nas_SaveBufferAuto(cmd, 0x6E0, param->size,
-                             (s32)PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[param->start_pos]));
+                             PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[param->start_pos]));
     if (param->wrapped_size != 0) {
         cmd = Nas_SaveBufferAuto(cmd, 0x6E0 + param->size, param->wrapped_size,
-                                 (s32)PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[0]));
+                                 PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[0]));
     }
 
     return cmd;
@@ -431,10 +431,10 @@ static Acmd* Nas_LoadAuxBuffer1_B(Acmd* cmd, s32 samples_per_update, delay* del_
     return cmd;
 }
 
-static Acmd* Nas_SaveBufferAuto(Acmd* cmd, u16 dmem, u16 size, s32 startAddr) {
-    s32 startUnaligned = startAddr & 15;
-    s32 endAddr = startAddr + size;
-    s32 endUnaligned = endAddr & 15;
+static Acmd* Nas_SaveBufferAuto(Acmd* cmd, u16 dmem, u16 size, u32 startAddr) {
+    u32 startUnaligned = startAddr & 15;
+    u32 endAddr = startAddr + size;
+    u32 endUnaligned = endAddr & 15;
 
     if (endUnaligned != 0) {
         aLoadBuffer2(cmd++, (endAddr - endUnaligned), 0x380, 16);
@@ -457,14 +457,14 @@ static Acmd* Nas_SaveBufferAuto(Acmd* cmd, u16 dmem, u16 size, s32 startAddr) {
 }
 
 static Acmd* __LoadAuxBuf(Acmd* cmd, u16 dmem, u16 startPos, s32 size, delay* del_p) {
-    aLoadBuffer2(cmd++, &del_p->left_reverb_buf[startPos], dmem, size);
-    aLoadBuffer2(cmd++, &del_p->right_reverb_buf[startPos], dmem + 0x1A0, size);
+    Nas_LoadBuffer2(cmd++, dmem, size, PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[startPos]));
+    Nas_LoadBuffer2(cmd++, dmem + 0x1A0, size, PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[startPos]));
     return cmd;
 }
 
 static Acmd* __SaveAuxBuf(Acmd* cmd, u16 dmem, u16 startPos, s32 size, delay* del_p) {
-    aSaveBuffer2(cmd++, &del_p->left_reverb_buf[startPos], dmem, size);
-    aSaveBuffer2(cmd++, &del_p->right_reverb_buf[startPos], dmem + 0x1A0, size);
+    Nas_SaveBuffer2(cmd++, dmem, size, PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[startPos]));
+    Nas_SaveBuffer2(cmd++, dmem + 0x1A0, size, PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[startPos]));
     return cmd;
 }
 
@@ -519,16 +519,16 @@ static Acmd* Nas_SaveAuxBuffer(Acmd* cmd, delay* del_p, s16 update_idx) {
 
             if (param->size != 0) {
                 cmd = Nas_SaveBufferAuto(cmd, 0xC40, (u16)param->size,
-                                         (s32)PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[param->start_pos]));
+                                         PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[param->start_pos]));
                 cmd = Nas_SaveBufferAuto(cmd, 0xDE0, (u16)param->size,
-                                         (s32)PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[param->start_pos]));
+                                         PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[param->start_pos]));
             }
 
             if (param->wrapped_size != 0) {
                 cmd = Nas_SaveBufferAuto(cmd, 0xC40 + param->size, (u16)param->wrapped_size,
-                                         (s32)PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[0]));
+                                         PC_RUNTIME_U32_PTR(&del_p->left_reverb_buf[0]));
                 cmd = Nas_SaveBufferAuto(cmd, 0xDE0 + param->size, (u16)param->wrapped_size,
-                                         (s32)PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[0]));
+                                         PC_RUNTIME_U32_PTR(&del_p->right_reverb_buf[0]));
             }
             break;
     }
@@ -661,7 +661,7 @@ extern Acmd* Nas_DriveRsp(s16* aiBuf, s32 aiBufLen, Acmd* cmd, s32 updateIndex) 
         cmd = (Acmd*)JAUDIO_CALLBACK_TAG(NA_DACOUT_CALLBACK(cmd, 2 * size, updateIndex)); // ?? what is this? this has to be a bug
     }
 
-    aSaveBuffer2(cmd++, aiBuf, DMEM_TEMP, JAC_FRAMESAMPLES);
+    Nas_SaveBuffer2(cmd++, DMEM_TEMP, JAC_FRAMESAMPLES, PC_RUNTIME_U32_PTR(aiBuf));
 
     return cmd;
 }
@@ -935,7 +935,7 @@ extern Acmd* Nas_SynthMain(s32 chan_id, commonch* common, driverch* driver, s16*
                         } else {
                             Nas_LoadBuffer2(cmd++, DMEM_UNCOMPRESSED_NOTE,
                                 numSamplesToLoadAdj * SAMPLE_SIZE + SAMPLES_PER_FRAME * SAMPLE_SIZE,
-                                (s32)reverbAddrTag);
+                                reverbAddrTag);
                             // deviation from MM:
                             goto codec_continue_and_skip;
                             // flags = A_CONTINUE;
@@ -1054,7 +1054,7 @@ codec_continue_and_skip:
                         Nas_SetBuffer(cmd++, 0, sampleDataDmemAddr + sampleDataChunkAlignPad,
                                                 DMEM_UNCOMPRESSED_NOTE + dmemUncompressedAddrOffset2,
                                                 numSamplesToDecode * SAMPLE_SIZE);
-                        Nas_PCM8dec(cmd++, flags, (s32)PC_RUNTIME_U32_PTR(driver->synth_params->adpcm_state));
+                        Nas_PCM8dec(cmd++, flags, PC_RUNTIME_U32_PTR(driver->synth_params->adpcm_state));
                         break;
 
                     case CODEC_UNK7:
@@ -1211,10 +1211,10 @@ codec_continue_and_skip:
                 driver->comb_filter_needs_init = false;
             } else {
                 Nas_LoadBuffer2(cmd++, DMEM_COMB_TEMP - combFilterSize, combFilterSize,
-                                (s32)PC_RUNTIME_U32_PTR(combFilterState));
+                                PC_RUNTIME_U32_PTR(combFilterState));
             }
             Nas_SaveBuffer2(cmd++, DMEM_TEMP - combFilterSize + size, combFilterSize,
-                            (s32)PC_RUNTIME_U32_PTR(combFilterState));
+                            PC_RUNTIME_U32_PTR(combFilterState));
             Nas_Mix(cmd++, size >> 4, combFilterGain, DMEM_COMB_TEMP, DMEM_COMB_TEMP - combFilterSize);
             Nas_DMEMMove(cmd++, DMEM_COMB_TEMP - combFilterSize, DMEM_TEMP, size);
         } else {
@@ -1273,7 +1273,8 @@ Acmd* Nas_DolbySurround(Acmd* cmd, commonch* common, driverch* driver, s32 num_s
     } else {
         wetGain = (driver->surround_effect_gain * driver->cur_reverb_vol) >> 7;
         
-        aLoadBuffer2(cmd++, driver->synth_params->surround_effect_state, dmem, sizeof(driver->synth_params->surround_effect_state));
+        Nas_LoadBuffer2(cmd++, dmem, sizeof(driver->synth_params->surround_effect_state),
+                        PC_RUNTIME_U32_PTR(driver->synth_params->surround_effect_state));
         
         aMix(cmd++, size >> 4, dryGain, dmem, DMEM_LEFT_CH);
         aMix(cmd++, size >> 4, (u16)(dryGain ^ 0xFFFF), dmem, DMEM_RIGHT_CH);
@@ -1282,7 +1283,8 @@ Acmd* Nas_DolbySurround(Acmd* cmd, commonch* common, driverch* driver, s32 num_s
         aMix(cmd++, size >> 4, (wetGain ^ 0xFFFF), dmem, DMEM_WET_RIGHT_CH);
     }
 
-    aSaveBuffer2(cmd++, driver->synth_params->surround_effect_state, DMEM_SURROUND_TEMP + size, sizeof(driver->synth_params->surround_effect_state));
+    Nas_SaveBuffer2(cmd++, DMEM_SURROUND_TEMP + size, sizeof(driver->synth_params->surround_effect_state),
+                    PC_RUNTIME_U32_PTR(driver->synth_params->surround_effect_state));
     
     decayGain = (common->target_volume_left + common->target_volume_right) / 8192.0f;
     if (decayGain > 1.0f) {
@@ -1451,8 +1453,8 @@ extern Acmd* Nas_Synth_Delay(Acmd* cmd, commonch* common, driverch* driver, s32 
         }
 
         if (prevHaasEffectDelaySize != 0) {
-            aLoadBuffer2(cmd++, driver->synth_params->haas_effect_delay_state, DMEM_HAAS_TEMP,
-                        ALIGN_NEXT(prevHaasEffectDelaySize, 16));
+            Nas_LoadBuffer2(cmd++, DMEM_HAAS_TEMP, ALIGN_NEXT(prevHaasEffectDelaySize, 16),
+                            PC_RUNTIME_U32_PTR(driver->synth_params->haas_effect_delay_state));
             aDMEMMove(cmd++, DMEM_TEMP, DMEM_HAAS_TEMP + prevHaasEffectDelaySize,
                       size + haasEffectDelaySize - prevHaasEffectDelaySize);
         } else {
@@ -1469,8 +1471,8 @@ extern Acmd* Nas_Synth_Delay(Acmd* cmd, commonch* common, driverch* driver, s32 
 
     if (haasEffectDelaySize) { // != 0
         // Save excessive samples for next iteration
-        aSaveBuffer2(cmd++, driver->synth_params->haas_effect_delay_state, DMEM_HAAS_TEMP + size,
-                    ALIGN_NEXT(haasEffectDelaySize, 16));
+        Nas_SaveBuffer2(cmd++, DMEM_HAAS_TEMP + size, ALIGN_NEXT(haasEffectDelaySize, 16),
+                        PC_RUNTIME_U32_PTR(driver->synth_params->haas_effect_delay_state));
     }
 
     aAddMixer(cmd++, ALIGN_NEXT(size, 64), DMEM_HAAS_TEMP, dmemDest, 0x7FFF);

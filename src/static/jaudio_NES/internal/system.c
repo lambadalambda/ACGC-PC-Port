@@ -1578,15 +1578,15 @@ void Nas_FastCopy(u8* SrcAddr, u8* DestAdd, size_t Length, s32 medium) {
 
     // This is unnecessary because we've already ensured length is aligned to 32
     if ((Length & 0x1F) != 0) {
-        OSReport("DMA Warning: Length  %d is not align32\n", Length);
+        OSReport("DMA Warning: Length  %lu is not align32\n", (unsigned long)Length);
     }
 
     if ((src_addr_bits & 0x1F) != 0) {
-        OSReport("DMA Warning: SrcAddr %d is not align32\n", SrcAddr);
+        OSReport("DMA Warning: SrcAddr %p is not align32\n", (void*)SrcAddr);
     }
 
     if ((dest_addr_bits & 0x1F) != 0) {
-        OSReport("DMA Warning: DestAdd %d is not align32\n", DestAdd);
+        OSReport("DMA Warning: DestAdd %p is not align32\n", (void*)DestAdd);
     }
 
     if ((src_addr_bits & 0x1F) != 0) {
@@ -1918,7 +1918,7 @@ void Nas_InitAudio(u64* heap_p, s32 heap_size) {
 
     AG.audio_heap_p = heap_p;
     AG.audio_heap_size = heap_size;
-    OSReport("AUDIOHEAP SET ADDR %xh (SIZE %xh) \n", PC_RUNTIME_U32_PTR(heap_p), heap_size);
+    OSReport("AUDIOHEAP SET ADDR %p (SIZE %xh) \n", (void*)heap_p, heap_size);
     OSReport(" FIXSIZE  %x \n", AGC.fixSize);
     OSReport(" EMEMSIZE %x \n", AGC.ememSize);
     OSReport(" MAXCHAN  %d \n", AGC.maxChan);
