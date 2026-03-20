@@ -365,6 +365,7 @@ sh pc/tests/check_jut_console_runtime_ptr_contract.sh
 sh pc/tests/check_jkr_dvd_message_contract.sh
 sh pc/tests/check_jkr_exp_heap_runtime_ptr_contract.sh
 sh pc/tests/check_jkr_exp_heap_dump_sort_sentinel_contract.sh
+sh pc/tests/check_jkr_heap_pointer_format_contract.sh
 sh pc/tests/check_jsyswrap_system_heap_size_contract.sh
 sh pc/tests/check_object_exchange_runtime_ptr_contract.sh
 sh pc/tests/check_memcard_runtime_ptr_contract.sh
