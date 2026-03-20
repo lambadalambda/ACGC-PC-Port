@@ -154,9 +154,9 @@ void DVDDumpWaitingQueue(void) {
         } else {
             OSReport("\n");
             for(q = start->next; q != start; q = q->next) {
-                OSReport("0x%08x: Command: %s ", q, CommandNames[q->command]);
+                OSReport("%p: Command: %s ", (void*)q, CommandNames[q->command]);
                 if (q->command == 1) {
-                    OSReport("Disk offset: %d, Length: %d, Addr: 0x%08x\n", q->offset, q->length, q->addr);
+                    OSReport("Disk offset: %d, Length: %d, Addr: %p\n", q->offset, q->length, q->addr);
                 } else {
                     OSReport("\n");
                 }
