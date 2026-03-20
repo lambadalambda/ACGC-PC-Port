@@ -1,5 +1,6 @@
 /* pc_os.c - Dolphin OS replacement: arena, timers, threads, message queues */
 #include "pc_platform.h"
+#include "pc_runtime_ptr.h"
 
 #include <time.h>
 
@@ -355,8 +356,19 @@ int __osResetSwitchPressed = 0;
 /* --- Address translation (physical addr → arena_memory offset) --- */
 void* OSPhysicalToCached(u32 paddr) { return (void*)(arena_memory + paddr); }
 void* OSPhysicalToUncached(u32 paddr) { return (void*)(arena_memory + paddr); }
-u32 OSCachedToPhysical(void* caddr) { return (u32)((u8*)caddr - arena_memory); }
-u32 OSUncachedToPhysical(void* ucaddr) { return (u32)((u8*)ucaddr - arena_memory); }
+u32 OSCachedToPhysical(void* caddr) {
+    uintptr_t caddr_bits = (uintptr_t)caddr;
+    uintptr_t arena_base_bits = (uintptr_t)arena_memory;
+
+    return PC_RUNTIME_U32_PTR(caddr_bits - arena_base_bits);
+}
+
+u32 OSUncachedToPhysical(void* ucaddr) {
+    uintptr_t ucaddr_bits = (uintptr_t)ucaddr;
+    uintptr_t arena_base_bits = (uintptr_t)arena_memory;
+
+    return PC_RUNTIME_U32_PTR(ucaddr_bits - arena_base_bits);
+}
 void* OSCachedToUncached(void* caddr) { return caddr; }
 void* OSUncachedToCached(void* ucaddr) { return ucaddr; }
 
