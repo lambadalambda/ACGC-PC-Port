@@ -403,6 +403,7 @@ sh pc/tests/check_exi_uart_runtime_ptr_contract.sh
 sh pc/tests/check_os_alloc_runtime_ptr_contract.sh
 sh pc/tests/check_os_message_pointer_storage_contract.sh
 sh pc/tests/check_dvd_runtime_ptr_contract.sh
+sh pc/tests/check_dvd_queue_pointer_format_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 sh pc/tests/check_pc_crash_and_image_addr_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
