@@ -378,6 +378,7 @@ sh pc/tests/check_player_net_catch_runtime_ptr_contract.sh
 sh pc/tests/check_field_make_runtime_ptr_contract.sh
 sh pc/tests/check_field_draw_audio_id_contract.sh
 sh pc/tests/check_effect_audio_id_contract.sh
+sh pc/tests/check_festival_npc_audio_id_contract.sh
 sh pc/tests/check_furniture_audio_id_contract.sh
 sh pc/tests/check_gyoei_audio_id_contract.sh
 sh pc/tests/check_house_goki_audio_id_contract.sh
