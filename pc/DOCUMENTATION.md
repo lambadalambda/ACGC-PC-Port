@@ -363,6 +363,7 @@ sh pc/tests/check_jfw_retrace_message_contract.sh
 sh pc/tests/check_jut_console_runtime_ptr_contract.sh
 sh pc/tests/check_jkr_dvd_message_contract.sh
 sh pc/tests/check_jkr_exp_heap_runtime_ptr_contract.sh
+sh pc/tests/check_jkr_exp_heap_dump_sort_sentinel_contract.sh
 sh pc/tests/check_jsyswrap_system_heap_size_contract.sh
 sh pc/tests/check_object_exchange_runtime_ptr_contract.sh
 sh pc/tests/check_memcard_runtime_ptr_contract.sh
@@ -399,6 +400,7 @@ sh pc/tests/check_os_memory_runtime_ptr_contract.sh
 sh pc/tests/check_boot_runtime_ptr_contract.sh
 sh pc/tests/check_exi_uart_runtime_ptr_contract.sh
 sh pc/tests/check_os_alloc_runtime_ptr_contract.sh
+sh pc/tests/check_os_message_pointer_storage_contract.sh
 sh pc/tests/check_dvd_runtime_ptr_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 sh pc/tests/check_pc_crash_and_image_addr_contract.sh
