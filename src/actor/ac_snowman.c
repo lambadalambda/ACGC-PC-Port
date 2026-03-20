@@ -16,6 +16,12 @@ enum {
     aSMAN_PART_NUM
 };
 
+enum {
+    aSMAN_AUDIO_TOKEN_BASE = 0x534E0000u,
+};
+
+#define aSMAN_AUDIO_TOKEN(part) (aSMAN_AUDIO_TOKEN_BASE + (u32)(part))
+
 static void aSMAN_actor_ct(ACTOR* actorx, GAME* game);
 static void aSMAN_actor_dt(ACTOR* actorx, GAME* game);
 static void aSMAN_actor_move(ACTOR* actorx, GAME* game);
@@ -997,7 +1003,7 @@ static int aSMAN_process_player_push(ACTOR* actorx, GAME* game) {
 
                 aSMAN_Make_Effect_Ground(actorx, game);
                 if (actorx->speed > 1.0f) {
-                    sAdo_OngenPos((u32)actorx, 52, &actorx->world.position);
+                    sAdo_OngenPos(aSMAN_AUDIO_TOKEN(actor->snowman_part), 52, &actorx->world.position);
                 }
                 aSMAN_player_push_scroll_request(actorx, game);
             }
