@@ -68,7 +68,7 @@ u32 emu64::seg2k0(u32 segadr) {
        Strategy: try segment resolution first (this is what the game expects).
        If the resolved address is NOT in committed memory, it's likely a
        misidentification — the original address was a raw PC pointer. */
-    u32 resolved = (u32)this->segments[seg] + offset;
+    u32 resolved = this->segments[seg] + offset;
 
     if (seg2k0_is_committed(resolved)) {
         /* Segment resolution gave a valid address — use it (normal path) */
@@ -99,7 +99,7 @@ u32 emu64::seg2k0(u32 segadr) {
             this->panic("segadr is over 0x03000000.", __FILE__, 20);
             k0 = segadr + 0x80000000;
         } else {
-            k0 = (u32)this->segments[(segadr >> 24) & 0xF] + (segadr & 0xFFFFFF);
+            k0 = this->segments[(segadr >> 24) & 0xF] + (segadr & 0xFFFFFF);
         }
         this->resolved_addresses++;
     } else {

@@ -4296,7 +4296,7 @@ void emu64::dl_G_SETTIMG() {
 #endif
 
     this->now_setimg.setimg2 = *setimg2;
-    this->now_setimg.setimg2.imgaddr = (u32)this->seg2k0(setimg2->imgaddr);
+    this->now_setimg.setimg2.imgaddr = this->seg2k0(setimg2->imgaddr);
 }
 
 void emu64::dl_G_SETENVCOLOR() {
