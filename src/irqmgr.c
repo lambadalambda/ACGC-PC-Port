@@ -6,6 +6,7 @@
 #include "dolphin/os.h"
 #include "dolphin/os/OSMessage.h"
 #include "dolphin/os/OSTime.h"
+#include "pc_runtime_ptr.h"
 
 #define MSEC(x) OSMicrosecondsToTicks(((u64)(x)) * (u64)1000)
 
@@ -27,7 +28,7 @@ static OSMessage irqmgr_MessageToken(u32 token) {
 }
 
 static u32 irqmgr_MessageTokenValue(OSMessage msg) {
-  return (u32)(uintptr_t)msg;
+  return PC_RUNTIME_U32_PTR(msg);
 }
 
 /**

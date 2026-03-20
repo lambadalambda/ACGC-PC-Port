@@ -17,6 +17,7 @@
 #include "dolphin/os.h"
 #include "m_controller.h"
 #include "dvderr.h"
+#include "pc_runtime_ptr.h"
 
 #define G_CC_LOGO 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0
 
@@ -349,7 +350,7 @@ static OSMessage initial_menu_MessageToken(u32 token) {
 }
 
 static u32 initial_menu_MessageTokenValue(OSMessage msg) {
-  return (u32)(uintptr_t)msg;
+  return PC_RUNTIME_U32_PTR(msg);
 }
 
 extern void proc(void* arg) {
