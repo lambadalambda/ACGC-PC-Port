@@ -743,7 +743,7 @@ void emu64::printInfo() {
     // Display DL stack %d level.
     this->Printf0("DLスタック表示 %d level\n", this->DL_stack_level);
     for (i = 0; i < this->DL_stack_level; i++) {
-        this->Printf0("%d %08x %08x\n", i, (u32)this->DL_stack[i], convert_partial_address((u32)this->DL_stack[i]));
+        this->Printf0("%d %p\n", i, (void*)this->DL_stack[i]);
     }
 
     // Display last 16 DLs.
