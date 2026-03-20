@@ -1,3 +1,9 @@
+enum {
+    aTMN0_AUDIO_TOKEN_BASE = 0x544D0000u,
+};
+
+#define aTMN0_AUDIO_TOKEN(actorx) (aTMN0_AUDIO_TOKEN_BASE + (u32)((actorx)->npc_id - SP_NPC_EV_TAMAIRE_0))
+
 static void aTMN0_set_move_pos(TAMAIRE_NPC0_ACTOR* actor) {
     switch (actor->think_idx) {
         case aTMN0_THINK_TEAM0_TURN:
@@ -55,7 +61,7 @@ static void aTMN0_timer_next(TAMAIRE_NPC0_ACTOR* actor, GAME_PLAY* play) {
     }
 
     if (actor->npc_class.draw.animation_id == aNPC_ANIM_CLAP1) {
-        sAdo_OngenPos((u32)actorx, NA_SE_2F, &actorx->world.position);
+        sAdo_OngenPos(aTMN0_AUDIO_TOKEN(actorx), NA_SE_2F, &actorx->world.position);
     }
 }
 

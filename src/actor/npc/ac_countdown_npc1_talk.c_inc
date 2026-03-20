@@ -1,3 +1,9 @@
+enum {
+    aCD1_AUDIO_TOKEN_BASE = 0x43440000u,
+};
+
+#define aCD1_AUDIO_TOKEN(idx) (aCD1_AUDIO_TOKEN_BASE + (u32)(idx))
+
 static void aCD1_set_request_act(COUNTDOWN_NPC1_ACTOR* actor) {
     actor->npc_class.request.act_priority = 4;
     actor->npc_class.request.act_idx = aNPC_ACT_SPECIAL;
@@ -167,7 +173,7 @@ static void aCD1_clap(COUNTDOWN_NPC1_ACTOR* actor) {
     int idx = actor->npc_class.actor_class.npc_id - SP_NPC_EV_COUNTDOWN_1;
 
     aCD1_before_wait(actor);
-    sAdo_OngenPos((u32)actor, se_no[idx], &actor->npc_class.actor_class.world.position);
+    sAdo_OngenPos(aCD1_AUDIO_TOKEN(idx), se_no[idx], &actor->npc_class.actor_class.world.position);
 }
 
 static void aCD1_set_spd_info(COUNTDOWN_NPC1_ACTOR* actor, int action) {

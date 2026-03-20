@@ -22,6 +22,12 @@ typedef struct npc_harvest_npc0_actor_s {
 } NPC_HARVEST_NPC0_ACTOR;
 
 enum {
+    aHT0_AUDIO_TOKEN_BASE = 0x48540000u,
+};
+
+#define aHT0_AUDIO_TOKEN(actor) (aHT0_AUDIO_TOKEN_BASE + (u32)aHT0_GetMyIdx(actor))
+
+enum {
     aHT0_ACT_WAIT,
     aHT0_ACT_MERRY,
     aHT0_ACT_DRINK,

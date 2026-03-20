@@ -1,3 +1,9 @@
+enum {
+    aHN1_AUDIO_TOKEN_BASE = 0x484E0000u,
+};
+
+#define aHN1_AUDIO_TOKEN(actor) (aHN1_AUDIO_TOKEN_BASE + (u32)((actor)->npc_class.actor_class.npc_id - SP_NPC_EV_HANABI_1))
+
 static void aHN1_set_request_act(HANABI_NPC1_ACTOR* actor) {
     actor->npc_class.request.act_priority = 4;
     actor->npc_class.request.act_idx = aNPC_ACT_SPECIAL;
@@ -48,7 +54,7 @@ static void aHN1_hurrahs(HANABI_NPC1_ACTOR* actor) {
 
 static void aHN1_clapping(HANABI_NPC1_ACTOR* actor) {
     aHN1_hurrahs(actor);
-    sAdo_OngenPos((u32)actor, actor->clap_se_no, &actor->npc_class.actor_class.world.position);
+    sAdo_OngenPos(aHN1_AUDIO_TOKEN(actor), actor->clap_se_no, &actor->npc_class.actor_class.world.position);
 }
 
 static void aHN1_setupAction(HANABI_NPC1_ACTOR* actor, int action) {

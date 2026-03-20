@@ -1,3 +1,9 @@
+enum {
+    aTKN1_AUDIO_TOKEN_BASE = 0x544B0000u,
+};
+
+#define aTKN1_AUDIO_TOKEN(actorx) (aTKN1_AUDIO_TOKEN_BASE + (u32)aTKC_NPCID2IDX((actorx)->npc_id))
+
 static void aTKN1_local_to_goal(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play, s16 goal) {
     aEv_tokyoso_c* tokyoso = (aEv_tokyoso_c*)mEv_get_save_area(mEv_EVENT_SPORTS_FAIR_FOOT_RACE, 8);
 
@@ -168,9 +174,9 @@ static void aTKN1_omedeto(TOKYOSO_NPC1_ACTOR* actor, GAME_PLAY* play) {
     }
 
     if (aTKC_NPCID2TEAM(actorx->npc_id) != 0) {
-        sAdo_OngenPos((u32)actorx, 0x2F, &actorx->world.position);
+        sAdo_OngenPos(aTKN1_AUDIO_TOKEN(actorx), 0x2F, &actorx->world.position);
     } else {
-        sAdo_OngenPos((u32)actorx, 0x31, &actorx->world.position);
+        sAdo_OngenPos(aTKN1_AUDIO_TOKEN(actorx), 0x31, &actorx->world.position);
     }
 }
 
