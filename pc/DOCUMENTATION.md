@@ -359,6 +359,7 @@ sh pc/tests/check_audio_command_payload_contract.sh
 sh pc/tests/check_audio_debug_format_contract.sh
 sh pc/tests/check_initial_menu_message_contract.sh
 sh pc/tests/check_irqmgr_message_contract.sh
+sh pc/tests/check_osmessage_token_narrowing_contract.sh
 sh pc/tests/check_jfw_retrace_message_contract.sh
 sh pc/tests/check_jfw_retrace_message_width_contract.sh
 sh pc/tests/check_jut_exception_pad_sentinel_contract.sh
