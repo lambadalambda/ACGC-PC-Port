@@ -24,11 +24,11 @@ int           g_pc_window_h = PC_SCREEN_HEIGHT;
 int           g_pc_widescreen_stretch = 0;
 
 /* exe image range — used by seg2k0 to distinguish pointers from segment addresses */
-unsigned int pc_image_base = 0;
-unsigned int pc_image_end  = 0;
+uintptr_t pc_image_base = 0;
+uintptr_t pc_image_end  = 0;
 
 #ifndef _WIN32
-static unsigned int pc_get_image_end(const void* image_base) {
+static uintptr_t pc_get_image_end(const void* image_base) {
 #if defined(__APPLE__)
     const struct mach_header* header = (const struct mach_header*)image_base;
     const unsigned char* cmd_ptr = NULL;
@@ -63,21 +63,21 @@ static unsigned int pc_get_image_end(const void* image_base) {
         cmd_ptr += cmd->cmdsize;
     }
 
-    return (unsigned int)max_end;
+    return max_end;
 #else
     const Elf32_Ehdr* ehdr = (const Elf32_Ehdr*)image_base;
     const Elf32_Phdr* phdr = (const Elf32_Phdr*)((const char*)image_base + ehdr->e_phoff);
-    unsigned int max_end = 0;
+    uintptr_t max_end = 0;
 
     for (int i = 0; i < ehdr->e_phnum; i++) {
         if (phdr[i].p_type == PT_LOAD) {
-            unsigned int seg_end = phdr[i].p_vaddr + phdr[i].p_memsz;
+            uintptr_t seg_end = (uintptr_t)phdr[i].p_vaddr + (uintptr_t)phdr[i].p_memsz;
             if (seg_end > max_end) max_end = seg_end;
         }
     }
 
     if (ehdr->e_type == ET_DYN) {
-        return (unsigned int)(uintptr_t)image_base + max_end;
+        return (uintptr_t)image_base + max_end;
     }
 
     return max_end;
@@ -86,9 +86,9 @@ static unsigned int pc_get_image_end(const void* image_base) {
 #endif
 
 static jmp_buf* pc_active_jmpbuf = NULL;
-static volatile unsigned int pc_last_crash_addr = 0;
+static volatile uintptr_t pc_last_crash_addr = 0;
 
-static volatile unsigned int pc_last_crash_data_addr = 0;
+static volatile uintptr_t pc_last_crash_data_addr = 0;
 
 #ifdef _WIN32
 /* longjmp from VEH is technically UB, but works on x86 MinGW (no SEH to corrupt).
@@ -100,9 +100,9 @@ static LONG WINAPI pc_veh_handler(PEXCEPTION_POINTERS ep) {
          code == EXCEPTION_ILLEGAL_INSTRUCTION ||
          code == EXCEPTION_INT_DIVIDE_BY_ZERO ||
          code == EXCEPTION_PRIV_INSTRUCTION)) {
-        pc_last_crash_addr = (unsigned int)(uintptr_t)ep->ExceptionRecord->ExceptionAddress;
+        pc_last_crash_addr = (uintptr_t)ep->ExceptionRecord->ExceptionAddress;
         if (code == EXCEPTION_ACCESS_VIOLATION)
-            pc_last_crash_data_addr = (unsigned int)(uintptr_t)ep->ExceptionRecord->ExceptionInformation[1];
+            pc_last_crash_data_addr = (uintptr_t)ep->ExceptionRecord->ExceptionInformation[1];
         else
             pc_last_crash_data_addr = 0;
         jmp_buf* buf = pc_active_jmpbuf;
@@ -116,9 +116,9 @@ static LONG WINAPI pc_veh_handler(PEXCEPTION_POINTERS ep) {
 static void pc_signal_handler(int sig, siginfo_t* info, void* ucontext) {
     (void)ucontext;
     if (pc_active_jmpbuf != NULL) {
-        pc_last_crash_addr = (unsigned int)(uintptr_t)info->si_addr;
+        pc_last_crash_addr = (uintptr_t)info->si_addr;
         pc_last_crash_data_addr = (sig == SIGSEGV) ?
-            (unsigned int)(uintptr_t)info->si_addr : 0;
+            (uintptr_t)info->si_addr : 0;
         jmp_buf* buf = pc_active_jmpbuf;
         pc_active_jmpbuf = NULL;
         longjmp(*buf, 1);
@@ -128,7 +128,7 @@ static void pc_signal_handler(int sig, siginfo_t* info, void* ucontext) {
 }
 #endif
 
-unsigned int pc_crash_get_data_addr(void) {
+uintptr_t pc_crash_get_data_addr(void) {
     return pc_last_crash_data_addr;
 }
 
@@ -154,7 +154,7 @@ void pc_crash_set_jmpbuf(jmp_buf* buf) {
     pc_active_jmpbuf = buf;
 }
 
-unsigned int pc_crash_get_addr(void) {
+uintptr_t pc_crash_get_addr(void) {
     return pc_last_crash_addr;
 }
 
@@ -366,14 +366,14 @@ int main(int argc, char* argv[]) {
         HMODULE exe = GetModuleHandle(NULL);
         IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)exe;
         IMAGE_NT_HEADERS* nt = (IMAGE_NT_HEADERS*)((char*)exe + dos->e_lfanew);
-        pc_image_base = (unsigned int)(uintptr_t)exe;
+        pc_image_base = (uintptr_t)exe;
         pc_image_end = pc_image_base + nt->OptionalHeader.SizeOfImage;
     }
 #else
     {
         Dl_info dl;
         if (dladdr((void*)main, &dl) && dl.dli_fbase) {
-            pc_image_base = (unsigned int)(uintptr_t)dl.dli_fbase;
+            pc_image_base = (uintptr_t)dl.dli_fbase;
             pc_image_end = pc_get_image_end(dl.dli_fbase);
         }
     }

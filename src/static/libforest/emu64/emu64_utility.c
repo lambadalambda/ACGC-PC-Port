@@ -6,8 +6,8 @@
 
 #ifdef TARGET_PC
 /* Executable image range from pc_main.c — BSS/data can collide with N64 segments */
-extern "C" unsigned int pc_image_base;
-extern "C" unsigned int pc_image_end;
+extern "C" uintptr_t pc_image_base;
+extern "C" uintptr_t pc_image_end;
 
 #ifdef _WIN32
 /* Page-granularity cache for VirtualQuery results.
@@ -50,7 +50,7 @@ u32 emu64::seg2k0(u32 segadr) {
     }
 
     /* Check if address falls within the executable image (BSS/data/code). */
-    if (segadr >= pc_image_base && segadr < pc_image_end) {
+    if ((uintptr_t)segadr >= pc_image_base && (uintptr_t)segadr < pc_image_end) {
         return segadr;
     }
 

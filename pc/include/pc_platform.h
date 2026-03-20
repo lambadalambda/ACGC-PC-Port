@@ -101,12 +101,12 @@ int  pc_platform_poll_events(void);
 /* --- Crash protection (VEH + setjmp/longjmp) --- */
 void pc_crash_protection_init(void);
 void pc_crash_set_jmpbuf(jmp_buf* buf);  /* NULL to disable */
-unsigned int pc_crash_get_addr(void);
-unsigned int pc_crash_get_data_addr(void);
+uintptr_t pc_crash_get_addr(void);
+uintptr_t pc_crash_get_data_addr(void);
 
 /* EXE image range for seg2k0 pointer disambiguation (vs N64 segment addresses) */
-extern unsigned int pc_image_base;
-extern unsigned int pc_image_end;
+extern uintptr_t pc_image_base;
+extern uintptr_t pc_image_end;
 
 /* --- Model viewer --- */
 extern int g_pc_model_viewer;

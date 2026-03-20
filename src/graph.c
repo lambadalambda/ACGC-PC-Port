@@ -328,8 +328,8 @@ static void graph_main(GRAPH* this, GAME* game) {
             static jmp_buf audio_jmpbuf;
             pc_crash_set_jmpbuf(&audio_jmpbuf);
             if (setjmp(audio_jmpbuf) != 0) {
-                printf("[PC] CRASH in sAdo_GameFrame! addr=0x%08X data=0x%08X\n",
-                       pc_crash_get_addr(), pc_crash_get_data_addr());
+                printf("[PC] CRASH in sAdo_GameFrame! addr=%p data=%p\n",
+                       (void*)pc_crash_get_addr(), (void*)pc_crash_get_data_addr());
             } else {
                 sAdo_GameFrame();
             }
