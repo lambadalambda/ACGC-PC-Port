@@ -783,13 +783,13 @@ bool JKRExpHeap::dump_sort() {
     } else {
         CMemBlock* var1 = nullptr;
         while (true) {
-            CMemBlock* block = (CMemBlock*)0xffffffff;
+            CMemBlock* block = nullptr;
             for (CMemBlock* iterBlock = mHeadUsedList; iterBlock; iterBlock = iterBlock->mNext) {
-                if (var1 < iterBlock && iterBlock < block) {
+                if ((uintptr_t)var1 < (uintptr_t)iterBlock && (block == nullptr || (uintptr_t)iterBlock < (uintptr_t)block)) {
                     block = iterBlock;
                 }
             }
-            if (block == (CMemBlock*)0xffffffff) {
+            if (block == nullptr) {
                 break;
             }
             if (!block->isValid()) {
