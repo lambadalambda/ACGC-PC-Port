@@ -27,6 +27,15 @@ enum {
 };
 
 enum {
+    aGYO_AUDIO_TOKEN_BASE = 0x47590000u,
+    aGYO_AUDIO_TOKEN_INVALID = aGYO_AUDIO_TOKEN_BASE | 0xFFFFu,
+};
+
+#define aGYO_AUDIO_TOKEN(slot)                                                                           \
+    (((slot) >= 0 && (slot) < aGYO_MAX_GYOEI) ? (aGYO_AUDIO_TOKEN_BASE + (u32)(u16)(slot))            \
+                                              : aGYO_AUDIO_TOKEN_INVALID)
+
+enum {
     aGYO_DRAW_TYPE_GYOEI,
     aGYO_DRAW_TYPE_FISH,
 

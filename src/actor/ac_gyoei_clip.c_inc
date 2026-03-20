@@ -80,6 +80,7 @@ static void aGYO_setupActor(aGYO_Init_c* init_data, int idx) {
     Shape_Info_init((ACTOR*)ctrl, 0.0f, &mAc_ActorShadowCircle, 5.0f, 5.0f);
     ctrl->tools_class.actor_class.shape_info.shadow_alpha_change_rate = 0.6f;
     ctrl->tools_class.actor_class.world = ctrl->tools_class.actor_class.home;
+    ctrl->swork1 = idx;
     ctrl->tools_class.actor_class.shape_info.rotation = ctrl->tools_class.actor_class.world.angle;
     Actor_world_to_eye((ACTOR*)ctrl, 0.0f);
     xyz_t_move(&ctrl->tools_class.actor_class.last_world_position, &ctrl->tools_class.actor_class.world.position);
