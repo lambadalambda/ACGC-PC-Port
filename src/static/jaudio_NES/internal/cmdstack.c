@@ -144,7 +144,6 @@ BOOL Add_Portcmd(JPorthead_* port, u32* a2)
 			OSRestoreInterrupts(interrupt);
 			return FALSE;
 		}
-		tail[4] = (u32)(uintptr_t)a2;
 	} else {
 		port->_00 = (uintptr_t)a2;
 	}

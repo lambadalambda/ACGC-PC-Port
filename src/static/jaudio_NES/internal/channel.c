@@ -13,7 +13,7 @@
 #include "pc_runtime_ptr.h"
 #include <dolphin/os.h>
 
-#define JAUDIO_U32_ADDR_PTR(type, value) ((type*)(uintptr_t)(u32)(value))
+#define JAUDIO_U32_ADDR_PTR(type, value) ((type*)(uintptr_t)(value))
 
 static void Nas_smzSetPitch(channel* chan, f32 pitch);
 static void Nas_AddListHead(link* list, link* l);

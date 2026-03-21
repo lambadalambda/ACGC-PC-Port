@@ -10,7 +10,7 @@
 #include "pc_runtime_ptr.h"
 #include "dolphin/os.h"
 
-#define JAUDIO_U32_CALLBACK(type, value) ((type)(uintptr_t)(u32)(value))
+#define JAUDIO_U32_CALLBACK(type, value) ((type)(uintptr_t)(value))
 
 static void __Nas_GroupFadeOut(s32 group, s32 fadeout_timer);
 static void __Nas_GroupFadeIn(s32 group, s32 fadein_timer);

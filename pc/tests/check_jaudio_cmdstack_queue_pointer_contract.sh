@@ -81,3 +81,8 @@ if rg -q 'p = \(\(u32\*\)\(uintptr_t\)p\)\[4\];' "$FILE"; then
     printf '%s\n' 'legacy jaudio cmdstack stay-queue u32 next traversal still present' >&2
     exit 1
 fi
+
+if rg -q 'tail\[4\] = \(u32\)\(uintptr_t\)a2;' "$FILE"; then
+    printf '%s\n' 'legacy jaudio cmdstack tail next pointer truncation still present' >&2
+    exit 1
+fi
