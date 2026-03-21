@@ -9,6 +9,7 @@
 #include "jaudio_NES/track.h"
 #include "jaudio_NES/system.h"
 #include "dolphin/os/OSCache.h"
+#include "dolphin/os.h"
 #include "types.h"
 
 #define DMEM_TEMP 0x380
@@ -576,6 +577,29 @@ extern Acmd* Nas_DriveRsp(s16* aiBuf, s32 aiBufLen, Acmd* cmd, s32 updateIndex) 
         }
     }
 
+#ifdef TARGET_PC
+    {
+        static u32 s_rsp_diag_ctr = 0;
+        static u32 s_rsp_zero_note_logs = 0;
+        extern int g_pc_verbose;
+
+        if (g_pc_verbose != 0) {
+            if ((s_rsp_diag_ctr++ % 120u) == 0u) {
+                OSReport(
+                    "[AUDIO][rsp] upd=%d notes=%d chans=%d reset=%d timer=%d reverbs=%d groups=%d%d%d%d%d\n",
+                    updateIndex, noteCount, AG.num_channels, AG.reset_status, AG.reset_timer, AG.num_synth_reverbs,
+                    AG.groups_p[0]->flags.enabled, AG.groups_p[1]->flags.enabled, AG.groups_p[2]->flags.enabled,
+                    AG.groups_p[3]->flags.enabled, AG.groups_p[4]->flags.enabled);
+            }
+
+            if (noteCount == 0 && s_rsp_zero_note_logs < 12u) {
+                OSReport("[AUDIO][rsp] no enabled notes (upd=%d chans=%d)\n", updateIndex, AG.num_channels);
+                s_rsp_zero_note_logs++;
+            }
+        }
+    }
+#endif
+
     aClearBuffer(cmd++, DMEM_LEFT_CH, DMEM_2CH_SIZE);
 
     i = 0;
@@ -779,6 +803,20 @@ extern Acmd* Nas_SynthMain(s32 chan_id, commonch* common, driverch* driver, s16*
         // deviation from MM here, no synth wave check
         
         sample = common->tuned_sample->wavetable;
+
+#ifdef TARGET_PC
+        {
+            static u32 s_synth_probe_ctr = 0;
+            extern int g_pc_verbose;
+
+            if (g_pc_verbose != 0 && (s_synth_probe_ctr++ % 256u) == 0u) {
+                OSReport("[AUDIO][synth] ch=%d upd=%d codec=%d medium=%d size=%u bit31=%d sample=%p loop=%p book=%p\n",
+                         chan_id, update_idx, sample->codec, sample->medium, sample->size, sample->bit31,
+                         sample->sample, sample->loop, sample->book);
+            }
+        }
+#endif
+
         loopInfo = sample->loop;
 
         if (chan->playback_ch.status != 0) {
@@ -985,16 +1023,60 @@ codec_continue_and_skip:
                         return cmd;
                     } else if (sample->medium == MEDIUM_DISK) {
                         // This medium is unsupported so terminate processing this chan
+#ifdef TARGET_PC
+                        {
+                            static u32 s_disk_medium_logs = 0;
+
+                            if (s_disk_medium_logs < 16u) {
+                                OSReport("[AUDIO][synth] drop MEDIUM_DISK ch=%d upd=%d codec=%d sample=%p\n", chan_id,
+                                         update_idx, sample->codec, sample->sample);
+                                s_disk_medium_logs++;
+                            }
+                        }
+#endif
                         return cmd;
                     } else {
                         // This medium is not in ram, so dma the requested sample into ram
-                        samplesToLoadAddr = (u8*)Nas_WaveDmaCallBack(PC_RUNTIME_U32_PTR(tmpSamplesToLoadAddr),
-                        sampleDataChunkSize, flags,
-                            &driver->sample_dma_idx, sample->medium);
+                        u32 sampleDmaSrc = PC_RUNTIME_U32_PTR(tmpSamplesToLoadAddr);
+
+#ifdef TARGET_PC
+                        if ((sample->medium == MEDIUM_CART || sample->medium == MEDIUM_DISK_DRIVE) &&
+                            (sampleDataChunkSize <= 0 || sampleDataChunkSize > 0x01000000 || sampleDmaSrc > 0x00FFFFFF)) {
+                            static u32 s_dma_oob_guard_logs = 0;
+                            extern int g_pc_verbose;
+
+                            if (g_pc_verbose != 0 && s_dma_oob_guard_logs < 24u) {
+                                OSReport(
+                                    "[AUDIO][synth] guard drop ch=%d upd=%d med=%d src=%08x chunk=%d frame=%d ofs=%d pos=%d ign=%d skp=%d fsz=%d nfd=%d loop=(%d,%d,%d)\n",
+                                    chan_id, update_idx, sample->medium, sampleDmaSrc, sampleDataChunkSize,
+                                    frameIndex, sampleAddrOffset, driver->sample_pos_integer_part,
+                                    numFirstFrameSamplesToIgnore, skipInitialSamples, frameSize, numFramesToDecode,
+                                    loopInfo->loop_start, loopInfo->loop_end, loopInfo->sample_end);
+                                s_dma_oob_guard_logs++;
+                            }
+                            return cmd;
+                        }
+#endif
+
+                        samplesToLoadAddr =
+                            (u8*)Nas_WaveDmaCallBack(sampleDmaSrc, sampleDataChunkSize, flags, &driver->sample_dma_idx,
+                                                     sample->medium);
                     }
 
                     if (samplesToLoadAddr == NULL) {
                         // The ram address was unsuccessfully allocated
+#ifdef TARGET_PC
+                        {
+                            static u32 s_dma_null_logs = 0;
+
+                            if (s_dma_null_logs < 16u) {
+                                OSReport("[AUDIO][synth] dma null ch=%d upd=%d medium=%d chunk=%d flags=%d src=%p\n",
+                                         chan_id, update_idx, sample->medium, sampleDataChunkSize, flags,
+                                         tmpSamplesToLoadAddr);
+                                s_dma_null_logs++;
+                            }
+                        }
+#endif
                         return cmd;
                     }
 

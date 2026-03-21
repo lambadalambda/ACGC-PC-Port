@@ -6,10 +6,11 @@
 
 #include "dolphin/os/OSMessage.h"
 #include "dolphin/ar.h"
+#include "dolphin/os.h"
 #include "dolphin/os/OSCache.h"
 
 #if defined(TARGET_PC)
-#define JAUDIO_ARQ_PTR(ptr) PC_RUNTIME_U32_PTR(ptr)
+#define JAUDIO_ARQ_PTR(ptr) pc_aram_host_addr_encode(ptr)
 #else
 #define JAUDIO_ARQ_PTR(ptr) ((u32)(ptr))
 #endif
@@ -27,11 +28,13 @@ static u32 global_id = 0;
 static void ARAMFinish(u32 msg)
 {
 	// STACK_PAD_VAR(1);
-	u32* REF_param_1;
+	ARQRequest* request = (ARQRequest*)pc_aram_host_addr_decode(msg);
 
-	REF_param_1         = &msg;
-	ARQRequest* request = (ARQRequest*)msg;
-	OSSendMessage((OSMessageQueue*)request->owner, (OSMessage)1, OS_MESSAGE_BLOCK);
+	if (request == NULL) {
+		return;
+	}
+
+	OSSendMessage((OSMessageQueue*)pc_aram_host_addr_decode(request->owner), (OSMessage)1, OS_MESSAGE_BLOCK);
 }
 
 /*
@@ -49,6 +52,21 @@ static void ARAM_TO_ARAM_DMA(u32 src, u32 dst, u32 totalSize)
 	OSInitMessageQueue(&msgQueue, &msg, 1);
 	while (totalSize != 0) {
 		burstSize = totalSize >= DMABUFFER_SIZE ? DMABUFFER_SIZE : totalSize;
+
+#ifdef TARGET_PC
+		{
+			static u32 s_heap_arq_log_count = 0;
+			extern int g_pc_verbose;
+			u32 owner_key = JAUDIO_ARQ_PTR(&msgQueue);
+			u32 dma_buf_key = JAUDIO_ARQ_PTR(dmabuffer);
+
+			if (g_pc_verbose != 0 && s_heap_arq_log_count < 8u) {
+				OSReport("[AUDIO][heap] ARAM2ARAM owner=%08x src=%08x dma=%08x burst=%08x\n", owner_key, src,
+				         dma_buf_key, burstSize);
+				s_heap_arq_log_count++;
+			}
+		}
+#endif
 
 		ARQPostRequest(&request, JAUDIO_ARQ_PTR(&msgQueue), ARQ_TYPE_ARAM_TO_MRAM, ARQ_PRIORITY_LOW, src, JAUDIO_ARQ_PTR(dmabuffer), burstSize, &ARAMFinish);
 		OSReceiveMessage(&msgQueue, NULL, OS_MESSAGE_BLOCK);

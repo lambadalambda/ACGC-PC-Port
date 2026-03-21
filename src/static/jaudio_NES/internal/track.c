@@ -1812,6 +1812,18 @@ static void Nas_GroupSeq(group* grp) {
 
     if (grp->flags.enabled) {
         if (Nas_CheckIDseq(grp->seq_id) == FALSE || Nas_CheckIDbank(grp->bank_id) == FALSE) {
+#ifdef TARGET_PC
+            {
+                static u32 s_group_checkfail_logs = 0;
+                extern int g_pc_verbose;
+
+                if (g_pc_verbose != 0 && s_group_checkfail_logs < 24u) {
+                    OSReport("[AUDIO][grp] release checkfail grp=%d seq=%d bank=%d\n", grp->group_idx, grp->seq_id,
+                             grp->bank_id);
+                    s_group_checkfail_logs++;
+                }
+            }
+#endif
             Nas_CheckIDseq(grp->seq_id);
             Nas_CheckIDseq(grp->bank_id);
             Nas_ReleaseGroup(grp);
@@ -1857,6 +1869,18 @@ static void Nas_GroupSeq(group* grp) {
                         if (delay != 0) {
                             /* Group is on delay or script has exited */
                             if (delay == COMMON_SCRIPT_END) {
+#ifdef TARGET_PC
+                                {
+                                    static u32 s_group_end_logs = 0;
+                                    extern int g_pc_verbose;
+
+                                    if (g_pc_verbose != 0 && s_group_end_logs < 24u) {
+                                        OSReport("[AUDIO][grp] script end grp=%d seq=%d bank=%d\n", grp->group_idx,
+                                                 grp->seq_id, grp->bank_id);
+                                        s_group_end_logs++;
+                                    }
+                                }
+#endif
                                 Nas_ReleaseGroup(grp);
                             } else {
                                 grp->delay = delay;

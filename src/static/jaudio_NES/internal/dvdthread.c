@@ -10,7 +10,7 @@
 #include "pc_runtime_ptr.h"
 
 #if defined(TARGET_PC)
-#define JAUDIO_ARQ_PTR(ptr) PC_RUNTIME_U32_PTR(ptr)
+#define JAUDIO_ARQ_PTR(ptr) pc_aram_host_addr_encode(ptr)
 #else
 #define JAUDIO_ARQ_PTR(ptr) ((u32)(ptr))
 #endif
@@ -158,13 +158,31 @@ extern s32 DVDT_LoadtoARAM_Main(void* arg) {
     DVDCall* call = (DVDCall*)arg;
     static DVDFileInfo finfo;
 
+    {
+        static u32 s_dvdt_load_log_count = 0;
+        if (s_dvdt_load_log_count < 8u) {
+            printf("[AUDIO][dvdt] load begin file=%s dst=0x%08x src=0x%08x len=0x%08x\n", call->fileName, call->dst,
+                   call->src, call->length);
+            s_dvdt_load_log_count++;
+        }
+    }
+
     if (!Jac_DVDOpen(call->fileName, &finfo)) {
+        printf("[AUDIO][dvdt] open failed file=%s\n", call->fileName);
         __DoError(call, 0);
         return -1;
     }
 
     u32 len = finfo.length;
+    {
+        static u32 s_dvdt_open_log_count = 0;
+        if (s_dvdt_open_log_count < 8u) {
+            printf("[AUDIO][dvdt] open ok file=%s file_len=0x%08x\n", call->fileName, len);
+            s_dvdt_open_log_count++;
+        }
+    }
     if (len == 0) {
+        printf("[AUDIO][dvdt] zero-length file=%s\n", call->fileName);
         __DoError(call, 1);
         return -1;
     }

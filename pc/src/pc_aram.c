@@ -5,6 +5,19 @@
 static u8* aram_base = NULL;
 static u32 aram_alloc_ptr = 0;
 
+typedef void (*PCARQCallback)(u32 ptr_to_request);
+
+typedef struct {
+    void* next;
+    u32 owner;
+    u32 type;
+    u32 priority;
+    u32 source;
+    u32 dest;
+    u32 length;
+    PCARQCallback callback;
+} PCARQRequest;
+
 #if defined(PC_EXPERIMENTAL_64BIT)
 #define PC_ARAM_PTR_MAP_CAPACITY 65536u
 #define PC_ARAM_PTR_KEY_TAG 0xD0000000u
@@ -158,6 +171,7 @@ void ARFree(u32* addr) {
 /* type 0 = MRAM→ARAM, type 1 = ARAM→MRAM. params are always (type, mram, aram). */
 void ARStartDMA(u32 type, u32 mram_addr, u32 aram_addr, u32 length) {
     void* mram_ptr;
+    const u32 orig_aram_addr = aram_addr;
 
     if (!aram_base) return;
     mram_ptr = pc_aram_host_addr_decode(mram_addr);
@@ -173,12 +187,41 @@ void ARStartDMA(u32 type, u32 mram_addr, u32 aram_addr, u32 length) {
     }
 
     if (length > PC_ARAM_SIZE || aram_addr > PC_ARAM_SIZE - length) {
+        fprintf(stderr,
+                "[PC/ARAM] OOB DMA type=%u mram=0x%08x aram=0x%08x len=0x%08x size=0x%08x\n",
+                type, mram_addr, aram_addr, length, PC_ARAM_SIZE);
         /* OOB read: zero-fill dest so caller doesn't get garbage (cap 1MB) */
         if (type == 1 && mram_ptr != NULL && length > 0 && length <= 0x100000) {
             memset(mram_ptr, 0, length);
         }
         return;
     }
+
+#if defined(TARGET_PC)
+    {
+        static u32 s_aram_dma_log_count = 0;
+
+        if (s_aram_dma_log_count < 40u && length >= 8u) {
+            const u8* probe_src;
+            const u8* probe_aram;
+
+            if (type == 0) {
+                probe_src = (const u8*)mram_ptr;
+                fprintf(stderr,
+                        "[PC/ARAM][dma] MRAM->ARAM mram=0x%08x aram=0x%08x(norm=0x%08x) len=0x%08x src=%02x %02x %02x %02x %02x %02x %02x %02x\n",
+                        mram_addr, orig_aram_addr, aram_addr, length, probe_src[0], probe_src[1], probe_src[2],
+                        probe_src[3], probe_src[4], probe_src[5], probe_src[6], probe_src[7]);
+            } else {
+                probe_aram = aram_base + aram_addr;
+                fprintf(stderr,
+                        "[PC/ARAM][dma] ARAM->MRAM mram=0x%08x aram=0x%08x(norm=0x%08x) len=0x%08x aram=%02x %02x %02x %02x %02x %02x %02x %02x\n",
+                        mram_addr, orig_aram_addr, aram_addr, length, probe_aram[0], probe_aram[1], probe_aram[2],
+                        probe_aram[3], probe_aram[4], probe_aram[5], probe_aram[6], probe_aram[7]);
+            }
+            s_aram_dma_log_count++;
+        }
+    }
+#endif
 
     if (type == 0) {
         memcpy(aram_base + aram_addr, mram_ptr, length);
@@ -195,6 +238,26 @@ BOOL ARCheckInit(void) { return aram_base != NULL; }
 void ARQInit(void) {}
 void ARQPostRequest(void* req, u32 owner, u32 type, u32 prio,
                     u32 source, u32 dest, u32 length, void* callback) {
+    PCARQRequest* request = (PCARQRequest*)req;
+
+    if (request != NULL) {
+        request->next = NULL;
+        request->owner = owner;
+        request->type = type;
+        request->priority = prio;
+        request->source = source;
+        request->dest = dest;
+        request->length = length;
+        request->callback = (PCARQCallback)callback;
+    }
+
+    if ((length > PC_ARAM_SIZE) ||
+        (type == 1 && source > PC_ARAM_SIZE - (length <= PC_ARAM_SIZE ? length : 0))) {
+        fprintf(stderr,
+                "[PC/ARAM][arq] suspicious req=%p owner=%08x type=%u prio=%u src=%08x dst=%08x len=%08x cb=%p\n",
+                req, owner, type, prio, source, dest, length, callback);
+    }
+
     if (type == 0) {
         ARStartDMA(type, source, dest, length); /* source=mram, dest=aram */
     } else {

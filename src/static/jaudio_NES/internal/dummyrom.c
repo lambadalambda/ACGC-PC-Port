@@ -39,7 +39,11 @@ extern u32 SetPreCopy_NeosRom(u8* load_addr, u32 load_size, BOOL cut_flag) {
 }
 
 extern void mesg_finishcall(u32 mq) {
-    Z_osSendMesg((OSMesgQueue*)mq, NULL, OS_MESSAGE_NOBLOCK);
+    OSMesgQueue* queue = (OSMesgQueue*)pc_aram_host_addr_decode(mq);
+
+    if (queue != NULL) {
+        Z_osSendMesg(queue, NULL, OS_MESSAGE_NOBLOCK);
+    }
 }
 
 extern BOOL ARAMStartDMAmesg(u32 dir, u32 dramAddr, u32 aramAddr, u32 size, s32 unused, OSMesgQueue* mq) {

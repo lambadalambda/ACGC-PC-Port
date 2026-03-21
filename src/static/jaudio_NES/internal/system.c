@@ -1143,6 +1143,8 @@ static s32 __Nas_StartSeq(s32 group_idx, s32 seq_id, s32 param) {
         if (s_bgm_start_ok_trace_count < 16) {
             OSReport("[BGM] __Nas_StartSeq ok group=%d seq=%d seq_p=%p bank=%d\n", group_idx, seq_id, seq_p,
                      group->bank_id);
+            OSReport("[BGM] seq head %02x %02x %02x %02x %02x %02x %02x %02x\n", seq_p[0], seq_p[1], seq_p[2],
+                     seq_p[3], seq_p[4], seq_p[5], seq_p[6], seq_p[7]);
             s_bgm_start_ok_trace_count++;
         }
     }
@@ -1261,6 +1263,19 @@ static u8* __Load_Bank(s32 table_type, s32 id, s32* did_alloc) {
         medium = header->entries[id].medium;
         cache_type = header->entries[id].cacheType;
         rom_addr = (u8*)header->entries[link_id].addr;
+
+#ifdef TARGET_PC
+        {
+            static u32 s_load_bank_trace_count = 0;
+
+            if (s_load_bank_trace_count < 24) {
+                OSReport("[AUDIO][load] table=%d id=%d link=%d medium=%d cache=%d size=%u rom=%p hdr_data=%p hdr_med=%d\n",
+                         table_type, id, link_id, medium, cache_type, size, rom_addr, header->pData, header->medium);
+                s_load_bank_trace_count++;
+            }
+        }
+#endif
+
         switch (cache_type) {
             case CACHE_LOAD_PERMANENT:
                 ram_addr = (u8*)EmemAlloc(table_type, link_id, size);
@@ -1680,7 +1695,11 @@ void Nas_FastCopy(u8* SrcAddr, u8* DestAdd, size_t Length, s32 medium) {
 }
 
 extern void Nas_FastDiskCopy(u8* SrcAddr, u8* DestAdd, size_t Length, s32 medium) {
+#ifdef TARGET_PC
+    Nas_FastCopy(SrcAddr, DestAdd, Length, medium);
+#else
     // empty
+#endif
 }
 
 static s32 Nas_StartDma(OSIoMesg* ioMsg, s32 priority, s32 direction, u32 device_addr, void* dram_addr, u32 size,
@@ -1707,6 +1726,15 @@ static s32 Nas_StartDma(OSIoMesg* ioMsg, s32 priority, s32 direction, u32 device
     /* device_addr is an ARAM offset (relative to audiorom start).
      * GetNeosRomTop() gives the base ARAM address for audiorom data. */
     u32 aram_offset = device_addr + GetNeosRomTop();
+
+#ifdef TARGET_PC
+    extern int g_pc_verbose;
+    if (g_pc_verbose != 0 && (aram_offset >= 0x01000000u || size >= 0x01000000u)) {
+        OSReport("[AUDIO][dma] suspicious type=%s medium=%d dev=0x%08x aram=0x%08x dram=%p size=0x%08x\n", dma_type,
+                 medium, device_addr, aram_offset, dram_addr, size);
+    }
+#endif
+
     ARStartDMA(1 /* ARAM→MRAM */, pc_aram_host_addr_encode(dram_addr), aram_offset, size);
 
     /* Send completion message so callers that do Z_osRecvMesg(BLOCK) unblock */
@@ -2611,6 +2639,25 @@ s32 Nas_BankOfsToAddr(s32 bank_id, u8* ctrl_p, WaveMedia* wave_media, s32 async)
 
         wavetable = AG.used_samples[i];
         wave_ram_p = NULL;
+
+#ifdef TARGET_PC
+        if (wavetable->medium == MEDIUM_CART || wavetable->medium == MEDIUM_DISK_DRIVE) {
+            u32 sample_addr = PC_RUNTIME_U32_PTR(wavetable->sample);
+            u32 wave_size = (u32)wavetable->size;
+
+            if (wave_size == 0 || wave_size > 0x01000000u || sample_addr > 0x01000000u - wave_size) {
+                static u32 s_bad_wave_logs = 0;
+                extern int g_pc_verbose;
+
+                if (g_pc_verbose != 0 && s_bad_wave_logs < 24u) {
+                    OSReport("[AUDIO][wave] skip bad preload bank=%d idx=%d med=%d sample=%08x size=%08x loop=%p book=%p\n",
+                             bank_id, i, wavetable->medium, sample_addr, wave_size, wavetable->loop, wavetable->book);
+                    s_bad_wave_logs++;
+                }
+                continue;
+            }
+        }
+#endif
 
         switch (async) {
             case FALSE: {
