@@ -7,17 +7,17 @@ REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 FILE_MAIN="$REPO_ROOT/src/actor/ac_train0.c"
 FILE_MOVE="$REPO_ROOT/src/actor/ac_train0_move.c_inc"
 
-if ! rg -q 'engineer_p = Actor_info_fgName_search\(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC\);' "$FILE_MAIN"; then
+if ! rg -q 'engineer_p\s*=\s*Actor_info_fgName_search\(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC\)\s*;' "$FILE_MAIN"; then
     printf '%s\n' 'missing train0 dt engineer actor lookup contract' >&2
     exit 1
 fi
 
-if ! rg -q 'ac_p = Actor_info_fgName_search\(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC\);' "$FILE_MOVE"; then
+if ! rg -q 'ac_p\s*=\s*Actor_info_fgName_search\(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC\)\s*;' "$FILE_MOVE"; then
     printf '%s\n' 'missing train0 move engineer actor lookup contract' >&2
     exit 1
 fi
 
-if ! rg -q 'engineer_p = Actor_info_fgName_search\(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC\);' "$FILE_MOVE"; then
+if ! rg -q 'engineer_p\s*=\s*Actor_info_fgName_search\(&play->actor_info, SP_NPC_ENGINEER, ACTOR_PART_NPC\)\s*;' "$FILE_MOVE"; then
     printf '%s\n' 'missing train0 delcheck engineer actor lookup contract' >&2
     exit 1
 fi
@@ -37,17 +37,17 @@ if ! rg -q 'spawned_now = TRUE;' "$FILE_MOVE"; then
     exit 1
 fi
 
-if ! rg -q 'if \(train0->arg3 && engineer_p != NULL\)' "$FILE_MAIN"; then
+if ! rg -q 'if\s*\(\s*train0->arg3\s*&&\s*engineer_p\s*!=\s*NULL\s*\)' "$FILE_MAIN"; then
     printf '%s\n' 'missing train0 dt ownership-gated engineer delete contract' >&2
     exit 1
 fi
 
-if ! rg -q 'if \(train0->arg3 && ac_p != NULL && !spawned_now\)' "$FILE_MOVE"; then
+if ! rg -q 'if\s*\(\s*train0->arg3\s*&&\s*ac_p\s*!=\s*NULL\s*&&\s*!spawned_now\s*\)' "$FILE_MOVE"; then
     printf '%s\n' 'missing train0 ownership-gated engineer position contract' >&2
     exit 1
 fi
 
-if ! rg -q 'if \(train0->arg3 && engineer_p != NULL\)' "$FILE_MOVE"; then
+if ! rg -q 'if\s*\(\s*train0->arg3\s*&&\s*engineer_p\s*!=\s*NULL\s*\)' "$FILE_MOVE"; then
     printf '%s\n' 'missing train0 delcheck ownership-gated engineer delete contract' >&2
     exit 1
 fi
