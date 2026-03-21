@@ -106,6 +106,21 @@ static int pad_good_frame_count = -1;
 
 extern void make_dl_nintendo_logo(Gfx** gpp, u32 alpha);
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_logo_nin_gfx(void);
+
+static void initial_menu_patch_logo_gfx_once(void) {
+  static int s_patched = 0;
+
+  if (s_patched != 0) {
+    return;
+  }
+
+  pc_patch_logo_nin_gfx();
+  s_patched = 1;
+}
+#endif
+
 static void step0_make_dl(Gfx** gpp) {
   Gfx* g = *gpp;
 
@@ -142,6 +157,10 @@ static void step0_make_dl(Gfx** gpp) {
 
 extern void make_dl_nintendo_logo(Gfx** gpp, u32 alpha) {
   Gfx* g = *gpp;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+  initial_menu_patch_logo_gfx_once();
+#endif
 
   gSPSegment(g++, G_MWO_SEGMENT_8, logo_initial_dl); /* segment 8 = logo_initial_dl */
   gSPSegment(g++, G_MWO_SEGMENT_9, gam_win1_moji_setup); /* segment 9 = gam_win1_moji_setup */

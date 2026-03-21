@@ -124,6 +124,30 @@ cKF_Joint_R_c cKF_je_r_logo_us_sing_tbl[] = { { NULL, 4, cKF_JOINT_FLAG_DISP_OPA
 
 cKF_Skeleton_R_c cKF_bs_r_logo_us_sing = { ARRAY_COUNT(cKF_je_r_logo_us_sing_tbl), 5, cKF_je_r_logo_us_sing_tbl };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_logo_us_sing_gfx(void) {
+    logo_us_zss_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zss_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_s_tex_txt);
+    logo_us_zss_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_sing_v[16]);
+
+    logo_us_znn_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_znn_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_n_tex_txt);
+    logo_us_znn_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_sing_v[8]);
+
+    logo_us_zii_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zii_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_i_tex_txt);
+    logo_us_zii_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_sing_v[12]);
+
+    logo_us_zgB_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zgB_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_g_2_tex_txt);
+    logo_us_zgB_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_sing_v[4]);
+
+    logo_us_zgA_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zgA_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_g_1_tex_txt);
+    logo_us_zgA_model[3].words.w1 = pc_gbi_ptr_encode(logo_us_sing_v);
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_logo_us_sing_c(void) {

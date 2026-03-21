@@ -1089,6 +1089,15 @@ static s32 __Nas_StartSeq(s32 group_idx, s32 seq_id, s32 param) {
     Nas_ReleaseGroup(group);
     bank_id = 0xFF;
     idx = AG.map_header[seq_id];
+#ifdef TARGET_PC
+    {
+        static u32 s_bgm_start_trace_count = 0;
+        if (s_bgm_start_trace_count < 16) {
+            OSReport("[BGM] __Nas_StartSeq group=%d seq=%d map=%d param=%d\n", group_idx, seq_id, idx, param);
+            s_bgm_start_trace_count++;
+        }
+    }
+#endif
     for (i = Nas_MapHeaderReadByte(idx++); i > 0; i--) {
         bank_id = Nas_MapHeaderReadByte(idx++);
         __Load_Ctrl(bank_id);
@@ -1096,6 +1105,17 @@ static s32 __Nas_StartSeq(s32 group_idx, s32 seq_id, s32 param) {
 
     seq_p = __Load_Seq(seq_id);
     if (seq_p == NULL) {
+#ifdef TARGET_PC
+        {
+            static u32 s_bgm_start_fail_trace_count = 0;
+            if (s_bgm_start_fail_trace_count < 16) {
+                s32 link_id = __Link_BankNum(SEQUENCE_TABLE, seq_id);
+                OSReport("[BGM] __Nas_StartSeq seq load failed seq=%d link=%d status=%d\n", seq_id, link_id,
+                         AG.sequence_load_status[link_id]);
+                s_bgm_start_fail_trace_count++;
+            }
+        }
+#endif
         return 0;
     }
 
@@ -1116,6 +1136,17 @@ static s32 __Nas_StartSeq(s32 group_idx, s32 seq_id, s32 param) {
     group->flags.enabled = TRUE;
     group->flags.finished = FALSE;
     group->group_idx = group_idx;
+
+#ifdef TARGET_PC
+    {
+        static u32 s_bgm_start_ok_trace_count = 0;
+        if (s_bgm_start_ok_trace_count < 16) {
+            OSReport("[BGM] __Nas_StartSeq ok group=%d seq=%d seq_p=%p bank=%d\n", group_idx, seq_id, seq_p,
+                     group->bank_id);
+            s_bgm_start_ok_trace_count++;
+        }
+    }
+#endif
 
     return 0;
 }

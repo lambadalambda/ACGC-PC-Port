@@ -164,7 +164,7 @@ extern "C" {
                                                                         \
         _a->words.w0 = _SHIFTL(A_CMD_FIRFILTER, 24, 8) | _SHIFTL(f, 16, 8) |   \
                     _SHIFTL(bufSize, 0, 16);                         \
-        _a->words.w1 = (unsigned int)(addr);                            \
+        _a->words.w1 = A_CMD_PTR_WORD(addr);                            \
 }
 
 #define aFirLoadTable(pkt, size, addr) aFirFilter(pkt, 2, size, addr)
@@ -177,7 +177,7 @@ extern "C" {
                 _SHIFTL(count, 8, 8) | _SHIFTL(swapLR, 4, 1) |          \
                 _SHIFTL(x0, 3, 1) | _SHIFTL(x1, 2, 1) |                 \
                 _SHIFTL(x2, 1, 1) | _SHIFTL(x3, 0, 1));                 \
-        _a->words.w1 = (unsigned int)(m);                               \
+        _a->words.w1 = A_CMD_PTR_WORD(m);                               \
 }
 
 #define aAddMixer(pkt, count, dmemi, dmemo, a4)                         \

@@ -64,6 +64,8 @@ check_contains "src/static/jaudio_NES/game/rhythm.c" 'Nap_SetPtr\(NA_MAKE_COMMAN
 check_contains "src/static/jaudio_NES/game/rhythm.c" 'Nap_SetPtr\(NA_MAKE_COMMAND\(228, 0, 0, 1\), \(uintptr_t\)Na_RhythmGrpProcess\);' 'rhythm group callback registration uses pointer command API'
 check_contains "src/static/jaudio_NES/game/melody.c" 'Nap_SetPtr\(NA_MAKE_COMMAND\(0x10, 0x00, subTrack, 0x00\), \(uintptr_t\)pData\);' 'melody sequence state pointer registration uses pointer command API'
 check_contains "src/static/jaudio_NES/game/melody.c" 'Nap_SetPtr\(NA_MAKE_COMMAND\(0x10, 0x02, sub_track, 0x00\), \(uintptr_t\)melody\);' 'furniture melody state pointer registration uses pointer command API'
+check_contains "include/jaudio_NES/audiocommon.h" '_a->words\.w1 = A_CMD_PTR_WORD\(addr\);' 'fir filter command encodes pointer payload'
+check_contains "include/jaudio_NES/audiocommon.h" '_a->words\.w1 = A_CMD_PTR_WORD\(m\);' 'env mixer command encodes pointer payload'
 
 check_absent "src/static/jaudio_NES/internal/system.c" '#define OFS2RAM\(base, ofs\) \(\(u32\)\(ofs\) \+ \(u32\)base\)' 'legacy OFS2RAM base cast'
 check_absent "src/static/jaudio_NES/internal/system.c" 'u32 ctrl_base = PC_RUNTIME_U32_PTR\(ctrl_p\);' 'legacy bank ctrl base narrowing'
@@ -88,3 +90,5 @@ check_absent "src/static/jaudio_NES/game/rhythm.c" 'Nap_SetS32\(NA_MAKE_COMMAND\
 check_absent "src/static/jaudio_NES/game/rhythm.c" 'Nap_SetS32\(NA_MAKE_COMMAND\(228, 0, 0, 1\), \(s32\)Na_RhythmGrpProcess\);' 'legacy rhythm group callback cast to s32'
 check_absent "src/static/jaudio_NES/game/melody.c" 'Nap_SetS32\(NA_MAKE_COMMAND\(0x10, 0x00, subTrack, 0x00\), \(u64\)pData\);' 'legacy melody sequence state pointer narrowing path'
 check_absent "src/static/jaudio_NES/game/melody.c" 'Nap_SetS32\(NA_MAKE_COMMAND\(0x10, 0x02, sub_track, 0x00\), \(u64\)melody\);' 'legacy furniture melody state pointer narrowing path'
+check_absent "include/jaudio_NES/audiocommon.h" '_a->words\.w1 = \(unsigned int\)\(addr\);' 'legacy fir filter pointer narrowing'
+check_absent "include/jaudio_NES/audiocommon.h" '_a->words\.w1 = \(unsigned int\)\(m\);' 'legacy env mixer pointer narrowing'

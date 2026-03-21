@@ -30,3 +30,10 @@ Gfx logo_us_tm_model[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 0, 2, 3, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_logo_us_tm_gfx(void) {
+    logo_us_tm_model[2].words.w1 = pc_gbi_ptr_encode(logo_us_tm_tex_4i4_txt);
+    logo_us_tm_model[4].words.w1 = pc_gbi_ptr_encode(logo_us_tm_v);
+}
+#endif

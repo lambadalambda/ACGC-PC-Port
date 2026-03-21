@@ -182,6 +182,42 @@ cKF_Joint_R_c cKF_je_r_logo_us_animal_tbl[] = { { NULL, 6, cKF_JOINT_FLAG_DISP_O
 
 cKF_Skeleton_R_c cKF_bs_r_logo_us_animal = { ARRAY_COUNT(cKF_je_r_logo_us_animal_tbl), 8, cKF_je_r_logo_us_animal_tbl };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_logo_us_animal_gfx(void) {
+    logo_us_z_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_z_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_l_tex_txt);
+    logo_us_z_model[3].words.w1 = pc_gbi_ptr_encode(logo_us_animal_v);
+
+    logo_us_za_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_za_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_a_tex_txt);
+    logo_us_za_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[4]);
+
+    logo_us_zmB_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zmB_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_m_2_tex_txt);
+    logo_us_zmB_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[12]);
+
+    logo_us_zmA_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zmA_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_m_1_tex_txt);
+    logo_us_zmA_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[8]);
+
+    logo_us_zi_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zi_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_i_tex_txt);
+    logo_us_zi_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[16]);
+
+    logo_us_zn_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zn_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_n_tex_txt);
+    logo_us_zn_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[20]);
+
+    logo_us_zaaB_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zaaB_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_a_2_tex_txt);
+    logo_us_zaaB_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[24]);
+
+    logo_us_zaaA_model[0].words.w1 = pc_gbi_ptr_encode(logo_us_pal);
+    logo_us_zaaA_model[1].words.w1 = pc_gbi_ptr_encode(logo_us_a_1_tex_txt);
+    logo_us_zaaA_model[3].words.w1 = pc_gbi_ptr_encode(&logo_us_animal_v[28]);
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_logo_us_animal_c(void) {

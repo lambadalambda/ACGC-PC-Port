@@ -3856,15 +3856,15 @@ extern "C" void pc_gx_tlut_set_native_le(unsigned int idx);
 extern "C" u16 s_tlut_first_word[16];
 
 #if defined(PC_EXPERIMENTAL_64BIT)
-static void pc_tlut_trace(const char* tag, u32 raw_addr, const void* host_addr, u32 tlut_name, u32 count) {
+static void pc_tlut_trace(const char* tag, const Gfx* cmd, u32 raw_addr, const void* host_addr, u32 tlut_name, u32 count) {
     static u32 trace_count = 0;
 
     if (g_pc_verbose == 0 || trace_count >= 32) {
         return;
     }
 
-    OSReport("[PC][tlut] %s raw=%08x host=%p name=%u count=%u arena=%p\n", tag, raw_addr, host_addr, tlut_name,
-             count, pc_os_get_arena_base());
+    OSReport("[PC][tlut] %s cmd=%p raw=%08x host=%p name=%u count=%u arena=%p\n", tag, cmd, raw_addr, host_addr,
+             tlut_name, count, pc_os_get_arena_base());
     trace_count++;
 }
 
@@ -3924,7 +3924,7 @@ void emu64::dl_G_LOADTLUT() {
             }
 #endif
 #if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-            pc_tlut_trace("type2-resolve", loadtlut_dol->tlut_addr, tlut_addr, tlut_name, count);
+            pc_tlut_trace("type2-resolve", this->gfx_p, loadtlut_dol->tlut_addr, tlut_addr, tlut_name, count);
 #endif
 
             if (tlut_addr == this->tlut_addresses[tlut_name]) {
@@ -3939,7 +3939,8 @@ void emu64::dl_G_LOADTLUT() {
                     u16 first;
 #if defined(PC_EXPERIMENTAL_64BIT)
                     if (!pc_tlut_probe_first_word(tlut_addr, &first)) {
-                        pc_tlut_trace("type2-same-skip", loadtlut_dol->tlut_addr, tlut_addr, tlut_name, count);
+                        pc_tlut_trace("type2-same-skip", this->gfx_p, loadtlut_dol->tlut_addr, tlut_addr, tlut_name,
+                                      count);
                         this->tlut_addresses[tlut_name] = nullptr;
                     } else
 #endif
@@ -3979,7 +3980,8 @@ void emu64::dl_G_LOADTLUT() {
                         if (pc_tlut_probe_first_word(aligned_addr, &first_word)) {
                             s_tlut_first_word[tlut_name] = first_word;
                         } else {
-                            pc_tlut_trace("type2-load-skip", loadtlut_dol->tlut_addr, aligned_addr, tlut_name, count);
+                            pc_tlut_trace("type2-load-skip", this->gfx_p, loadtlut_dol->tlut_addr, aligned_addr,
+                                          tlut_name, count);
                             this->tlut_addresses[tlut_name] = nullptr;
                         }
                     }
@@ -4005,7 +4007,8 @@ void emu64::dl_G_LOADTLUT() {
             uintptr_t addr = this->seg2k0(this->now_setimg.setimg2.imgaddr);
             u32 tlut_name = (settile_p->tmem / 16) & 0xF;
 #if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
-            pc_tlut_trace("type1-resolve", this->now_setimg.setimg2.imgaddr, (void*)addr, tlut_name, count);
+            pc_tlut_trace("type1-resolve", this->gfx_p, this->now_setimg.setimg2.imgaddr, (void*)addr, tlut_name,
+                          count);
 #endif
 
             if (addr == (uintptr_t)this->tlut_addresses[tlut_name]) {
@@ -4019,8 +4022,8 @@ void emu64::dl_G_LOADTLUT() {
                     u16 first;
 #if defined(PC_EXPERIMENTAL_64BIT)
                     if (!pc_tlut_probe_first_word((void*)addr, &first)) {
-                        pc_tlut_trace("type1-same-skip", this->now_setimg.setimg2.imgaddr, (void*)addr, tlut_name,
-                                      count);
+                        pc_tlut_trace("type1-same-skip", this->gfx_p, this->now_setimg.setimg2.imgaddr, (void*)addr,
+                                      tlut_name, count);
                         this->tlut_addresses[tlut_name] = nullptr;
                     } else
 #endif

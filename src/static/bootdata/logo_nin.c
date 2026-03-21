@@ -27,6 +27,13 @@ Gfx logo_ninT_model[] = {
   gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_logo_nin_gfx(void) {
+    logo_ninT_model[0].words.w1 = pc_gbi_ptr_encode(nintendo_376x104);
+    logo_ninT_model[2].words.w1 = pc_gbi_ptr_encode(&logo_nin_v[0]);
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_static_bootdata_logo_nin_c(void) {

@@ -1490,6 +1490,9 @@ void Sou_Ongen_Lev_Prog(u8 index) {
 
 void Sou_BgmStart(u8 id, u16 fadeTime) {
     sou_now_bgm_num = id;
+#ifdef TARGET_PC
+    printf("[BGM] Sou_BgmStart id=%u fade=%u handle=%u scene=%u\n", id, fadeTime, sou_now_bgm_handle, sou_scene_mode);
+#endif
     if (id == BGM_SILENCE) {
         NA_COMMAND_AUDIO_STOP_SEQ(BGM0_GROUP, 0);
         NA_COMMAND_AUDIO_STOP_SEQ(BGM1_GROUP, 0);
@@ -1603,6 +1606,12 @@ void Sou_Na_BgmStop(u16 id) {
 
 void Sou_SpecialRoutine06() {
     u8 v = 0;
+#ifdef TARGET_PC
+    if (sou_bgm_call_buffer != 0) {
+        printf("[BGM] Special06 buffer=%u id8=%u id16=%u now=%u\n", sou_bgm_call_buffer, sou_bgm_call_buffer_u8,
+               sou_bgm_call_buffer_u16, sou_now_bgm_num);
+    }
+#endif
     switch (sou_bgm_call_buffer) {
         case 1: {
             Sou_Na_BgmStart(sou_bgm_call_buffer_u8);
@@ -1963,6 +1972,9 @@ void Na_Tenki(u8 a) {
 void Na_BgmStart(u8 a) {
     u16 unused = 0;
 
+#ifdef TARGET_PC
+    printf("[BGM] Na_BgmStart req=%u scene=%u\n", a, sou_scene_mode);
+#endif
     sou_bgm_call_buffer_u8 = a;
     sou_bgm_call_buffer = 1;
 }
@@ -1973,6 +1985,9 @@ void Na_BgmCrossfadeStart(u8 a) {
 }
 
 void Na_BgmStop(u16 a) {
+#ifdef TARGET_PC
+    printf("[BGM] Na_BgmStop req=%u scene=%u\n", a, sou_scene_mode);
+#endif
     sou_bgm_call_buffer_u16 = a;
     sou_bgm_call_buffer = 3;
 }

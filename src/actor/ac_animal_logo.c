@@ -45,6 +45,29 @@ extern u8 log_win_nintendo1_tex[];
 extern u8 log_win_nintendo2_tex[];
 extern u8 log_win_nintendo3_tex[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_logo_us_animal_gfx(void);
+extern void pc_patch_logo_us_cros_gfx(void);
+extern void pc_patch_logo_us_sing_gfx(void);
+extern void pc_patch_logo_us_back_gfx(void);
+extern void pc_patch_logo_us_tm_gfx(void);
+
+static void aAL_pc_patch_logo_gfx_once(void) {
+  static int s_patched = 0;
+
+  if (s_patched != 0) {
+    return;
+  }
+
+  pc_patch_logo_us_animal_gfx();
+  pc_patch_logo_us_cros_gfx();
+  pc_patch_logo_us_sing_gfx();
+  pc_patch_logo_us_back_gfx();
+  pc_patch_logo_us_tm_gfx();
+  s_patched = 1;
+}
+#endif
+
 extern Gfx logo_us_tm_model[];
 
 extern Gfx logo_us_backA_model[];
@@ -88,6 +111,10 @@ static void aAL_actor_ct(ACTOR* actor, GAME* game) {
   GAME_PLAY* play = (GAME_PLAY*)game;
   Clip_c* clip = Common_GetPointer(clip);
   aAL_SkeletonInfo_c* skeleton_info;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+  aAL_pc_patch_logo_gfx_once();
+#endif
 
 #ifdef TARGET_PC
   { extern int g_pc_verbose; if (g_pc_verbose) printf("[LOGO] aAL_actor_ct: Animal Logo actor created\n"); }
