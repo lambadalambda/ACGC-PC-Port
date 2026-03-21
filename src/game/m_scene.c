@@ -10,6 +10,7 @@
 #include "m_card.h"
 #include "m_submenu.h"
 #include "m_scene_ftr.h"
+#include "pc_runtime_ptr.h"
 
 static void mSc_set_bank_status_after(Object_Bank_c* bank) {
     bank->bank_id = ABS(bank->bank_id);
@@ -111,9 +112,9 @@ extern void mSc_regist_initial_exchange_bank(GAME_PLAY* play) {
         u32 size;
 
         /* Split the remaining object exchange space into two equal portions */
-        size = (u32)(((uintptr_t)play->object_exchange.max_ram_address -
-                      (uintptr_t)play->object_exchange.next_bank_ram_address) /
-                     2);
+        size = PC_RUNTIME_U32_PTR((((uintptr_t)play->object_exchange.max_ram_address -
+                                    (uintptr_t)play->object_exchange.next_bank_ram_address) /
+                                   2));
         play->object_exchange.start_address_save[0] = play->object_exchange.next_bank_ram_address;
         play->object_exchange.end_address_save[0] =
             mSc_align_next_bank_ram_address(play->object_exchange.next_bank_ram_address, size, 32);

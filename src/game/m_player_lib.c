@@ -1672,7 +1672,7 @@ extern void mPlib_request_main_demo_wait_from_submenu(ACTOR* speak_actor_p) {
     req_demo_wait_p->label = 0;
     change_data_from_submenu_p->demo_wait_label_shadow = speak_actor_p;
 #else
-    req_demo_wait_p->label = (u32)speak_actor_p;
+    req_demo_wait_p->label = PC_RUNTIME_U32_PTR(speak_actor_p);
 #endif
 
     if (speak_actor_p != NULL) {
@@ -1704,7 +1704,7 @@ extern void mPlib_Set_able_force_speak_label(ACTOR* label) {
         player->able_force_speak_label = 0;
         player->able_force_speak_label_shadow = label;
 #else
-        player->able_force_speak_label = (u32)label;
+        player->able_force_speak_label = PC_RUNTIME_U32_PTR(label);
 #endif
     }
 }
@@ -2633,7 +2633,7 @@ extern int mPlib_check_label_player_demo_wait(GAME* game, void* label) {
 #else
         mPlayer_main_demo_wait_c* demo_wait_p = &GET_PLAYER_ACTOR_GAME(game)->main_data.demo_wait;
 
-        if (demo_wait_p->label == (u32)label) {
+        if (demo_wait_p->label == PC_RUNTIME_U32_PTR(label)) {
             return TRUE;
         }
 #endif
