@@ -13,6 +13,8 @@ void* OSGetArenaLo(void) { return arena_lo; }
 void* OSGetArenaHi(void) { return arena_hi; }
 void  OSSetArenaLo(void* lo) { arena_lo = (u8*)lo; }
 void  OSSetArenaHi(void* hi) { arena_hi = (u8*)hi; }
+void* pc_os_get_arena_base(void) { return arena_memory; }
+u32   pc_os_get_arena_size(void) { return PC_MAIN_MEMORY_SIZE; }
 
 /* --- Time/clock --- */
 u32 pc_OSBusClock  = GC_BUS_CLOCK;

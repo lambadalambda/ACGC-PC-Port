@@ -30,7 +30,7 @@ check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'transSize = PC
 check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'uintptr_t limit = \(uintptr_t\)\(szpEnd - src\);' 'JKRDvdAramRipper next chunk keeps limit at host width'
 check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'uintptr_t maxTransSize = \(uintptr_t\)\(szpEnd - \(buf \+ limit\)\);' 'JKRDvdAramRipper next chunk keeps transfer span at host width'
 check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'transSize = PC_RUNTIME_U32_PTR\(maxTransSize\);' 'JKRDvdAramRipper next chunk narrows transfer span through runtime guard'
-check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'u32 length = \(u32\)ALIGN_NEXT\(\(uintptr_t\)\(dmaCurrent - dmaBuf\), 32\);' 'JKRDvdAramRipper keeps DMA length math host-width until final narrow'
+check_contains "src/static/JSystem/JKernel/JKRDvdAramRipper.cpp" 'u32 length = PC_RUNTIME_U32_PTR\(ALIGN_NEXT\(\(uintptr_t\)\(dmaCurrent - dmaBuf\), 32\)\);' 'JKRDvdAramRipper narrows DMA length through runtime guard'
 check_contains "src/static/JSystem/JKernel/JKRHeap.cpp" '#include "pc_runtime_ptr.h"' 'JKRHeap includes runtime pointer guard helper'
 check_contains "src/static/JSystem/JKernel/JKRHeap.cpp" 'uintptr_t userRamSize = \(uintptr_t\)\(\(u8\*\)arenaHi - \(u8\*\)arenaLo\);' 'JKRHeap keeps user RAM size math at host width'
 check_contains "src/static/JSystem/JKernel/JKRHeap.cpp" '\*outUserRamSize = PC_RUNTIME_U32_PTR\(userRamSize\);' 'JKRHeap narrows user RAM size through runtime guard'
@@ -41,6 +41,11 @@ check_contains "src/static/JSystem/JKernel/JKRDecomp.cpp" '#define JKR_DECOMP_CA
 
 if rg -q 'u32 length = ALIGN_NEXT\(\(u32\)\(dmaCurrent - dmaBuf\), 32\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRDvdAramRipper.cpp"; then
     printf '%s\n' 'unexpected legacy JKR DVD ARAM DMA length truncation' >&2
+    exit 1
+fi
+
+if rg -q 'u32 length = \(u32\)ALIGN_NEXT\(\(uintptr_t\)\(dmaCurrent - dmaBuf\), 32\);' "$REPO_ROOT/src/static/JSystem/JKernel/JKRDvdAramRipper.cpp"; then
+    printf '%s\n' 'unexpected unchecked JKR DVD ARAM DMA length narrowing' >&2
     exit 1
 fi
 

@@ -760,7 +760,7 @@ void emu64::printInfo() {
     // Display segment table.
     this->Printf0("セグメントテーブル表示\n");
     for (i = 0; i < EMU64_NUM_SEGMENTS; i++) {
-        this->Printf0("%2d %08x %08x\n", i, this->segments[i], convert_partial_address(this->segments[i]));
+        this->Printf0("%2d %p %08x\n", i, (void*)this->segments[i], convert_partial_address((u32)this->segments[i]));
     }
 }
 
@@ -3454,6 +3454,42 @@ void emu64::dl_G_DL(void) {
     static char s[256];
     Gfx* gfx = this->gfx_p;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    if (gfx->dma.addr == 0) {
+        static int null_dl_count = 0;
+
+        if (g_pc_verbose != 0 && null_dl_count < 8) {
+            uintptr_t parent = 0;
+            uintptr_t parent_cmd_ptr = 0;
+            u32 parent_w0 = 0;
+            u32 parent_w1 = 0;
+            u32 next_w0 = 0;
+            u32 next_w1 = 0;
+
+            next_w0 = (gfx + 1)->words.w0;
+            next_w1 = (gfx + 1)->words.w1;
+
+            if (this->DL_stack_level > 0) {
+                parent = this->DL_stack[this->DL_stack_level - 1];
+
+                if (parent >= sizeof(Gfx)) {
+                    Gfx* parent_cmd = (Gfx*)(parent - sizeof(Gfx));
+
+                    parent_cmd_ptr = (uintptr_t)parent_cmd;
+                    parent_w0 = parent_cmd->words.w0;
+                    parent_w1 = parent_cmd->words.w1;
+                }
+            }
+
+            this->Printf0("[PC] emu64: skip null gsSPDisplayList placeholder cmd=%p parent=%p parent_cmd=%p w0=%08x pw0=%08x pw1=%08x next=%08x/%08x stack=%d\n",
+                          (void*)gfx, (void*)parent, (void*)parent_cmd_ptr, gfx->words.w0, parent_w0, parent_w1,
+                          next_w0, next_w1, this->DL_stack_level);
+            null_dl_count++;
+        }
+        return;
+    }
+#endif
+
     this->work_ptr = (void*)this->seg2k0(gfx->dma.addr);
 #ifdef TARGET_PC
     if (this->work_ptr == NULL) {
@@ -3677,7 +3713,7 @@ void emu64::dl_G_SETTILE_DOLPHIN() {
     this->settilesize_dolphin_cmds[tile].isDolphin = 1;
 
     /* Set texture info for use in GC texture object initialization */
-    this->texture_info[tile].img_addr = (void*)this->now_setimg.setimg2.imgaddr;
+    this->texture_info[tile].img_addr = (void*)this->seg2k0(this->now_setimg.setimg2.imgaddr);
     this->texture_info[tile].format = this->now_setimg.setimg2.fmt;
     this->texture_info[tile].size = this->now_setimg.setimg2.siz;
     this->texture_info[tile].width = EXPAND_WIDTH(this->now_setimg.setimg2.wd);
@@ -3702,7 +3738,7 @@ void emu64::dl_G_LOADTILE() {
         return;
 
     /* Determine tmem base address */
-    u32 dram = this->now_setimg.setimg2.imgaddr;
+    uintptr_t dram = this->seg2k0(this->now_setimg.setimg2.imgaddr);
     dram += ((loadtile.tl / 4) * EXPAND_WIDTH(this->now_setimg.setimg2.wd) + (loadtile.sl / 4)
              << this->now_setimg.setimg2.siz) /
             2;
@@ -3730,7 +3766,7 @@ void emu64::dl_G_LOADTILE() {
 void emu64::dl_G_LOADBLOCK() {
     int tmem_idx;
     Gloadblock* loadblock = (Gloadblock*)this->gfx_p;
-    u32 addr;
+    uintptr_t addr;
     int i;
 
 #ifdef EMU64_DEBUG
@@ -3746,7 +3782,7 @@ void emu64::dl_G_LOADBLOCK() {
         return; /* Does not support LOAD commands */
 
     tmem_idx = this->settile_cmds[loadblock->tile].tmem / 4;
-    addr = this->now_setimg.setimg2.imgaddr;
+    addr = this->seg2k0(this->now_setimg.setimg2.imgaddr);
     for (i = tmem_idx; i < tmem_idx + (loadblock->sh + 1) / 16; i++) {
         tmem_map[i].addr = (void*)addr;
         tmem_map[i].loadblock = *loadblock;
@@ -3818,6 +3854,51 @@ void emu64::dl_G_SETTILESIZE() {
 #ifdef TARGET_PC
 extern "C" void pc_gx_tlut_set_native_le(unsigned int idx);
 extern "C" u16 s_tlut_first_word[16];
+
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_tlut_trace(const char* tag, u32 raw_addr, const void* host_addr, u32 tlut_name, u32 count) {
+    static u32 trace_count = 0;
+
+    if (g_pc_verbose == 0 || trace_count >= 32) {
+        return;
+    }
+
+    OSReport("[PC][tlut] %s raw=%08x host=%p name=%u count=%u arena=%p\n", tag, raw_addr, host_addr, tlut_name,
+             count, pc_os_get_arena_base());
+    trace_count++;
+}
+
+static bool pc_tlut_probe_first_word(const void* addr, u16* out_word) {
+    uintptr_t addr_bits = (uintptr_t)addr;
+    uintptr_t arena_base = (uintptr_t)pc_os_get_arena_base();
+    uintptr_t arena_end = arena_base + (uintptr_t)pc_os_get_arena_size();
+
+    if (addr_bits == 0) {
+        return false;
+    }
+
+    if (arena_base != 0 && addr_bits >= arena_base && addr_bits < arena_end) {
+        *out_word = *(const u16*)addr;
+        return true;
+    }
+
+    if (addr_bits > UINT32_MAX) {
+        *out_word = *(const u16*)addr;
+        return true;
+    }
+
+    if (addr_bits >= 0x80000000u && addr_bits < 0xC0000000u) {
+        return false;
+    }
+
+    if ((addr_bits & 0xE0000000u) == 0xE0000000u) {
+        return false;
+    }
+
+    *out_word = *(const u16*)addr;
+    return true;
+}
+#endif
 #endif
 
 void emu64::dl_G_LOADTLUT() {
@@ -3837,6 +3918,14 @@ void emu64::dl_G_LOADTLUT() {
             count = loadtlut_dol->count & 0x3FFF;
             tlut_name = loadtlut_dol->tlut_name;
             tlut_addr = (void*)this->seg2k0(loadtlut_dol->tlut_addr);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+            if (loadtlut_dol->tlut_addr == 0) {
+                tlut_addr = nullptr;
+            }
+#endif
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+            pc_tlut_trace("type2-resolve", loadtlut_dol->tlut_addr, tlut_addr, tlut_name, count);
+#endif
 
             if (tlut_addr == this->tlut_addresses[tlut_name]) {
                 /* Translation: ### Same TLUT address */
@@ -3847,10 +3936,18 @@ void emu64::dl_G_LOADTLUT() {
                  * GC hardware always re-DMA'd, so the skip was harmless there.
                  * On PC we must detect content changes and force a reload. */
                 if (tlut_addr != nullptr) {
-                    u16 first = *(u16*)tlut_addr;
-                    if (s_tlut_first_word[tlut_name] != first) {
-                        s_tlut_first_word[tlut_name] = first;
+                    u16 first;
+#if defined(PC_EXPERIMENTAL_64BIT)
+                    if (!pc_tlut_probe_first_word(tlut_addr, &first)) {
+                        pc_tlut_trace("type2-same-skip", loadtlut_dol->tlut_addr, tlut_addr, tlut_name, count);
                         this->tlut_addresses[tlut_name] = nullptr;
+                    } else
+#endif
+                    {
+                        if (s_tlut_first_word[tlut_name] != first) {
+                            s_tlut_first_word[tlut_name] = first;
+                            this->tlut_addresses[tlut_name] = nullptr;
+                        }
                     }
                 }
 #endif
@@ -3876,7 +3973,19 @@ void emu64::dl_G_LOADTLUT() {
                     GXLoadTlut(&this->tlut_objs[tlut_name], tlut_name);
 #ifdef TARGET_PC
                     pc_gx_tlut_set_native_le(tlut_name);
+#if defined(PC_EXPERIMENTAL_64BIT)
+                    {
+                        u16 first_word;
+                        if (pc_tlut_probe_first_word(aligned_addr, &first_word)) {
+                            s_tlut_first_word[tlut_name] = first_word;
+                        } else {
+                            pc_tlut_trace("type2-load-skip", loadtlut_dol->tlut_addr, aligned_addr, tlut_name, count);
+                            this->tlut_addresses[tlut_name] = nullptr;
+                        }
+                    }
+#else
                     s_tlut_first_word[tlut_name] = *(u16*)aligned_addr;
+#endif
 #endif
 
                     EMU64_INFOF("GXInitTlutObj %08x %d pal_no=%d\n", tlut_addr, count, tlut_name);
@@ -3893,30 +4002,42 @@ void emu64::dl_G_LOADTLUT() {
         if (this->disable_polygons == false) {
             u16 count = ((loadtlut->words.w1 >> 14) & 0x3FF) + 1;
             void* tlut;
-            u32 addr = this->now_setimg.setimg2.imgaddr;
+            uintptr_t addr = this->seg2k0(this->now_setimg.setimg2.imgaddr);
             u32 tlut_name = (settile_p->tmem / 16) & 0xF;
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+            pc_tlut_trace("type1-resolve", this->now_setimg.setimg2.imgaddr, (void*)addr, tlut_name, count);
+#endif
 
-            if ((uintptr_t)addr == (uintptr_t)this->tlut_addresses[tlut_name]) {
+            if (addr == (uintptr_t)this->tlut_addresses[tlut_name]) {
                 /* Translation: ### Same TLUT address %08x %d */
-                EMU64_INFOF("### 同じTLUTアドレスです %08x %d\n", addr, tlut_name);
+                EMU64_INFOF("### 同じTLUTアドレスです %p %d\n", (void*)addr, tlut_name);
 #ifdef TARGET_PC
                 /* Same fix as type-2 path: detect content change at reused address.
                  * Note: addr here is already a direct pointer (not a segment address),
                  * so do NOT call seg2k0() — just cast directly. */
                 if (addr != 0) {
-                    u16 first = *(u16*)(uintptr_t)addr;
-                    if (s_tlut_first_word[tlut_name] != first) {
-                        s_tlut_first_word[tlut_name] = first;
+                    u16 first;
+#if defined(PC_EXPERIMENTAL_64BIT)
+                    if (!pc_tlut_probe_first_word((void*)addr, &first)) {
+                        pc_tlut_trace("type1-same-skip", this->now_setimg.setimg2.imgaddr, (void*)addr, tlut_name,
+                                      count);
                         this->tlut_addresses[tlut_name] = nullptr;
+                    } else
+#endif
+                    {
+                        if (s_tlut_first_word[tlut_name] != first) {
+                            s_tlut_first_word[tlut_name] = first;
+                            this->tlut_addresses[tlut_name] = nullptr;
+                        }
                     }
                 }
 #endif
             } else {
                 /* Convert TLUT */
                 if (this->now_setimg.setimg2.isDolphin) {
-                    tlut = (void*)(uintptr_t)addr;
+                    tlut = (void*)addr;
                 } else {
-                    tlut = this->tlutconv_new((u16*)(uintptr_t)addr, EMU64_TLUT_RGBA5551, count);
+                    tlut = this->tlutconv_new((u16*)addr, EMU64_TLUT_RGBA5551, count);
                 }
 
                 if (tlut != nullptr) {
@@ -3928,7 +4049,7 @@ void emu64::dl_G_LOADTLUT() {
                         pc_gx_tlut_set_native_le(tlut_name);
 #endif
 
-                        EMU64_INFOF("GXInitTlutObj %08x %d pal_no=%d\n", addr, (u16)count, tlut_name);
+                        EMU64_INFOF("GXInitTlutObj %p %d pal_no=%d\n", (void*)addr, (u16)count, tlut_name);
 
                         tlut_name++;
                         count -= 16;
@@ -4296,7 +4417,6 @@ void emu64::dl_G_SETTIMG() {
 #endif
 
     this->now_setimg.setimg2 = *setimg2;
-    this->now_setimg.setimg2.imgaddr = this->seg2k0(setimg2->imgaddr);
 }
 
 void emu64::dl_G_SETENVCOLOR() {
@@ -4479,7 +4599,8 @@ void emu64::dl_G_MTX() {
         EMU64_LOG("),");
 
         if ((this->print_commands & EMU64_PRINTF3_FLAG) != 0) {
-            EMU64_LOGF("%08x %08x %08x\n", gfx_copy.w1, this->seg2k0(gfx_copy.w1), this->seg2k0(gfx_copy.w1));
+            EMU64_LOGF("%08x %p %p\n", gfx_copy.w1, (void*)this->seg2k0(gfx_copy.w1),
+                       (void*)this->seg2k0(gfx_copy.w1));
             this->disp_matrix((MtxP)this->seg2k0(gfx_copy.w1));
         }
     }
@@ -5448,7 +5569,7 @@ void emu64::dl_G_MOVEWORD() {
             EMU64_WARNF("gsSPSegmentA(%d, 0x%08x),", segment, moveword->data);
 #ifdef TARGET_PC
             /* On PC, store address directly (no GC physical address mapping) */
-            this->segments[segment] = moveword->data;
+            this->segments[segment] = this->seg2k0(moveword->data);
 #else
             this->segments[segment] = (0x80000000 + (moveword->data & 0x0FFFFFFF));
             if (segment >= EMU64_NUM_SEGMENTS ||
@@ -5857,6 +5978,25 @@ u32 emu64::emu64_taskstart_r(Gfx* dl_p) {
             if (unexpected_cmd_count < 5) {
                 this->Printf0(
                     "予期しないコマンドがありました。中断します。(cmd=%02x)\n", this->gfx_cmd);
+                {
+                    uintptr_t gfx_bits = (uintptr_t)this->gfx_p;
+                    uintptr_t arena_base = (uintptr_t)pc_os_get_arena_base();
+                    uintptr_t arena_end = arena_base + (uintptr_t)pc_os_get_arena_size();
+                    const char* region = (arena_base != 0 && gfx_bits >= arena_base && gfx_bits < arena_end)
+                                             ? "arena"
+                                             : "host";
+                    uintptr_t dl_top = 0;
+
+                    if (this->DL_stack_level > 0) {
+                        dl_top = this->DL_stack[this->DL_stack_level - 1];
+                    }
+
+                    this->Printf0("[PC] unexpected cmd ctx: w0=%08x w1=%08x gfx=%p region=%s stack=%d top=%p seg0=%p "
+                                  "seg8=%p segA=%p\n",
+                                  this->gfx.words.w0, this->gfx.words.w1, (void*)this->gfx_p, region,
+                                  this->DL_stack_level, (void*)dl_top, (void*)this->segments[0],
+                                  (void*)this->segments[8], (void*)this->segments[10]);
+                }
                 unexpected_cmd_count++;
                 if (unexpected_cmd_count == 5)
                     this->Printf0("[PC] (suppressing further unexpected command messages)\n");

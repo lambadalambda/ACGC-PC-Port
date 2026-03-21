@@ -3,6 +3,7 @@
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTConsole.h"
 #include "JSystem/JMacro.h"
+#include "pc_runtime_ptr.h"
 
 static u32 whatdo;
 static u32 whatdo2;
@@ -82,7 +83,7 @@ JKRExpHeap* JKRExpHeap::create(void* ptr, u32 size, JKRHeap* parent, bool errorF
         return nullptr;
 
     void* dataPtr = (u8*)ptr + expHeapSize;
-    u32 alignedSize = (u32)ALIGN_PREV((uintptr_t)ptr + size - (uintptr_t)dataPtr, 0x10);
+    u32 alignedSize = PC_RUNTIME_U32_PTR(ALIGN_PREV((uintptr_t)ptr + size - (uintptr_t)dataPtr, 0x10));
 
     if (ptr)
         newHeap = new (ptr) JKRExpHeap(dataPtr, alignedSize, parent2, errorFlag);
@@ -165,7 +166,8 @@ void* JKRExpHeap::allocFromHead(u32 size, int align) {
     CMemBlock* foundBlock = nullptr;
 
     for (CMemBlock* block = mHead; block; block = block->mNext) {
-        u32 offset = (u32)(ALIGN_PREV(align - 1 + (uintptr_t)block->getContent(), align) - (uintptr_t)block->getContent());
+        u32 offset = PC_RUNTIME_U32_PTR(ALIGN_PREV(align - 1 + (uintptr_t)block->getContent(), align) -
+                                        (uintptr_t)block->getContent());
         if (block->mAllocatedSpace < size + offset) {
             continue;
         }
@@ -309,7 +311,7 @@ void* JKRExpHeap::allocFromTail(u32 size, int align) {
     for (CMemBlock* block = mTail; block; block = block->mPrev) {
         uintptr_t contentAddr = (uintptr_t)block->getContent();
         startAddr = ALIGN_PREV(contentAddr + block->mAllocatedSpace - size, align);
-        usedSize = (u32)(contentAddr + block->mAllocatedSpace - startAddr);
+        usedSize = PC_RUNTIME_U32_PTR(contentAddr + block->mAllocatedSpace - startAddr);
         if (block->mAllocatedSpace >= usedSize) {
             foundBlock = block;
             offset = block->mAllocatedSpace - usedSize;

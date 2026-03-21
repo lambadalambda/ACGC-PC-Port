@@ -383,6 +383,21 @@ else()
     target_link_libraries(ac_pc OpenGL::GL dl pthread m)
 endif()
 
+if(APPLE)
+    target_link_options(ac_pc PRIVATE
+        -Wl,-unexported_symbol,__Znwm
+        -Wl,-unexported_symbol,__Znwmi
+        -Wl,-unexported_symbol,__ZnwmP7JKRHeapi
+        -Wl,-unexported_symbol,__Znam
+        -Wl,-unexported_symbol,__Znami
+        -Wl,-unexported_symbol,__ZnamP7JKRHeapi
+        -Wl,-unexported_symbol,__ZdlPv
+        -Wl,-unexported_symbol,__ZdaPv
+        -Wl,-unexported_symbol,__ZdlPvm
+        -Wl,-unexported_symbol,__ZdaPvm
+    )
+endif()
+
 set_target_properties(ac_pc PROPERTIES
     OUTPUT_NAME "AnimalCrossing"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"

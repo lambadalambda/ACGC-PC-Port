@@ -114,6 +114,28 @@ void JFWSystem::firstInit() {
     DVDInit();
     rootHeap = JKRExpHeap::createRoot(CSetUpParam::maxStdHeaps, false);
     systemHeap = JKRExpHeap::create(CSetUpParam::sysHeapSize, rootHeap, false);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    if (systemHeap == nullptr && rootHeap != nullptr) {
+        u32 retrySize = (u32)rootHeap->getFreeSize();
+        if (retrySize >= 0x10) {
+            retrySize = (retrySize - 0x10) & ~0xFu;
+        }
+
+        while (systemHeap == nullptr && retrySize >= 0x90) {
+            systemHeap = JKRExpHeap::create(retrySize, rootHeap, false);
+            if (systemHeap != nullptr) {
+                CSetUpParam::sysHeapSize = retrySize;
+                OSReport("[PC] JFWSystem::firstInit: reduced sys heap size to %08x\n", retrySize);
+                break;
+            }
+            if (retrySize < 0x20) {
+                break;
+            }
+            retrySize -= 0x10;
+        }
+    }
+#endif
 }
 
 void JFWSystem::init() {

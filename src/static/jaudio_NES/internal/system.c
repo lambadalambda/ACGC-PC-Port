@@ -11,6 +11,7 @@
 #include "jaudio_NES/audioheaders.h"
 #include "pc_runtime_ptr.h"
 #include <dolphin/os.h>
+#include <stdlib.h>
 #ifdef TARGET_PC
 #include <dolphin/ar.h>
 #endif
@@ -298,53 +299,55 @@ static u16 pc_bank_wavetable_capacity(const voiceinfo* vinfo) {
     return capacity > 0xFFFF ? 0xFFFF : (u16)capacity;
 }
 
+static void* pc_alloc_shadow_bytes(size_t size) {
+    void* ptr;
+
+    if (size == 0) {
+        return NULL;
+    }
+
+    ptr = Nas_HeapAlloc(&AG.init_heap, size);
+    if (ptr != NULL) {
+        memset(ptr, 0, size);
+        return ptr;
+    }
+
+    ptr = calloc(1, size);
+    return ptr;
+}
+
 static BOOL pc_init_voiceinfo_shadow(voiceinfo* vinfo) {
     u16 wavetable_capacity = pc_bank_wavetable_capacity(vinfo);
 
     if (vinfo->num_instruments != 0 && vinfo->instruments == NULL) {
-        vinfo->instruments = (voicetable**)Nas_HeapAlloc(&AG.init_heap, vinfo->num_instruments * sizeof(*vinfo->instruments));
+        vinfo->instruments = (voicetable**)pc_alloc_shadow_bytes(vinfo->num_instruments * sizeof(*vinfo->instruments));
         if (vinfo->instruments != NULL) {
-            memset(vinfo->instruments, 0, vinfo->num_instruments * sizeof(*vinfo->instruments));
             vinfo->instrument_capacity = vinfo->num_instruments;
         }
     }
     if (vinfo->num_instruments != 0 && vinfo->instrument_entries == NULL) {
-        vinfo->instrument_entries = (voicetable*)Nas_HeapAlloc(&AG.init_heap, vinfo->num_instruments * sizeof(*vinfo->instrument_entries));
-        if (vinfo->instrument_entries != NULL) {
-            memset(vinfo->instrument_entries, 0, vinfo->num_instruments * sizeof(*vinfo->instrument_entries));
-        }
+        vinfo->instrument_entries = (voicetable*)pc_alloc_shadow_bytes(vinfo->num_instruments * sizeof(*vinfo->instrument_entries));
     }
     if (vinfo->num_drums != 0 && vinfo->percussion == NULL) {
-        vinfo->percussion = (perctable**)Nas_HeapAlloc(&AG.init_heap, vinfo->num_drums * sizeof(*vinfo->percussion));
+        vinfo->percussion = (perctable**)pc_alloc_shadow_bytes(vinfo->num_drums * sizeof(*vinfo->percussion));
         if (vinfo->percussion != NULL) {
-            memset(vinfo->percussion, 0, vinfo->num_drums * sizeof(*vinfo->percussion));
             vinfo->percussion_capacity = vinfo->num_drums;
         }
     }
     if (vinfo->num_drums != 0 && vinfo->percussion_entries == NULL) {
-        vinfo->percussion_entries = (perctable*)Nas_HeapAlloc(&AG.init_heap, vinfo->num_drums * sizeof(*vinfo->percussion_entries));
-        if (vinfo->percussion_entries != NULL) {
-            memset(vinfo->percussion_entries, 0, vinfo->num_drums * sizeof(*vinfo->percussion_entries));
-        }
+        vinfo->percussion_entries = (perctable*)pc_alloc_shadow_bytes(vinfo->num_drums * sizeof(*vinfo->percussion_entries));
     }
     if (vinfo->num_sfx != 0 && vinfo->effects == NULL) {
-        vinfo->effects = (percvoicetable*)Nas_HeapAlloc(&AG.init_heap, vinfo->num_sfx * sizeof(*vinfo->effects));
+        vinfo->effects = (percvoicetable*)pc_alloc_shadow_bytes(vinfo->num_sfx * sizeof(*vinfo->effects));
         if (vinfo->effects != NULL) {
-            memset(vinfo->effects, 0, vinfo->num_sfx * sizeof(*vinfo->effects));
             vinfo->effect_capacity = vinfo->num_sfx;
         }
     }
     if (wavetable_capacity != 0 && vinfo->wavetable_entries == NULL) {
-        vinfo->wavetable_entries = (smzwavetable*)Nas_HeapAlloc(&AG.init_heap, wavetable_capacity * sizeof(*vinfo->wavetable_entries));
-        if (vinfo->wavetable_entries != NULL) {
-            memset(vinfo->wavetable_entries, 0, wavetable_capacity * sizeof(*vinfo->wavetable_entries));
-        }
+        vinfo->wavetable_entries = (smzwavetable*)pc_alloc_shadow_bytes(wavetable_capacity * sizeof(*vinfo->wavetable_entries));
     }
     if (wavetable_capacity != 0 && vinfo->wavetable_keys == NULL) {
-        vinfo->wavetable_keys = (u32*)Nas_HeapAlloc(&AG.init_heap, wavetable_capacity * sizeof(*vinfo->wavetable_keys));
-        if (vinfo->wavetable_keys != NULL) {
-            memset(vinfo->wavetable_keys, 0, wavetable_capacity * sizeof(*vinfo->wavetable_keys));
-        }
+        vinfo->wavetable_keys = (u32*)pc_alloc_shadow_bytes(wavetable_capacity * sizeof(*vinfo->wavetable_keys));
     }
 
     if (vinfo->wavetable_entries != NULL && vinfo->wavetable_keys != NULL) {
@@ -390,15 +393,16 @@ static void pc_reset_voiceinfo_shadow(voiceinfo* vinfo) {
     vinfo->wavetable_count = 0;
 }
 
-static smzwavetable* pc_bank_deserialize_wavetable(voiceinfo* vinfo, u32 wt_ofs, u32 ram_addr, WaveMedia* wave_media) {
+static smzwavetable* pc_bank_deserialize_wavetable(voiceinfo* vinfo, u32 wt_ofs, uintptr_t ram_addr,
+                                                   WaveMedia* wave_media) {
     const PCSmzWavetable32* raw;
     smzwavetable* wavetable;
     u32 header_bits;
     u32 sample_ofs;
     u32 loop_ofs;
     u32 book_ofs;
-    u32 wave0_base;
-    u32 wave1_base;
+    uintptr_t wave0_base;
+    uintptr_t wave1_base;
     u32 i;
 
     if (wt_ofs == 0 || vinfo->wavetable_entries == NULL || vinfo->wavetable_keys == NULL || vinfo->wavetable_capacity == 0) {
@@ -433,8 +437,8 @@ static smzwavetable* pc_bank_deserialize_wavetable(voiceinfo* vinfo, u32 wt_ofs,
     sample_ofs = BSWAP32(raw->sample);
     loop_ofs = BSWAP32(raw->loop);
     book_ofs = BSWAP32(raw->book);
-    wave0_base = PC_RUNTIME_U32_PTR(wave_media->wave0_p);
-    wave1_base = PC_RUNTIME_U32_PTR(wave_media->wave1_p);
+    wave0_base = (uintptr_t)wave_media->wave0_p;
+    wave1_base = (uintptr_t)wave_media->wave1_p;
 
     if (loop_ofs != 0) {
         wavetable->loop = (adpcmloop*)(uintptr_t)(loop_ofs + ram_addr);
@@ -468,13 +472,14 @@ static smzwavetable* pc_bank_deserialize_wavetable(voiceinfo* vinfo, u32 wt_ofs,
     return wavetable;
 }
 
-static void pc_bank_deserialize_wtstr(wtstr* dst, const PCWtStr32* raw, voiceinfo* vinfo, u32 ram_addr,
+static void pc_bank_deserialize_wtstr(wtstr* dst, const PCWtStr32* raw, voiceinfo* vinfo, uintptr_t ram_addr,
                                       WaveMedia* wave_media) {
     dst->wavetable = pc_bank_deserialize_wavetable(vinfo, BSWAP32(raw->wavetable), ram_addr, wave_media);
     dst->tuning = pc_bank_f32_from_be(raw->tuning_bits);
 }
 
-static void pc_bank_deserialize_perctable(perctable* dst, const PCPercTable32* raw, voiceinfo* vinfo, u32 ram_addr,
+static void pc_bank_deserialize_perctable(perctable* dst, const PCPercTable32* raw, voiceinfo* vinfo,
+                                          uintptr_t ram_addr,
                                           WaveMedia* wave_media) {
     u32 env_ofs;
 
@@ -493,13 +498,13 @@ static void pc_bank_deserialize_perctable(perctable* dst, const PCPercTable32* r
 }
 
 static void pc_bank_deserialize_percvoicetable(percvoicetable* dst, const PCPercVoiceTable32* raw, voiceinfo* vinfo,
-                                               u32 ram_addr, WaveMedia* wave_media) {
+                                                uintptr_t ram_addr, WaveMedia* wave_media) {
     memset(dst, 0, sizeof(*dst));
     pc_bank_deserialize_wtstr(&dst->tuned_sample, &raw->tuned_sample, vinfo, ram_addr, wave_media);
 }
 
-static void pc_bank_deserialize_voicetable(voicetable* dst, const PCVoiceTable32* raw, voiceinfo* vinfo, u32 ram_addr,
-                                           WaveMedia* wave_media) {
+static void pc_bank_deserialize_voicetable(voicetable* dst, const PCVoiceTable32* raw, voiceinfo* vinfo,
+                                           uintptr_t ram_addr, WaveMedia* wave_media) {
     u32 env_ofs;
 
     memset(dst, 0, sizeof(*dst));
@@ -1354,13 +1359,13 @@ static ArcHeader* __Get_ArcHeader(s32 table_type) {
     }
 }
 
-#define OFS2RAM(base_u32, ofs) ((u32)(ofs) + (base_u32))
+#define OFS2RAM(base_addr, ofs) ((uintptr_t)(base_addr) + (uintptr_t)(u32)(ofs))
 #define U32_ADDR_PTR(type, addr) ((type*)(uintptr_t)(addr))
 #define BANK_ENTRY(ctrl_base, idx) (U32_ADDR_PTR(u32, (ctrl_base)) + (idx))
 
 static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_media) {
     voiceinfo* vinfo = &AG.voice_info[bank_id];
-    u32 ctrl_base = PC_RUNTIME_U32_PTR(ctrl_p);
+    uintptr_t ctrl_base = (uintptr_t)ctrl_p;
     u32 ofs;
     u32 inst_ofs;
     voicetable* inst;
@@ -1403,9 +1408,9 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
     ofs = *BANK_ENTRY(ctrl_base, 0);
     if (ofs != 0 && n_perc_inst != 0 && vinfo->percussion != NULL && vinfo->percussion_entries != NULL) {
         u32* percussion_table;
+        uintptr_t percussion_table_addr = OFS2RAM(ctrl_base, ofs);
 
-        *BANK_ENTRY(ctrl_base, 0) = OFS2RAM(ctrl_base, ofs);
-        percussion_table = U32_ADDR_PTR(u32, *BANK_ENTRY(ctrl_base, 0));
+        percussion_table = U32_ADDR_PTR(u32, percussion_table_addr);
         pc_swap_perc_ptr_array(percussion_table, n_perc_inst);
 
         for (i = 0; i < n_perc_inst; i++) {
@@ -1416,8 +1421,8 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
             }
 
             percvt = &vinfo->percussion_entries[i];
-            pc_bank_deserialize_perctable(percvt, U32_ADDR_PTR(PCPercTable32, ctrl_base + inst_ofs), vinfo, ctrl_base,
-                                          wave_media);
+            pc_bank_deserialize_perctable(percvt, U32_ADDR_PTR(PCPercTable32, OFS2RAM(ctrl_base, inst_ofs)), vinfo,
+                                          ctrl_base, wave_media);
             vinfo->percussion[i] = percvt;
         }
     }
@@ -1425,9 +1430,9 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
     ofs = *BANK_ENTRY(ctrl_base, 1);
     if (ofs != 0 && n_sfx_inst != 0 && vinfo->effects != NULL) {
         const PCPercVoiceTable32* sfx_table;
+        uintptr_t sfx_table_addr = OFS2RAM(ctrl_base, ofs);
 
-        *BANK_ENTRY(ctrl_base, 1) = OFS2RAM(ctrl_base, ofs);
-        sfx_table = U32_ADDR_PTR(PCPercVoiceTable32, *BANK_ENTRY(ctrl_base, 1));
+        sfx_table = U32_ADDR_PTR(PCPercVoiceTable32, sfx_table_addr);
         for (i = 0; i < n_sfx_inst; i++) {
             pc_bank_deserialize_percvoicetable(&vinfo->effects[i], &sfx_table[i], vinfo, ctrl_base, wave_media);
         }
@@ -1445,9 +1450,8 @@ static void Nas_BankOfsToAddr_Inner(s32 bank_id, u8* ctrl_p, WaveMedia* wave_med
                 continue;
             }
 
-            *BANK_ENTRY(ctrl_base, i) = OFS2RAM(ctrl_base, ofs);
             inst = &vinfo->instrument_entries[i - 2];
-            pc_bank_deserialize_voicetable(inst, U32_ADDR_PTR(PCVoiceTable32, *BANK_ENTRY(ctrl_base, i)), vinfo,
+            pc_bank_deserialize_voicetable(inst, U32_ADDR_PTR(PCVoiceTable32, OFS2RAM(ctrl_base, ofs)), vinfo,
                                            ctrl_base, wave_media);
             vinfo->instruments[i - 2] = inst;
         }
@@ -1672,7 +1676,7 @@ static s32 Nas_StartDma(OSIoMesg* ioMsg, s32 priority, s32 direction, u32 device
     /* device_addr is an ARAM offset (relative to audiorom start).
      * GetNeosRomTop() gives the base ARAM address for audiorom data. */
     u32 aram_offset = device_addr + GetNeosRomTop();
-    ARStartDMA(1 /* ARAM→MRAM */, PC_RUNTIME_U32_PTR(dram_addr), aram_offset, size);
+    ARStartDMA(1 /* ARAM→MRAM */, pc_aram_host_addr_encode(dram_addr), aram_offset, size);
 
     /* Send completion message so callers that do Z_osRecvMesg(BLOCK) unblock */
     if (mq != NULL) {
@@ -1732,8 +1736,18 @@ static u8* __Load_Bank_BG(s32 table_type, s32 id, s32 n_chunks, s32 ret_data, OS
     s32 loadStatus;
     s8 cachePolicy;
     s32 asyncLoadStatus;
-    s32 link_id = __Link_BankNum(table_type, id);
+    s32 link_id;
     voiceinfo* vinfo;
+
+    header = __Get_ArcHeader(table_type);
+    if (header == NULL || id < 0 || id >= header->numEntries) {
+        return NULL;
+    }
+
+    link_id = __Link_BankNum(table_type, id);
+    if (link_id < 0 || link_id >= header->numEntries) {
+        return NULL;
+    }
 
     switch (table_type) {
         case SEQUENCE_TABLE:
@@ -1761,7 +1775,6 @@ static u8* __Load_Bank_BG(s32 table_type, s32 id, s32 n_chunks, s32 ret_data, OS
         Z_osSendMesg(ret_queue, (OSMesg)MK_BGLOAD_MSG(ret_data, SEQUENCE_TABLE, 0, LOAD_STATUS_NOT_LOADED),
                      OS_MESG_NOBLOCK);
     } else {
-        header = __Get_ArcHeader(table_type);
         size = header->entries[link_id].size;
         size = ALIGN_NEXT(size, 32);
         medium = header->entries[id].medium;
@@ -1965,12 +1978,6 @@ void Nas_InitAudio(u64* heap_p, s32 heap_size) {
     bzero(AG.voice_info, bank_count * sizeof(voiceinfo));
     for (i = 0; i < bank_count; i++) {
         __SetVlute(i);
-#if PC_JAUDIO_LP64_BANK_SHADOW
-        if (!pc_init_voiceinfo_shadow(&AG.voice_info[i])) {
-            OSReport("JAUDIO LP64 shadow allocation failed during audio init for bank %d\n", i);
-            OSPanic(__FILE__, __LINE__, "");
-        }
-#endif
     }
 
     emem_heap = (u8*)Nas_HeapAlloc(&AG.init_heap, AGC.ememSize);
@@ -2454,8 +2461,8 @@ static void __WaveTouch(wtstr* wavetouch_str, u32 ram_addr, WaveMedia* wave_medi
                 u32 loop_ofs = PC_RUNTIME_U32_PTR(wavetable->loop);
                 u32 book_ofs = PC_RUNTIME_U32_PTR(wavetable->book);
                 u32 sample_ofs = PC_RUNTIME_U32_PTR(wavetable->sample);
-                u32 wave0_base = PC_RUNTIME_U32_PTR(wave_media->wave0_p);
-                u32 wave1_base = PC_RUNTIME_U32_PTR(wave_media->wave1_p);
+                uintptr_t wave0_base = (uintptr_t)wave_media->wave0_p;
+                uintptr_t wave1_base = (uintptr_t)wave_media->wave1_p;
 
                 reloc = (void*)(uintptr_t)(loop_ofs + ram_addr);
                 wavetable->loop = (adpcmloop*)reloc;
@@ -2651,21 +2658,23 @@ s32 Nas_BankOfsToAddr(s32 bank_id, u8* ctrl_p, WaveMedia* wave_media, s32 async)
 s32 Nas_CheckBgWave(s32 reset_status) {
     smzwavetable* wavetable;
     Bgloadreq* preload;
+    OSMesg preload_msg;
     u32 preload_idx;
     s32 key;
     s32 n_chunks;
 
     if (AG.num_requested_samples > 0) {
         if (reset_status != 0) {
-            Z_osRecvMesg(&AG.preload_sample_queue, (OSMesg*)&preload_idx, OS_MESG_NOBLOCK);
+            Z_osRecvMesg(&AG.preload_sample_queue, &preload_msg, OS_MESG_NOBLOCK);
             AG.num_requested_samples = 0;
             return FALSE;
         }
 
-        if (Z_osRecvMesg(&AG.preload_sample_queue, (OSMesg*)&preload_idx, OS_MESG_NOBLOCK) == -1) {
+        if (Z_osRecvMesg(&AG.preload_sample_queue, &preload_msg, OS_MESG_NOBLOCK) == -1) {
             return FALSE;
         }
 
+        preload_idx = (u32)(uintptr_t)preload_msg;
         preload_idx >>= 24;
         preload = &AG.requested_samples[preload_idx];
 
@@ -2913,10 +2922,11 @@ void MK_load(s32 table_type, s32 id, u8* done_p) {
 
 void MK_FrameWork(void) {
     s32 idx;
-    u32 ret;
+    OSMesg ret_msg;
     u8* rmes;
 
-    if (Z_osRecvMesg(&MK_QUEUE, (OSMesg*)&ret, OS_MESG_NOBLOCK) != -1) {
+    if (Z_osRecvMesg(&MK_QUEUE, &ret_msg, OS_MESG_NOBLOCK) != -1) {
+        u32 ret = (u32)(uintptr_t)ret_msg;
         idx = ret >> 24;
         rmes = MK_RMES[idx];
         if (rmes != NULL) {

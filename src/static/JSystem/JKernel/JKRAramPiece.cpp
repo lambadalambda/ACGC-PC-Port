@@ -33,6 +33,7 @@ JKRAMCommand* JKRAramPiece::orderAsync(int direction, u32 source, u32 destinatio
                                        JKRAMCommand::AMCommandCallback callback) {
     JKRAramPiece::lock();
 
+#if !defined(TARGET_PC)
     if (!JKR_ISALIGNED32(source) || !JKR_ISALIGNED32(destination)) {
         JLOGF("direction = %x\n", direction);
         JLOGF("source = %x\n", source);
@@ -40,6 +41,7 @@ JKRAMCommand* JKRAramPiece::orderAsync(int direction, u32 source, u32 destinatio
         JLOGF("length = %x\n", length);
         JPANICLINE(102);
     }
+#endif
 
     JKRAMCommand* cmd = JKRAramPiece::prepareCommand(direction, source, destination, length, aramBlock, callback);
 
@@ -103,7 +105,12 @@ void JKRAramPiece::startDMA(JKRAMCommand* cmd) {
 }
 
 void JKRAramPiece::doneDMA(u32 param) {
-    JKRAMCommand* cmd = (JKRAMCommand*)param;
+    JKRAMCommand* cmd =
+#ifdef TARGET_PC
+        (JKRAMCommand*)pc_aram_host_addr_decode(param);
+#else
+        (JKRAMCommand*)param;
+#endif
     if (cmd->mDirection == ARAM_DIR_ARAM_TO_MRAM) {
         DCInvalidateRange((u8*)cmd->mDestination, cmd->mLength);
     }

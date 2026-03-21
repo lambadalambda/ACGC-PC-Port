@@ -12,11 +12,17 @@
 
 #define JAUDIO_U32_CALLBACK(type, value) ((type)(uintptr_t)(value))
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+static uintptr_t sAudioPortPtrParam[256];
+static u8 sAudioPortHasPtrParam[256];
+#endif
+
 static void __Nas_GroupFadeOut(s32 group, s32 fadeout_timer);
 static void __Nas_GroupFadeIn(s32 group, s32 fadein_timer);
 static s32 Nap_SilenceCheck_Inner(s32 flags);
 static void __SetGrpParam(group* group, AudioPort* port);
 static void __SetSubParam(sub* subtrack, AudioPort* port);
+static uintptr_t Nap_PortGetPtr(const AudioPort* port);
 
 static void Nap_AudioSysProcess(AudioPort* port) {
     group* group = AG.groups_p[port->command.arg0];
@@ -130,15 +136,15 @@ static void Nap_AudioSysProcess(AudioPort* port) {
             AG.main_group.subtracks[0]->changes.flags.volume = TRUE;
             break;
         case AUDIOCMD_SET_VFRAME_CALLBACK:
-            NA_VFRAME_CALLBACK = JAUDIO_U32_CALLBACK(VFRAME_CALLBACK, port->param.asU32);
+            NA_VFRAME_CALLBACK = JAUDIO_U32_CALLBACK(VFRAME_CALLBACK, Nap_PortGetPtr(port));
             break;
         case AUDIOCMD_SET_CALLBACK:
             if (port->command.arg2 == AUDIO_CALLBACK_SOUND) {
-                NA_SOUND_CALLBACK = JAUDIO_U32_CALLBACK(SOUND_CALLBACK, port->param.asU32);
+                NA_SOUND_CALLBACK = JAUDIO_U32_CALLBACK(SOUND_CALLBACK, Nap_PortGetPtr(port));
             } else if (port->command.arg2 == AUDIO_CALLBACK_DACOUT) {
-                NA_DACOUT_CALLBACK = JAUDIO_U32_CALLBACK(DACOUT_CALLBACK, port->param.asU32);
+                NA_DACOUT_CALLBACK = JAUDIO_U32_CALLBACK(DACOUT_CALLBACK, Nap_PortGetPtr(port));
             } else {
-                AG.seq_callbacks[port->command.arg2] = JAUDIO_U32_CALLBACK(SequenceCallback, port->param.asU32);
+                AG.seq_callbacks[port->command.arg2] = JAUDIO_U32_CALLBACK(SequenceCallback, Nap_PortGetPtr(port));
             }
             break;
         case AUDIOCMD_SET_PERC_BANK:
@@ -198,9 +204,20 @@ static void __Nas_GroupFadeIn(s32 groupId, s32 fadein_time) {
 }
 
 extern void Nap_AudioPortInit(void) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    s32 i;
+#endif
+
     AG.thread_cmd_write_pos = 0;
     AG.thread_cmd_read_pos = 0;
     AG.thread_cmd_queue_finished = FALSE;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    for (i = 0; i < ARRAY_COUNT(sAudioPortPtrParam); i++) {
+        sAudioPortPtrParam[i] = 0;
+        sAudioPortHasPtrParam[i] = FALSE;
+    }
+#endif
 
     AG.task_start_mq_p = &AG.task_start_mq;
     AG.thread_cmd_proc_mq_p = &AG.thread_cmd_proc_mq;
@@ -212,16 +229,29 @@ extern void Nap_AudioPortInit(void) {
     AG.spec_change_mq_p->validCount;
 }
 
-static void Nap_PortSet(u32 data, s32* param_p) {
-    AudioPort* port_p = &AG.audio_port_cmds[AG.thread_cmd_write_pos & 0xFF];
+static void Nap_PortSetInternal(u32 data, s32* param_p, uintptr_t ptr_param, u8 has_ptr_param) {
+    u32 slot = AG.thread_cmd_write_pos & 0xFF;
+    AudioPort* port_p = &AG.audio_port_cmds[slot];
 
     port_p->raw_cmd = data;
     port_p->param.asS32 = *param_p;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    sAudioPortPtrParam[slot] = ptr_param;
+    sAudioPortHasPtrParam[slot] = has_ptr_param;
+#else
+    (void)ptr_param;
+    (void)has_ptr_param;
+#endif
 
     AG.thread_cmd_write_pos++;
     if (AG.thread_cmd_write_pos == AG.thread_cmd_read_pos) {
         AG.thread_cmd_write_pos--;
     }
+}
+
+static void Nap_PortSet(u32 data, s32* param_p) {
+    Nap_PortSetInternal(data, param_p, 0, FALSE);
 }
 
 extern void Nap_SetF32(u32 cmd, f32 param) {
@@ -230,6 +260,28 @@ extern void Nap_SetF32(u32 cmd, f32 param) {
 
 extern void Nap_SetS32(u32 cmd, s32 param) {
     Nap_PortSet(cmd, (s32*)&param);
+}
+
+extern void Nap_SetPtr(u32 cmd, uintptr_t param) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    s32 mod_param = 0;
+    Nap_PortSetInternal(cmd, &mod_param, param, TRUE);
+#else
+    s32 mod_param = (s32)param;
+    Nap_PortSet(cmd, &mod_param);
+#endif
+}
+
+static uintptr_t Nap_PortGetPtr(const AudioPort* port) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    size_t slot = (size_t)(port - AG.audio_port_cmds) & 0xFFu;
+
+    if (sAudioPortHasPtrParam[slot]) {
+        return sAudioPortPtrParam[slot];
+    }
+#endif
+
+    return (uintptr_t)port->param.asU32;
 }
 
 extern void Nap_SetS8(u32 cmd, s8 param) {
@@ -341,12 +393,18 @@ extern void Nap_AudioPortProcess(u32 msg) {
         }
 
         Nap_Process1Command(port);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        sAudioPortPtrParam[now] = 0;
+        sAudioPortHasPtrParam[now] = FALSE;
+#endif
+
         port->command.opcode = AUDIOCMD_NOOP;
     }
 }
 
 extern s32 Nap_CheckSpecChange(void) {
-    s32 msg;
+    OSMesg msg;
     s32 res;
 
     /* Spec-change is not complete until reset pipeline fully settles. */
@@ -354,11 +412,11 @@ extern s32 Nap_CheckSpecChange(void) {
         return 0;
     }
 
-    res = Z_osRecvMesg(AG.spec_change_mq_p, (OSMesg*)&msg, OS_MESG_NOBLOCK);
+    res = Z_osRecvMesg(AG.spec_change_mq_p, &msg, OS_MESG_NOBLOCK);
 
     if (res == -1) {
         return 0;
-    } else if (msg != AG.spec_id) {
+    } else if ((u32)(uintptr_t)msg != AG.spec_id) {
         return -1;
     } else {
         return 1;
@@ -366,11 +424,11 @@ extern s32 Nap_CheckSpecChange(void) {
 }
 
 static void __ClearSpecChangeQ(void) {
-    s32 msg;
+    OSMesg msg;
     s32 res;
 
     do {
-        res = Z_osRecvMesg(AG.spec_change_mq_p, (OSMesg*)&msg, OS_MESG_NOBLOCK);
+        res = Z_osRecvMesg(AG.spec_change_mq_p, &msg, OS_MESG_NOBLOCK);
     } while (res != -1);
 }
 
@@ -581,12 +639,12 @@ static void __SetSubParam(sub* subtrack, AudioPort* port) {
             subtrack->sample_start_pos = port->param.asS32;
             break;
         case AUDIOCMD_OP_SUB_SET_SFX_STATE:
-            subtrack->sfx_state = (u8*)port->param.asVoidPtr;
+            subtrack->sfx_state = (u8*)Nap_PortGetPtr(port);
             break;
         case AUDIOCMD_OP_SUB_SET_FILTER:
             filter_cutoff = port->command.arg2;
             if (port->param.asS32 != 0) {
-                subtrack->filter = (s16*)port->param.asVoidPtr;
+                subtrack->filter = (s16*)Nap_PortGetPtr(port);
             }
 
             if (subtrack->filter != nullptr) {
@@ -716,10 +774,10 @@ extern s32 CreateAudioTask(Acmd* cmds, s16* pSamples, u32 nSamples, s32 param_4)
 
         port_cmds = 0;
         if (AG.reset_status == 0) {
-            u32 msg;
+            OSMesg msg;
 
-            while (Z_osRecvMesg(AG.thread_cmd_proc_mq_p, (OSMesg*)&msg, OS_MESG_NOBLOCK) != -1) {
-                Nap_AudioPortProcess(msg);
+            while (Z_osRecvMesg(AG.thread_cmd_proc_mq_p, &msg, OS_MESG_NOBLOCK) != -1) {
+                Nap_AudioPortProcess((u32)(uintptr_t)msg);
                 port_cmds++;
             }
 

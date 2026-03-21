@@ -1,5 +1,9 @@
 #include <dolphin/os.h>
 
+#include <string.h>
+
+#include <dolphin/ar.h>
+
 #include "JSystem/JKernel/JKRAram.h"
 #include "JSystem/JSupport/JSUStream.h"
 #include "JSystem/JSystem.h"
@@ -18,6 +22,10 @@ u32 JKRAramStream::transSize = (u32)0;
 JKRHeap* JKRAramStream::transHeap = nullptr;
 
 #define JKR_ARAM_STREAM_HOST_ADDR(ptr) PC_RUNTIME_U32_PTR(ptr)
+
+#if defined(TARGET_PC)
+extern "C" u8* pc_aram_get_base(void);
+#endif
 
 JKRAramStream* JKRAramStream::create(s32 param) {
     if (JKRAramStream::sAramStreamObject == nullptr) {
@@ -98,11 +106,40 @@ s32 JKRAramStream::writeToAram(JKRAramStreamCommand* command) {
             u32 length = (dstSize > bufferSize) ? bufferSize : dstSize;
 
             s32 readLength = command->mStream->read(buffer, length);
+            if (readLength <= 0) {
+                break;
+            }
 
-            JKRAramPcs(0, JKR_ARAM_STREAM_HOST_ADDR(buffer), destination, length, nullptr);
-            dstSize -= length;
-            writtenLength += length;
-            destination += length;
+            u32 copyLength = (u32)readLength;
+            if (copyLength > length) {
+                copyLength = length;
+            }
+
+#ifdef TARGET_PC
+            u8* aram_base = pc_aram_get_base();
+            if (aram_base != nullptr) {
+                u32 aramSize = ARGetSize();
+                if (destination >= aramSize) {
+                    break;
+                }
+
+                u32 maxCopy = aramSize - destination;
+                if (copyLength > maxCopy) {
+                    copyLength = maxCopy;
+                }
+
+                if (copyLength == 0) {
+                    break;
+                }
+
+                memcpy(aram_base + destination, buffer, copyLength);
+            }
+#else
+            JKRAramPcs(0, JKR_ARAM_STREAM_HOST_ADDR(buffer), destination, copyLength, nullptr);
+#endif
+            dstSize -= copyLength;
+            writtenLength += copyLength;
+            destination += copyLength;
         }
 
         if (command->mAllocatedTransferBuffer) {

@@ -2,7 +2,6 @@
 
 #include "jaudio_NES/connect.h"
 #include "jaudio_NES/bx.h"
-#include "pc_runtime_ptr.h"
 
 #define BANKP_SIZE (0x100)
 static Bank_* bankp[BANKP_SIZE];
@@ -12,12 +11,28 @@ static Bank_* bankp[BANKP_SIZE];
  * Address:	8000BE00
  * Size:	000024
  */
-static void PTconvert(void** pointer, u32 base_address)
+static void PTconvert(void** pointer, uintptr_t base_address)
 {
-	if (*pointer >= (void*)base_address || *pointer == NULL) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+	u32 raw_ofs;
+
+	if ((uintptr_t)*pointer >= base_address) {
 		return;
 	}
-	*pointer = *(char**)pointer + base_address;
+
+	raw_ofs = *(u32*)pointer;
+	if (raw_ofs == 0) {
+		*pointer = NULL;
+		return;
+	}
+
+	*pointer = (void*)(base_address + (uintptr_t)raw_ofs);
+#else
+	if ((uintptr_t)*pointer >= base_address || *pointer == NULL) {
+		return;
+	}
+	*pointer = (void*)((uintptr_t)(*(char**)pointer) + base_address);
+#endif
 }
 
 /*
@@ -28,7 +43,7 @@ static void PTconvert(void** pointer, u32 base_address)
 Bank_* Bank_Test(u8* ibnk_address)
 {
 	u32 i, j, k;
-	u32 base_addr    = PC_RUNTIME_U32_PTR(ibnk_address);
+	uintptr_t base_addr = (uintptr_t)ibnk_address;
 	Bank_* startBank = (Bank_*)(ibnk_address + 0x20);
 	if (startBank->mMagic != 'BANK') {
 		return NULL;
@@ -114,11 +129,18 @@ Bank_* Bank_Test(u8* ibnk_address)
  */
 static BOOL __Bank_Regist_Inner(u8* ibnk, u32 param_2, u32 param_3)
 {
+	#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+	(void)ibnk;
+	Jac_BnkConnectTableSet(param_3, param_2);
+	bankp[param_2] = NULL;
+	return TRUE;
+	#else
 	Jac_BnkConnectTableSet(param_3, param_2);
 	bankp[param_2] = Bank_Test(ibnk);
 	if (!bankp[param_2])
 		return FALSE;
 	return TRUE;
+	#endif
 }
 
 /*

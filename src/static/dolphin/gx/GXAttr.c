@@ -3,6 +3,7 @@
 #include <macros.h>
 
 #include "gx/__gx.h"
+#include "pc_runtime_ptr.h"
 
 #define CHECK_ATTRPTR(line, attrPtr) ASSERTMSGLINE(line, (attrPtr) != NULL, "GXSetVtxDescv: attrPtr is NULL")
 #define CHECK_ATTRNAME(line, attr)   ASSERTMSGLINE(line, (attr) >= GX_VA_PNMTXIDX && (attr) < GX_VA_MAX_ATTR, "GXSetVtxDesc: Invalid vertex attribute name")
@@ -448,6 +449,7 @@ void GXSetArray(GXAttr attr, const void *base_ptr, u8 stride)
 {
     GXAttr cpAttr;
     unsigned long phyAddr;
+    u32 baseAddr;
 
     attr;  // needed to match
 
@@ -457,7 +459,8 @@ void GXSetArray(GXAttr attr, const void *base_ptr, u8 stride)
     }
     CHECK_ATTRNAME3(872, attr);
     cpAttr = attr - GX_VA_POS;
-    phyAddr = (u32)base_ptr & 0x3FFFFFFF;
+    baseAddr = PC_RUNTIME_U32_PTR(base_ptr);
+    phyAddr = baseAddr & 0x3FFFFFFF;
     GX_WRITE_SOME_REG2(8, cpAttr | 0xA0, phyAddr, cpAttr - 12);
     GX_WRITE_SOME_REG3(8, cpAttr | 0xB0, stride, cpAttr - 12);
 }

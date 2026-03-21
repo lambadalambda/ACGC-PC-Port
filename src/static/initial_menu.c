@@ -102,43 +102,9 @@ static Gfx logo_initial_dl[] = {
   gsSPEndDisplayList(),
 };
 
-static Gfx logo_draw_dl[] = {
-  gsSPDisplayList(logo_initial_dl),
-  gsSPDisplayList(gam_win1_moji_setup),
-  gsDPSetPrimColor(0, 255, 220, 0, 0, 255),
-  gsSPMatrix(&logo_model_scale, G_MTX_PUSH | G_MTX_LOAD | G_MTX_MODELVIEW),
-  gsSPDisplayList(logo_ninT_model),
-  gsSPPopMatrix(G_MTX_MODELVIEW),
-  gsSPEndDisplayList(),
-};
-
-static Gfx step1_draw_dl[] = {
-  gsSPDisplayList(initial_dl),
-  gsSPDisplayList(gam_win1_moji_setup),
-  gsSPDisplayList(gam_win1_winT_model),
-  gsSPDisplayList(gam_win1_moji_model),
-  gsDPSetPrimColor(0, 255, 90, 90, 155, 255),
-  gsSPDisplayList(0x08000000),
-  gsDPSetPrimColor(0, 255, 50, 30, 150, 255),
-  gsSPDisplayList(0x09000000),
-  gsSPDisplayList(gam_win1_cursor_setup),
-  gsSPMatrix(&model_cursor, G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW),
-  gsSPDisplayList(gam_win1_cursor_model),
-  gsSPPopMatrix(G_MTX_MODELVIEW),
-  gsSPEndDisplayList(),
-};
-
-static Gfx step2_draw_dl[] = {
-  gsSPDisplayList(initial_dl), /* call initial dl */
-  gsSPDisplayList(gam_win1_moji_setup), /* call gam_win1_moji_setup */
-  gsDPSetPrimColor(0, 255, 225, 255, 255, 255), /* set primitive color to off-white */
-  gsSPDisplayList(gam_win2_winT_model), /* call gam_win2_winT_model */
-  gsDPSetPrimColor(0, 255, 50, 50, 60, 255), /* set primitive color to dark blue-gray */
-  gsSPDisplayList(0x08000000), /* call progressive mode model set in step2_make_dl */
-  gsSPEndDisplayList(),
-};
-
 static int pad_good_frame_count = -1;
+
+extern void make_dl_nintendo_logo(Gfx** gpp, u32 alpha);
 
 static void step0_make_dl(Gfx** gpp) {
   Gfx* g = *gpp;
@@ -170,7 +136,7 @@ static void step0_make_dl(Gfx** gpp) {
     JW_JUTReport(150, 410, 1, "SHOP PROMOTE VERSION");
   }
 
-  gSPDisplayList(g++, logo_draw_dl);
+  make_dl_nintendo_logo(&g, 255);
   *gpp = g;
 }
 
@@ -202,7 +168,18 @@ static void step1_make_dl(Gfx** gpp) {
   
   gSPSegment(g++, G_MWO_SEGMENT_8, yes_no_model[progressive_mode]); /* segment 8 is yes/no */
   gSPSegment(g++, G_MWO_SEGMENT_9, yes_no_model[progressive_mode ^ 1]); /* segment 9 is inverse yes/no */
-  gSPDisplayList(g++, step1_draw_dl); /* call step1 display list  */
+  gSPDisplayList(g++, initial_dl);
+  gSPDisplayList(g++, gam_win1_moji_setup);
+  gSPDisplayList(g++, gam_win1_winT_model);
+  gSPDisplayList(g++, gam_win1_moji_model);
+  gDPSetPrimColor(g++, 0, 255, 90, 90, 155, 255);
+  gSPDisplayList(g++, SEGMENT_ADDR(8, 0));
+  gDPSetPrimColor(g++, 0, 255, 50, 30, 150, 255);
+  gSPDisplayList(g++, SEGMENT_ADDR(9, 0));
+  gSPDisplayList(g++, gam_win1_cursor_setup);
+  gSPMatrix(g++, &model_cursor, G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW);
+  gSPDisplayList(g++, gam_win1_cursor_model);
+  gSPPopMatrix(g++, G_MTX_MODELVIEW);
 
   *gpp = g;
 }
@@ -211,7 +188,12 @@ static void step2_make_dl(Gfx** gpp) {
   Gfx* g = *gpp;
 
   gSPSegment(g++, G_MWO_SEGMENT_8, progressive_mode != 0 ? gam_win2_moji_model : gam_win3_moji_model);
-  gSPDisplayList(g++, step2_draw_dl);
+  gSPDisplayList(g++, initial_dl);
+  gSPDisplayList(g++, gam_win1_moji_setup);
+  gDPSetPrimColor(g++, 0, 255, 225, 255, 255, 255);
+  gSPDisplayList(g++, gam_win2_winT_model);
+  gDPSetPrimColor(g++, 0, 255, 50, 50, 60, 255);
+  gSPDisplayList(g++, SEGMENT_ADDR(8, 0));
 
   *gpp = g;
 }

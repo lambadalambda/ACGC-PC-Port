@@ -158,12 +158,73 @@ uintptr_t pc_crash_get_addr(void) {
     return pc_last_crash_addr;
 }
 
+static int pc_sdl_init_with_probe(Uint32 flags) {
+    const char* probe = getenv("PC_SDL_INIT_PROBE");
+    if (probe == NULL || probe[0] == '\0' || probe[0] == '0') {
+        return SDL_Init(flags);
+    }
+
+    static const struct {
+        Uint32 flag;
+        const char* name;
+    } sdl_subsystems[] = {
+        { SDL_INIT_VIDEO, "VIDEO" },
+        { SDL_INIT_GAMECONTROLLER, "GAMECONTROLLER" },
+        { SDL_INIT_AUDIO, "AUDIO" },
+        { SDL_INIT_TIMER, "TIMER" },
+    };
+
+    if (g_pc_verbose) {
+        printf("[PC] SDL init probe enabled (PC_SDL_INIT_PROBE=%s)\n", probe);
+    }
+
+    if (SDL_Init(0) < 0) {
+        return -1;
+    }
+
+    for (size_t i = 0; i < (sizeof(sdl_subsystems) / sizeof(sdl_subsystems[0])); i++) {
+        if ((flags & sdl_subsystems[i].flag) == 0) {
+            continue;
+        }
+
+        if (g_pc_verbose) {
+            printf("[PC] SDL init probe: initializing %s\n", sdl_subsystems[i].name);
+        }
+
+        if (SDL_InitSubSystem(sdl_subsystems[i].flag) < 0) {
+            fprintf(stderr, "SDL_InitSubSystem(%s) failed: %s\n", sdl_subsystems[i].name, SDL_GetError());
+            SDL_Quit();
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+static Uint32 pc_sdl_init_flags(void) {
+    Uint32 flags = SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+
+#if defined(__APPLE__)
+    {
+        const char* skip_controller = getenv("PC_SKIP_SDL_GAMECONTROLLER");
+        if (skip_controller != NULL && skip_controller[0] != '\0' && skip_controller[0] != '0') {
+            flags &= ~SDL_INIT_GAMECONTROLLER;
+            if (g_pc_verbose) {
+                printf("[PC] Skipping SDL_INIT_GAMECONTROLLER (PC_SKIP_SDL_GAMECONTROLLER=%s)\n", skip_controller);
+            }
+        }
+    }
+#endif
+
+    return flags;
+}
+
 void pc_platform_init(void) {
 #ifdef _WIN32
     SetProcessDPIAware();
 
 #endif
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+    if (pc_sdl_init_with_probe(pc_sdl_init_flags()) < 0) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         exit(1);
     }

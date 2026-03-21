@@ -132,6 +132,10 @@ void pc_audio_start_producer_thread(void);
 void pc_audio_mq_init(void);
 void pc_audio_mq_shutdown(void);
 
+/* --- Main memory arena (RDRAM backing on PC) --- */
+void* pc_os_get_arena_base(void);
+u32   pc_os_get_arena_size(void);
+
 #ifdef __cplusplus
 }
 #endif

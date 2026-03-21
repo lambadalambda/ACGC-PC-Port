@@ -1,6 +1,7 @@
 #include "jsyswrap_cpp.h"
 
 #include "JSystem/JSystem.h"
+#include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JUtility/JUTGamePad.h"
 #include "JSystem/JUtility/TColor.h"
 #include "libforest/emu64.h"
@@ -491,12 +492,16 @@ extern void JW_Init() {
     void* arena_hi = OSGetArenaHi();
     void* arena_lo = OSGetArenaLo();
     uintptr_t system_heap_size = (uintptr_t)arena_hi - (uintptr_t)arena_lo;
+    uintptr_t root_heap_header_size = ((uintptr_t)sizeof(JKRExpHeap) + 0xF) & ~(uintptr_t)0xF;
+    uintptr_t root_heap_align_slop = (((uintptr_t)sizeof(JKRExpHeap::CMemBlock) + 0xF) & ~(uintptr_t)0xF) -
+                                      (uintptr_t)sizeof(JKRExpHeap::CMemBlock);
+    uintptr_t root_heap_reserve = root_heap_header_size + 0x10 + root_heap_align_slop;
 
-    if (system_heap_size < 0xD0 || system_heap_size - 0xD0 > 0xFFFFFFFFu) {
+    if (system_heap_size < root_heap_reserve || system_heap_size - root_heap_reserve > 0xFFFFFFFFu) {
         OSPanic(__FILE__, __LINE__, "JW_Init(): system heap size exceeds u32");
     }
 
-    system_heap_size -= 0xD0;
+    system_heap_size -= root_heap_reserve;
     SystemHeapSize = PC_RUNTIME_U32_PTR(system_heap_size);
     JC_JFWSystem_setMaxStdHeap(1);
     JC_JFWSystem_setSysHeapSize(SystemHeapSize);

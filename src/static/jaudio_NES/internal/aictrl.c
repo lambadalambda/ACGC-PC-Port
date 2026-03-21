@@ -6,7 +6,6 @@
 #include "jaudio_NES/dspbuf.h"
 #include "jaudio_NES/streamctrl.h"
 #include "jaudio_NES/rate.h"
-#include "pc_runtime_ptr.h"
 #include "dolphin/os.h"
 #include "dolphin/ai.h"
 
@@ -61,7 +60,7 @@ extern void Jac_Init(void) {
     }
 
     AIInit(nullptr);
-    AIInitDMA(PC_RUNTIME_U32_PTR(dac[2]), DAC_SIZE * 2);
+    AIInitDMA((uintptr_t)dac[2], DAC_SIZE * 2);
 }
 
 static void MixMonoTrack(s16* track, s32 nSamples, MixCallback callback) {
@@ -283,7 +282,7 @@ extern void Jac_UpdateDAC(void) {
     }
 
     if (use_rsp_madep != nullptr) {
-        AIInitDMA(PC_RUNTIME_U32_PTR(use_rsp_madep), DAC_SIZE * 2);
+        AIInitDMA((uintptr_t)use_rsp_madep, DAC_SIZE * 2);
         use_rsp_madep = nullptr;
     } else {
         UNIVERSAL_DACCOUNTER++;

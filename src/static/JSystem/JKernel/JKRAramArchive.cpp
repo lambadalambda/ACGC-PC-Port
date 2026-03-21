@@ -219,7 +219,7 @@ bool JKRAramArchive::open(s32 entryNum) {
                          aramSize, mBlock->getAddress());
 #endif
                 JKRDvdToAram(entryNum, mBlock->getAddress(), EXPAND_SWITCH_DECOMPRESS,
-                             mem->header_length + mem->file_data_offset, 0);
+                             mem->header_length + mem->file_data_offset, mem->file_length);
             }
         }
     }

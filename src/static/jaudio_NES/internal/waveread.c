@@ -3,7 +3,6 @@
 #include "jaudio_NES/connect.h"
 #include "jaudio_NES/heapctrl.h"
 #include "jaudio_NES/bx.h"
-#include "pc_runtime_ptr.h"
 
 #define WAVEARC_SIZE   (0x100)
 #define WAVEGROUP_SIZE (0x100)
@@ -18,16 +17,32 @@ CtrlGroup_* CGRP_ARRAY[16];
  * Size:	000038
  */
 
-static void PTconvert(void** pointer, u32 base_address)
+static void PTconvert(void** pointer, uintptr_t base_address)
 {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+	u32 raw_ofs;
+
+	if ((uintptr_t)*pointer >= base_address) {
+		return;
+	}
+
+	raw_ofs = *(u32*)pointer;
+	if (raw_ofs == 0) {
+		*pointer = NULL;
+		return;
+	}
+
+	*pointer = (void*)(base_address + (uintptr_t)raw_ofs);
+#else
 	if (*pointer == NULL) {
 		*pointer = NULL;
 		return;
 	}
-	if (*pointer >= (void*)base_address || *pointer == NULL) {
+	if ((uintptr_t)*pointer >= base_address || *pointer == NULL) {
 		return;
 	}
-	*pointer = *(char**)pointer + base_address;
+	*pointer = (void*)((uintptr_t)(*(char**)pointer) + base_address);
+#endif
 }
 
 /*
@@ -37,7 +52,7 @@ static void PTconvert(void** pointer, u32 base_address)
  */
 CtrlGroup_* Wave_Test(u8* data)
 {
-    u32 base_addr = PC_RUNTIME_U32_PTR(data);
+	uintptr_t base_addr = (uintptr_t)data;
 	CtrlGroup_* group;
 	SCNE_* scene;
 	Ctrl_* cst;
@@ -126,6 +141,13 @@ void GetSound_Test(u32 id)
  */
 BOOL Wavegroup_Regist(void* wsysData, u32 id)
 {
+	#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+	Wsys_* wsys = (Wsys_*)wsysData;
+	Jac_WsConnectTableSet(wsys->globalID, id);
+	wavegroup[id] = NULL;
+	wavearc[id] = NULL;
+	return TRUE;
+	#else
 	Wsys_* wsys = (Wsys_*)wsysData;
 	Jac_WsConnectTableSet(wsys->globalID, id);
 	wavegroup[id] = Wave_Test((u8*)wsys);
@@ -136,6 +158,7 @@ BOOL Wavegroup_Regist(void* wsysData, u32 id)
 	}
 	wavegroup[id]->_04 = 0;
 	return TRUE;
+	#endif
 }
 
 /*

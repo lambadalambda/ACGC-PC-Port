@@ -26,6 +26,19 @@
 
 #define _GBI_STATIC_PTR(s) PC_STATIC_U32_PTR(s)
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#ifdef __cplusplus
+extern "C" {
+#endif
+unsigned int pc_gbi_ptr_encode(const void* ptr);
+#ifdef __cplusplus
+}
+#endif
+#define GBI_PTR_WORD(s) pc_gbi_ptr_encode((const void*)(s))
+#else
+#define GBI_PTR_WORD(s) PC_RUNTIME_U32_PTR(s)
+#endif
+
 /*
  * To use the F3DEX ucodes, define F3DEX_GBI before include this file.
  *
@@ -1136,7 +1149,7 @@ typedef struct {
  * First 8 words are integer portion of the 4x4 matrix
  * Last 8 words are the fraction portion of the 4x4 matrix
  */
-typedef long	Mtx_t[4][4];
+typedef s32	Mtx_t[4][4];
 
 typedef union {
     Mtx_t		m;
@@ -1424,7 +1437,7 @@ typedef struct {
 
 typedef union {
     Hilite_t	h;
-    long int	force_structure_alignment[4];
+    s32	force_structure_alignment[4];
 } Hilite;
 
 #define gdSPDefLights0(ar,ag,ab)					\
@@ -1689,7 +1702,7 @@ typedef struct {
 		unsigned int	prim_min_level:8;
 		unsigned int	pad:8;
 		int		cmd:8;
-		unsigned long	color;
+		unsigned int	color;
 } Gsetcolor;
 #else
 typedef struct {
@@ -1697,7 +1710,7 @@ typedef struct {
 		unsigned char	pad;
 		unsigned char	prim_min_level;
 		unsigned char	prim_level;
-		unsigned long	color;
+		unsigned int	color;
 } Gsetcolor;
 #endif
 
@@ -1836,10 +1849,10 @@ typedef struct {
  * Textured rectangles are 128 bits not 64 bits
  */	
 typedef struct {
-    unsigned long w0;
-    unsigned long w1;
-    unsigned long w2;
-    unsigned long w3;
+    unsigned int w0;
+    unsigned int w1;
+    unsigned int w2;
+    unsigned int w3;
 } TexRect;
 
 /*
@@ -1888,7 +1901,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 									\
 	_g->words.w0 = _SHIFTL((c), 24, 8) | _SHIFTL((l), 0, 24);	\
-	_g->words.w1 = PC_RUNTIME_U32_PTR(s);				\
+	_g->words.w1 = GBI_PTR_WORD(s);					\
 }
 
 #define	gsDma0p(c, s, l)						\
@@ -1902,7 +1915,7 @@ typedef union {
 									\
 	_g->words.w0 = (_SHIFTL((c), 24, 8) | _SHIFTL((p), 16, 8) |	\
 			_SHIFTL((l), 0, 16));				\
-	_g->words.w1 = PC_RUNTIME_U32_PTR(s);				\
+	_g->words.w1 = GBI_PTR_WORD(s);					\
 }
 
 #define	gsDma1p(c, s, l, p)						\
@@ -1917,7 +1930,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 = (_SHIFTL((c),24,8)|_SHIFTL(((len)-1)/8,19,5)|	\
 			_SHIFTL((ofs)/8,8,8)|_SHIFTL((idx),0,8));	\
-	_g->words.w1 = PC_RUNTIME_U32_PTR(adrs);				\
+	_g->words.w1 = GBI_PTR_WORD(adrs);				\
 }
 #define	gsDma2p(c, adrs, len, idx, ofs)					\
 {{									\
@@ -1954,7 +1967,7 @@ typedef union {
 	Gfx *_g = (Gfx *)(pkt);						\
 	_g->words.w0 =							\
 	  _SHIFTL(G_VTX,24,8)|_SHIFTL((n),12,8)|_SHIFTL((v0)+(n),1,7);	\
-	_g->words.w1 = PC_RUNTIME_U32_PTR(v);				\
+	_g->words.w1 = GBI_PTR_WORD(v);					\
 }
 # define	gsSPVertex(v, n, v0)					\
 {{									\
@@ -2077,9 +2090,20 @@ typedef union {
 
 #ifdef	F3DEX_GBI_2
 #define gMoveWd(pkt, index, offset, data)				\
-	gDma1p((pkt), G_MOVEWORD, data, offset, index)
+	{								\
+		Gfx *_g = (Gfx *)(pkt);				\
+		_g->words.w0 = (_SHIFTL(G_MOVEWORD, 24, 8) |	\
+				_SHIFTL((index), 16, 8) |		\
+				_SHIFTL((offset), 0, 16));		\
+		_g->words.w1 = (unsigned int)(data);			\
+	}
 #define gsMoveWd(    index, offset, data)				\
-	gsDma1p(      G_MOVEWORD, data, offset, index)
+	{{								\
+		(_SHIFTL(G_MOVEWORD, 24, 8) |			\
+		 _SHIFTL((index), 16, 8) |			\
+		 _SHIFTL((offset), 0, 16)),			\
+		(unsigned int)(data)					\
+	}}
 #else	/* F3DEX_GBI_2 */
 #define gMoveWd(pkt, index, offset, data)				\
 	gImmp21((pkt), G_MOVEWORD, offset, index, data)
@@ -2369,9 +2393,9 @@ typedef union {
 #endif
 
 #define gSPSegment(pkt, segment, base)					\
-	gMoveWd(pkt, G_MW_SEGMENT, (segment)*4, base)
+	gMoveWd(pkt, G_MW_SEGMENT, (segment)*4, GBI_PTR_WORD(base))
 #define gsSPSegment(segment, base)					\
-	gsMoveWd(    G_MW_SEGMENT, (segment)*4, base)
+	gsMoveWd(    G_MW_SEGMENT, (segment)*4, _GBI_STATIC_PTR(base))
 
 /*
  * Clipping Macros

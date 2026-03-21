@@ -406,7 +406,7 @@ u32 dmaBufferFlush(u32 src) {
     if (dmaCurrent == dmaBuf) {
         return 0;
     } else {
-        u32 length = (u32)ALIGN_NEXT((uintptr_t)(dmaCurrent - dmaBuf), 32);
+        u32 length = PC_RUNTIME_U32_PTR(ALIGN_NEXT((uintptr_t)(dmaCurrent - dmaBuf), 32));
         JKRAramPiece::orderSync(0, JKR_DVD_ARAM_HOST_ADDR(dmaBuf), src, length, nullptr);
         dmaCurrent = dmaBuf;
         return length;

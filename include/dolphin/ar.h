@@ -51,6 +51,11 @@ void ARSetSize();
 u32 ARGetInternalSize();
 void ARClear(u32 flag);
 
+#ifdef TARGET_PC
+u32 pc_aram_host_addr_encode(const void* ptr);
+void* pc_aram_host_addr_decode(u32 addr);
+#endif
+
 ////////////////////////////////////////////
 
 //////////////// AR DEFINES ////////////////

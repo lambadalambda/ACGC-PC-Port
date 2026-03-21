@@ -3,6 +3,7 @@
 #include <macros.h>
 
 #include "gx/__gx.h"
+#include "pc_runtime_ptr.h"
 
 // GXTexObj internal data
 typedef struct __GXTexObjInt_struct {
@@ -161,6 +162,7 @@ void __GetImageTileCount(enum _GXTexFmt fmt, u16 wd, u16 ht, u32 *rowTiles, u32 
 void GXInitTexObj(GXTexObj *obj, void *image_ptr, u16 width, u16 height, GXTexFmt format, GXTexWrapMode wrap_s, GXTexWrapMode wrap_t, u8 mipmap)
 {
     u32 imageBase;
+    u32 imagePtr;
     u32 maxLOD;
     u16 rowT;
     u16 colT;
@@ -211,8 +213,9 @@ void GXInitTexObj(GXTexObj *obj, void *image_ptr, u16 width, u16 height, GXTexFm
     SET_REG_FIELD(0x265, t->image0, 10, 0, width - 1);
     SET_REG_FIELD(0x266, t->image0, 10, 10, height - 1);
     SET_REG_FIELD(0x267, t->image0, 4, 20, format & 0xF);
-    ASSERTMSGLINEV(0x26D, ((u32)image_ptr & 0x1F) == 0, "%s: %s pointer not aligned to 32B", "GXInitTexObj", "image");
-    imageBase = (u32)((u32)image_ptr >> 5) & 0x01FFFFFF;
+    imagePtr = PC_RUNTIME_U32_PTR(image_ptr);
+    ASSERTMSGLINEV(0x26D, (imagePtr & 0x1F) == 0, "%s: %s pointer not aligned to 32B", "GXInitTexObj", "image");
+    imageBase = (imagePtr >> 5) & 0x01FFFFFF;
     SET_REG_FIELD(0x26F, t->image3, 21, 0, imageBase);
     switch (format & 0xF) {
     case 0:
@@ -314,12 +317,14 @@ void GXInitTexObjLOD(GXTexObj *obj, GXTexFilter min_filt, GXTexFilter mag_filt, 
 void GXInitTexObjData(GXTexObj *obj, void *image_ptr)
 {
     u32 imageBase;
+    u32 imagePtr;
     __GXTexObjInt *t = (__GXTexObjInt *)obj;
 
     ASSERTMSGLINE(0x31E, obj, "Texture Object Pointer is null");
     CHECK_GXBEGIN(0x320, "GXInitTexObjData");
-    ASSERTMSGLINEV(0x323, ((u32)image_ptr & 0x1F) == 0, "%s: %s pointer not aligned to 32B", "GXInitTexObjData", "image");
-    imageBase = ((u32)image_ptr >> 5) & 0x01FFFFFF;
+    imagePtr = PC_RUNTIME_U32_PTR(image_ptr);
+    ASSERTMSGLINEV(0x323, (imagePtr & 0x1F) == 0, "%s: %s pointer not aligned to 32B", "GXInitTexObjData", "image");
+    imageBase = (imagePtr >> 5) & 0x01FFFFFF;
     SET_REG_FIELD(0x326, t->image3, 21, 0, imageBase);
 }
 
@@ -580,14 +585,16 @@ void GXLoadTexObj(GXTexObj *obj, GXTexMapID id)
 void GXInitTlutObj(GXTlutObj *tlut_obj, void *lut, GXTlutFmt fmt, u16 n_entries)
 {
     __GXTlutObjInt *t = (__GXTlutObjInt *)tlut_obj;
+    u32 lutAddr;
 
     ASSERTMSGLINE(0x477, tlut_obj, "TLut Object Pointer is null");
     CHECK_GXBEGIN(0x478, "GXInitTlutObj");
     ASSERTMSGLINEV(0x47B, n_entries <= 0x4000, "%s: number of entries exceeds maximum", "GXInitTlutObj");
-    ASSERTMSGLINEV(0x47D, ((u32)lut & 0x1F) == 0, "%s: %s pointer not aligned to 32B", "GXInitTlutObj", "Tlut");
+    lutAddr = PC_RUNTIME_U32_PTR(lut);
+    ASSERTMSGLINEV(0x47D, (lutAddr & 0x1F) == 0, "%s: %s pointer not aligned to 32B", "GXInitTlutObj", "Tlut");
     t->tlut = 0;
     SET_REG_FIELD(0x480, t->tlut, 2, 10, fmt);
-    SET_REG_FIELD(0x481, t->loadTlut0, 21, 0, ((u32)lut & 0x3FFFFFFF) >> 5);
+    SET_REG_FIELD(0x481, t->loadTlut0, 21, 0, (lutAddr & 0x3FFFFFFF) >> 5);
     SET_REG_FIELD(0x482, t->loadTlut0, 8, 24, 0x64);
     t->numEntries = n_entries;
 }

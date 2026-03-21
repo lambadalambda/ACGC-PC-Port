@@ -1,5 +1,7 @@
 #include "jaudio_NES/rspsim.h"
 
+#include <stdlib.h>
+
 #include <dolphin/os.h>
 #include "jaudio_NES/sample.h"
 #include "jaudio_NES/rate.h"
@@ -9,6 +11,86 @@ static u8 DMEM[0x1000] ATTRIBUTE_ALIGN(32);
 static u32 ADPCM_BOOKBUF_SIZE = 0;
 static s16 ADPCM_BOOKBUF[8][16] ATTRIBUTE_ALIGN(32);
 static s16 FINALR_STATE_BUF[16] ATTRIBUTE_ALIGN(32);
+
+#ifdef TARGET_PC
+#define PC_AUDIO_CMD_PTR_MAP_CAPACITY 8192u
+
+typedef struct PCAudioCmdPtrMapEntry {
+    u32 key;
+    uintptr_t value;
+} PCAudioCmdPtrMapEntry;
+
+static PCAudioCmdPtrMapEntry s_pc_audio_cmd_ptr_map[PC_AUDIO_CMD_PTR_MAP_CAPACITY];
+
+static BOOL pc_audio_cmd_ptr_map_find(u32 key, uintptr_t* out_value) {
+    u32 slot = key & (PC_AUDIO_CMD_PTR_MAP_CAPACITY - 1u);
+
+    for (u32 n = 0; n < PC_AUDIO_CMD_PTR_MAP_CAPACITY; n++) {
+        PCAudioCmdPtrMapEntry* entry = &s_pc_audio_cmd_ptr_map[slot];
+
+        if (entry->value == 0) {
+            return FALSE;
+        }
+        if (entry->key == key) {
+            *out_value = entry->value;
+            return TRUE;
+        }
+
+        slot = (slot + 1u) & (PC_AUDIO_CMD_PTR_MAP_CAPACITY - 1u);
+    }
+
+    return FALSE;
+}
+
+static void pc_audio_cmd_ptr_map_insert(u32 key, uintptr_t value) {
+    u32 slot = key & (PC_AUDIO_CMD_PTR_MAP_CAPACITY - 1u);
+
+    for (u32 n = 0; n < PC_AUDIO_CMD_PTR_MAP_CAPACITY; n++) {
+        PCAudioCmdPtrMapEntry* entry = &s_pc_audio_cmd_ptr_map[slot];
+
+        if (entry->value == 0) {
+            entry->key = key;
+            entry->value = value;
+            return;
+        }
+
+        if (entry->key == key) {
+            if (entry->value != value) {
+                OSPanic(__FILE__, __LINE__, "jaudio cmd ptr key collision (%08x)", key);
+                abort();
+            }
+            return;
+        }
+
+        slot = (slot + 1u) & (PC_AUDIO_CMD_PTR_MAP_CAPACITY - 1u);
+    }
+
+    OSPanic(__FILE__, __LINE__, "jaudio cmd ptr map full");
+    abort();
+}
+
+unsigned int pc_audio_cmd_ptr_encode(const void* ptr) {
+    uintptr_t value = (uintptr_t)ptr;
+    u32 key = (u32)value;
+
+    if (ptr == NULL) {
+        return 0;
+    }
+
+    pc_audio_cmd_ptr_map_insert(key, value);
+    return key;
+}
+
+static void* pc_audio_cmd_ptr_decode_word(u32 word) {
+    uintptr_t value;
+
+    if (pc_audio_cmd_ptr_map_find(word, &value)) {
+        return (void*)value;
+    }
+
+    return (void*)(uintptr_t)word;
+}
+#endif
 
 static s16 RES_FILTER[64][4] ATTRIBUTE_ALIGN(32) = {
     0x0C39, 0x66AD, 0x0D46, 0xFFDF, 0x0B39, 0x6696, 0x0E5F, 0xFFD8, 0x0A44, 0x6669, 0x0F83, 0xFFD0, 0x095A, 0x6626,
@@ -96,9 +178,9 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
 
         switch (cmdHi >> 24) {
             case A_CMD_LOADCACHE: // A_LOADCACHE (special to GC?)
-                sp128 = (u8*)cmdLo;
+                sp128 = (u8*)pc_audio_cmd_ptr_decode_word(cmdLo);
                 sp12C = cmdHi & 0xFFFF;
-                DCTouchRange((void*)cmdLo, ((cmdHi >> 16) & 0xFF) * 16);
+                DCTouchRange(sp128, ((cmdHi >> 16) & 0xFF) * 16);
                 break;
 
             case A_CMD_SPNOOP: // A_SPNOOP
@@ -114,7 +196,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                     Jac_bcopy(loop_point, &DMEM[DMEMOut], 16 * sizeof(s16));
                 } else {
                     // copy from address in command
-                    Jac_bcopy((void*)cmdLo, &DMEM[DMEMOut], 16 * sizeof(s16));
+                    Jac_bcopy(pc_audio_cmd_ptr_decode_word(cmdLo), &DMEM[DMEMOut], 16 * sizeof(s16));
                 }
 
                 s16* var_r17 = (s16*)&DMEM[(u16)(DMEMOut + 32)];
@@ -208,7 +290,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                         *var_r17++ = sp9C[k];
                     }
                 }
-                Jac_bcopy(var_r17 - 16, (void*)cmdLo, 16 * sizeof(s16));
+                Jac_bcopy(var_r17 - 16, pc_audio_cmd_ptr_decode_word(cmdLo), 16 * sizeof(s16));
                 break;
             }
 
@@ -237,7 +319,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                     Jac_bzero(spC, 8 * sizeof(s16));
                     var_r7 = 0;
                 } else {
-                    Jac_bcopy((void*)cmdLo, spC, 8 * sizeof(s16));
+                    Jac_bcopy(pc_audio_cmd_ptr_decode_word(cmdLo), spC, 8 * sizeof(s16));
                     var_r7 = spC[4] & 0x7FFF;
                 }
                 var_r4 = (s16*)&DMEM[DMEMIn];
@@ -287,7 +369,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                     *var_r6++ = var_r15;
                 }
                 spC[var_r8] = var_r7 & 0x7FFF;
-                Jac_bcopy(&spC[var_r8 - 4], (void*)cmdLo, 8 * sizeof(s16));
+                Jac_bcopy(&spC[var_r8 - 4], pc_audio_cmd_ptr_decode_word(cmdLo), 8 * sizeof(s16));
                 break;
             }
 
@@ -338,7 +420,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
             }
 
             case A_CMD_LOADADPCM: // A_LOADADPCM
-                Jac_bcopy((void*)cmdLo, ADPCM_BOOKBUF, cmdHi & 0xFFFF);
+                Jac_bcopy(pc_audio_cmd_ptr_decode_word(cmdLo), ADPCM_BOOKBUF, cmdHi & 0xFFFF);
                 ADPCM_BOOKBUF_SIZE = cmdHi & 0xFFFF;
                 break;
             
@@ -395,7 +477,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                 break;
 
             case A_CMD_SETLOOP: // A_SETLOOP
-                loop_point = (void*)cmdLo;
+                loop_point = pc_audio_cmd_ptr_decode_word(cmdLo);
                 break;
 
             case A_CMD_UNK16: { // ???
@@ -428,13 +510,13 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
 
             case A_CMD_LOADBUFFER2: { // A_LOADBUFF2
                 u16 size = ((cmdHi >> 16) & 0xFF) * 16;
-                Jac_bcopy((void*)cmdLo, (s16*)&DMEM[cmdHi & 0xFFFF], size);
+                Jac_bcopy(pc_audio_cmd_ptr_decode_word(cmdLo), (s16*)&DMEM[cmdHi & 0xFFFF], size);
                 break;
             }
 
             case A_CMD_SAVEBUFFER2: { // A_SAVEBUFF2
                 u16 size = ((cmdHi >> 16) & 0xFF) * 16;
-                Jac_bcopy(DMEM_OFS(cmdHi & 0xFFFF), (void*)cmdLo, size);
+                Jac_bcopy(DMEM_OFS(cmdHi & 0xFFFF), pc_audio_cmd_ptr_decode_word(cmdLo), size);
                 break;
             }
 
@@ -598,7 +680,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                     Jac_bcopy(loop_point, DMEM_OFS(DMEMOut), 16 * sizeof(s16));
                 } else {
                     // copy from address in command
-                    Jac_bcopy((void*)cmdLo, DMEM_OFS(DMEMOut), 16 * sizeof(s16));
+                    Jac_bcopy(pc_audio_cmd_ptr_decode_word(cmdLo), DMEM_OFS(DMEMOut), 16 * sizeof(s16));
                 }
 
                 u16 temp1 = DMEMOut + 32;
@@ -612,7 +694,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
 
                 u16 temp2 = DMEMOut;
                 temp2 += 32;
-                Jac_bcopy(&DMEM[temp2 - 32], (void*)cmdLo, 32);
+                Jac_bcopy(&DMEM[temp2 - 32], pc_audio_cmd_ptr_decode_word(cmdLo), 32);
                 break;
             }
 
@@ -631,7 +713,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
 
                 flags = cmdHi >> 16;
                 if (flags & 2) {
-                    sp120 = (s16*)cmdLo;
+                    sp120 = (s16*)pc_audio_cmd_ptr_decode_word(cmdLo);
                     sp124 = (cmdHi & 0xFFFF) >> 1;
                 } else {
                     var_r14_3 = (s16*)&DMEM[cmdHi & 0xFFFF];
@@ -640,7 +722,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                             sp3C[j] = 0;
                         }
                     } else {
-                        Jac_bcopy((void*)cmdLo, sp3C, 16 * sizeof(s16));
+                        Jac_bcopy(pc_audio_cmd_ptr_decode_word(cmdLo), sp3C, 16 * sizeof(s16));
                     }
                     for (j = 0; j < 8; j++) {
                         sp1C[j] = sp120[j] >> 3;
@@ -666,7 +748,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                             var_r8_3 = 0;
                         }
                     }
-                    Jac_bcopy(sp3C, (void*)cmdLo, 16 * sizeof(s16));
+                    Jac_bcopy(sp3C, pc_audio_cmd_ptr_decode_word(cmdLo), 16 * sizeof(s16));
                 }
                 break;
             }

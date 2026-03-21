@@ -12,7 +12,11 @@ JSUList<JKRAMCommand> JKRAram::sAramCommandList;
 JKRAram* JKRAram::sAramObject;
 u32 JKRAram::sSZSBufferSize = 0x400;
 
+#if defined(TARGET_PC)
+#define JKR_ARAM_HOST_ADDR(ptr) pc_aram_host_addr_encode(ptr)
+#else
 #define JKR_ARAM_HOST_ADDR(ptr) PC_RUNTIME_U32_PTR(ptr)
+#endif
 
 JKRAram* JKRAram::create(u32 aram_audio_buffer_size, u32 aram_audio_graph_size, s32 streamPriority, s32 decomp_priority,
                          s32 piece_priority) {

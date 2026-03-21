@@ -5,6 +5,7 @@
 #include <macros.h>
 
 #include "gx/__gx.h"
+#include "pc_runtime_ptr.h"
 
 struct __GXFifoObj *CPUFifo = NULL;
 struct __GXFifoObj *GPFifo = NULL;
@@ -99,10 +100,13 @@ static void GXCPInterruptHandler(s16 interrupt, OSContext *context)
 void GXInitFifoBase(GXFifoObj *fifo, void *base, u32 size)
 {
     struct __GXFifoObj *realFifo = (struct __GXFifoObj *)fifo;
+    u32 baseAddr;
+
+    baseAddr = PC_RUNTIME_U32_PTR(base);
 
     ASSERTMSGLINE(524, realFifo != CPUFifo,     "GXInitFifoBase: fifo is attached to CPU");
     ASSERTMSGLINE(526, realFifo != GPFifo,      "GXInitFifoBase: fifo is attached to GP");
-    ASSERTMSGLINE(528, ((u32)base & 0x1F) == 0, "GXInitFifoBase: base must be 32B aligned");
+    ASSERTMSGLINE(528, (baseAddr & 0x1F) == 0,  "GXInitFifoBase: base must be 32B aligned");
     ASSERTMSGLINE(530, base != NULL,            "GXInitFifoBase: base pointer is NULL");
     ASSERTMSGLINE(532, (size & 0x1F) == 0,      "GXInitFifoBase: size must be 32B aligned");
     ASSERTMSGLINE(534, size >= 0x10000,         "GXInitFifoBase: fifo is not large enough");
@@ -119,11 +123,16 @@ void GXInitFifoPtrs(GXFifoObj *fifo, void *readPtr, void *writePtr)
 {
     struct __GXFifoObj *realFifo = (struct __GXFifoObj *)fifo;
     BOOL enabled;
+    u32 readAddr;
+    u32 writeAddr;
+
+    readAddr = PC_RUNTIME_U32_PTR(readPtr);
+    writeAddr = PC_RUNTIME_U32_PTR(writePtr);
 
     ASSERTMSGLINE(574, realFifo != CPUFifo,         "GXInitFifoPtrs: fifo is attached to CPU");
     ASSERTMSGLINE(576, realFifo != GPFifo,          "GXInitFifoPtrs: fifo is attached to GP");
-    ASSERTMSGLINE(578, ((u32)readPtr & 0x1F) == 0,  "GXInitFifoPtrs: readPtr not 32B aligned");
-    ASSERTMSGLINE(580, ((u32)writePtr & 0x1F) == 0, "GXInitFifoPtrs: writePtr not 32B aligned");
+    ASSERTMSGLINE(578, (readAddr & 0x1F) == 0,      "GXInitFifoPtrs: readPtr not 32B aligned");
+    ASSERTMSGLINE(580, (writeAddr & 0x1F) == 0,     "GXInitFifoPtrs: writePtr not 32B aligned");
     ASSERTMSGLINE(583, realFifo->base <= readPtr && readPtr < realFifo->top,   "GXInitFifoPtrs: readPtr not in fifo range");
     ASSERTMSGLINE(586, realFifo->base <= writePtr && writePtr < realFifo->top, "GXInitFifoPtrs: writePtr not in fifo range");
 

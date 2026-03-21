@@ -112,8 +112,8 @@ typedef u32 unknown;
 // #define AT_ADDRESS(x) __attribute__((section(".data." #x)))
 // #endif
 
-#define ALIGN_PREV(u, align) (u & (~(align - 1)))
-#define ALIGN_NEXT(u, align) ((u + (align - 1)) & (~(align - 1)))
+#define ALIGN_PREV(u, align) ((uintptr_t)(u) & ~((uintptr_t)(align) - (uintptr_t)1u))
+#define ALIGN_NEXT(u, align) (((uintptr_t)(u) + ((uintptr_t)(align) - (uintptr_t)1u)) & ~((uintptr_t)(align) - (uintptr_t)1u))
 #define IS_ALIGNED(X, N) (((X) & ((N) - 1)) == 0)
 #define IS_NOT_ALIGNED(X, N) (((X) & ((N) - 1)) != 0)
 

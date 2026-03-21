@@ -152,12 +152,18 @@ typedef struct {
     /* 0x01 */ u8 arrange_ftr_num;
 } Scene_Word_Data_ArrangeFurniture_ct_c;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+typedef uintptr_t mSc_ptrword_t;
+#else
+typedef u32 mSc_ptrword_t;
+#endif
+
 typedef struct {
     /* 0x00 */ u8 type;
     /* 0x01 */ u8 param0;
     /* 0x02 */ u8 param1;
     /* 0x03 */ u8 param2;
-    /* 0x04 */ u32 param3;
+    /* 0x04 */ mSc_ptrword_t param3;
 } Scene_Word_Data_Misc_c;
 
 typedef union scene_word_u {
@@ -172,29 +178,35 @@ typedef union scene_word_u {
 
 #define mSc_STATIC_U32_PTR(ptr) PC_STATIC_U32_PTR(ptr)
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+#define mSc_STATIC_SCENE_PTR(ptr) ((mSc_ptrword_t)(ptr))
+#else
+#define mSc_STATIC_SCENE_PTR(ptr) mSc_STATIC_U32_PTR(ptr)
+#endif
+
 #define mSc_DATA_PLAYER(actor_data_p)                               \
     {                                                               \
-        mSc_SCENE_DATA_TYPE_PLAYER_PTR, 1, 0, 0, mSc_STATIC_U32_PTR(actor_data_p), \
+        mSc_SCENE_DATA_TYPE_PLAYER_PTR, 1, 0, 0, mSc_STATIC_SCENE_PTR(actor_data_p), \
     }
 
 #define mSc_DATA_CTRL_ACTORS(n_actors, ctrl_actor_list_p)                           \
     {                                                                               \
-        mSc_SCENE_DATA_TYPE_CTRL_ACTOR_PTR, n_actors, 0, 0, mSc_STATIC_U32_PTR(ctrl_actor_list_p), \
+        mSc_SCENE_DATA_TYPE_CTRL_ACTOR_PTR, n_actors, 0, 0, mSc_STATIC_SCENE_PTR(ctrl_actor_list_p), \
     }
 
 #define mSc_DATA_ACTORS(n_actors, actor_data_p)                           \
     {                                                                     \
-        mSc_SCENE_DATA_TYPE_ACTOR_PTR, n_actors, 0, 0, mSc_STATIC_U32_PTR(actor_data_p), \
+        mSc_SCENE_DATA_TYPE_ACTOR_PTR, n_actors, 0, 0, mSc_STATIC_SCENE_PTR(actor_data_p), \
     }
 
 #define mSc_DATA_OBJ_BANK(n_banks, bank_list_p)                                        \
     {                                                                                  \
-        mSc_SCENE_DATA_TYPE_OBJECT_EXCHANGE_BANK_PTR, n_banks, 0, 0, mSc_STATIC_U32_PTR(bank_list_p), \
+        mSc_SCENE_DATA_TYPE_OBJECT_EXCHANGE_BANK_PTR, n_banks, 0, 0, mSc_STATIC_SCENE_PTR(bank_list_p), \
     }
 
 #define mSc_DATA_DOOR_DATA(n_doors, door_data_list_p)                            \
     {                                                                            \
-        mSc_SCENE_DATA_TYPE_DOOR_DATA_PTR, n_doors, 0, 0, mSc_STATIC_U32_PTR(door_data_list_p), \
+        mSc_SCENE_DATA_TYPE_DOOR_DATA_PTR, n_doors, 0, 0, mSc_STATIC_SCENE_PTR(door_data_list_p), \
     }
 
 #define mSc_DATA_FIELDCT(item_type, bg_num, bg_disp_size, room_type, draw_type)                  \
