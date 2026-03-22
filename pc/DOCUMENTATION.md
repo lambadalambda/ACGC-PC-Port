@@ -440,6 +440,7 @@ cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
 sh pc/tests/smoke_lp64_selftest.sh
 sh pc/tests/smoke_lp64_title_boot.sh
+sh pc/tests/smoke_lp64_asan_title_boot.sh
 ```
 
 ### Cross-Compilation
