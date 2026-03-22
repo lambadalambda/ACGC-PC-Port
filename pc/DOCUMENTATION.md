@@ -428,8 +428,12 @@ sh pc/tests/check_m_scene_exchange_size_width_contract.sh
 sh pc/tests/check_m_player_demo_label_narrowing_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 sh pc/tests/check_pc_crash_and_image_addr_contract.sh
+sh pc/tests/check_jkr_archive_file_entry_layout_contract.sh
+sh pc/tests/check_jut_gamepad_record_base_contract.sh
+sh pc/tests/check_pc_selftest_mode_contract.sh
 cmake -S pc -B /tmp/acgc-p2-config-64 -DPC_EXPERIMENTAL_64BIT=ON
 cmake --build /tmp/acgc-p2-config-64 -j2
+sh pc/tests/smoke_lp64_selftest.sh
 ```
 
 ### Cross-Compilation
