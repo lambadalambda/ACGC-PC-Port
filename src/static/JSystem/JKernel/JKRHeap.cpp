@@ -1,5 +1,6 @@
 #include "JSystem/JUtility/JUTAssertion.h"
 #include "JSystem/JKernel/JKRHeap.h"
+#include "JSystem/JKernel/JKRMacro.h"
 #include "dolphin/os.h"
 #include "dolphin/os/OSArena.h"
 #include "dolphin/os/OSAlloc.h"
@@ -299,7 +300,7 @@ bool JKRHeap::isSubHeap(JKRHeap* heap) const {
 }
 
 void* operator new(size_t byteCount) {
-    return JKRHeap::alloc(byteCount, 4, nullptr);
+    return JKRHeap::alloc(byteCount, JKR_HEAP_OBJ_ALIGN_HEAD, nullptr);
 }
 void* operator new(size_t byteCount, int alignment) {
     return JKRHeap::alloc(byteCount, alignment, nullptr);
@@ -309,7 +310,7 @@ void* operator new(size_t byteCount, JKRHeap* heap, int alignment) {
 }
 
 void* operator new[](size_t byteCount) {
-    return JKRHeap::alloc(byteCount, 4, nullptr);
+    return JKRHeap::alloc(byteCount, JKR_HEAP_OBJ_ALIGN_HEAD, nullptr);
 }
 void* operator new[](size_t byteCount, int alignment) {
     return JKRHeap::alloc(byteCount, alignment, nullptr);

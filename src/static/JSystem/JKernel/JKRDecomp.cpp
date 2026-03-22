@@ -2,6 +2,7 @@
 
 #include "JSystem/JKernel/JKRAram.h"
 #include "JSystem/JKernel/JKRHeap.h"
+#include "JSystem/JKernel/JKRMacro.h"
 #include "JSystem/JSystem.h"
 #include "dolphin/os/OSMessage.h"
 #include "pc_runtime_ptr.h"
@@ -66,7 +67,7 @@ void* JKRDecomp::run() {
 
 JKRDecompCommand* JKRDecomp::prepareCommand(u8* srcBuffer, u8* dstBuffer, u32 srcLength, u32 skipCount,
                                             DecompCallback* callback) {
-    JKRDecompCommand* cmd = new (JKRGetSystemHeap(), -4) JKRDecompCommand();
+    JKRDecompCommand* cmd = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JKRDecompCommand();
 
     cmd->mSrcBuffer = srcBuffer;
     cmd->mDstBuffer = dstBuffer;

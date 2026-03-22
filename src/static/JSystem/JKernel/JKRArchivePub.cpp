@@ -5,6 +5,7 @@
 #include "JSystem/JKernel/JKRDisposer.h"
 #include "JSystem/JKernel/JKRFileFinder.h"
 #include "JSystem/JKernel/JKRHeap.h"
+#include "JSystem/JKernel/JKRMacro.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 #include "types.h"
 
@@ -55,7 +56,7 @@ JKRArchive* JKRArchive::mount(const char* path, EMountMode mode, JKRHeap* heap, 
         return mountedArchive;
     }
 
-    int alignment = (direction == MOUNT_DIRECTION_HEAD) ? 4 : -4;
+    int alignment = (direction == MOUNT_DIRECTION_HEAD) ? JKR_HEAP_OBJ_ALIGN_HEAD : JKR_HEAP_OBJ_ALIGN_TAIL;
     JKRArchive* archive;
     switch (mode) {
         case MOUNT_MEM:
@@ -86,7 +87,8 @@ JKRArchive* JKRArchive::mount(void* p1, JKRHeap* heap, EMountDirection mountDire
     if (archive != nullptr) {
         return archive;
     }
-    return new (heap, (mountDirection == MOUNT_DIRECTION_HEAD) ? 4 : -4) JKRMemArchive(p1, 0xFFFF, MBF_0);
+    return new (heap, (mountDirection == MOUNT_DIRECTION_HEAD) ? JKR_HEAP_OBJ_ALIGN_HEAD : JKR_HEAP_OBJ_ALIGN_TAIL)
+        JKRMemArchive(p1, 0xFFFF, MBF_0);
 }
 
 JKRArchive* JKRArchive::mount(s32 entryNum, EMountMode mountMode, JKRHeap* heap, EMountDirection mountDirection) {
@@ -94,7 +96,7 @@ JKRArchive* JKRArchive::mount(s32 entryNum, EMountMode mountMode, JKRHeap* heap,
     if (archive) {
         return archive;
     } else {
-        int i = (mountDirection == MOUNT_DIRECTION_HEAD) ? 4 : -4;
+        int i = (mountDirection == MOUNT_DIRECTION_HEAD) ? JKR_HEAP_OBJ_ALIGN_HEAD : JKR_HEAP_OBJ_ALIGN_TAIL;
         JKRArchive* archive;
         switch (mountMode) {
             case MOUNT_MEM:

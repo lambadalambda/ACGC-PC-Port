@@ -14,7 +14,7 @@ OSMutex JKRAramPiece::mMutex;
 
 JKRAMCommand* JKRAramPiece::prepareCommand(int direction, u32 source, u32 destination, u32 length,
                                            JKRAramBlock* aramBlock, JKRAMCommand::AMCommandCallback callback) {
-    JKRAMCommand* cmd = new (JKRGetSystemHeap(), -4) JKRAMCommand();
+    JKRAMCommand* cmd = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JKRAMCommand();
     cmd->mDirection = direction;
     cmd->mSource = source;
     cmd->mDestination = destination;
@@ -49,7 +49,7 @@ JKRAMCommand* JKRAramPiece::orderAsync(int direction, u32 source, u32 destinatio
     /* On PC, execute DMA synchronously (no worker thread) */
     JKRAramPiece::startDMA(cmd);
 #else
-    JKRAramCommand* aramCmd = new (JKRGetSystemHeap(), -4) JKRAramCommand();
+    JKRAramCommand* aramCmd = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JKRAramCommand();
     aramCmd->setting(TRUE, cmd);
     OSSendMessage((OSMessageQueue*)&JKRAram::sMessageQueue, (OSMessage)aramCmd, OS_MESSAGE_BLOCK);
     if (cmd->mCallback != nullptr) {

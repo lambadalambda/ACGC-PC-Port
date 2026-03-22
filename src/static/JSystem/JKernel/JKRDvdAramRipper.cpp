@@ -6,6 +6,7 @@
 
 #include "JSystem/JKernel/JKRDecomp.h"
 #include "JSystem/JKernel/JKRDvdFile.h"
+#include "JSystem/JKernel/JKRMacro.h"
 #include "JSystem/JKernel/JKRDvdRipper.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 #include "pc_runtime_ptr.h"
@@ -42,7 +43,7 @@ JKRAramBlock* JKRDvdAramRipper::loadToAram(JKRDvdFile* dvdFile, u32 p1, JKRExpan
 
 JKRADCommand* JKRDvdAramRipper::loadToAram_Async(JKRDvdFile* dvdFile, u32 p1, JKRExpandSwitch expSwitch,
                                                  JKRADCommand::LoadCallback cb, u32 p4, u32 p5) {
-    JKRADCommand* command = new (JKRGetSystemHeap(), -4) JKRADCommand();
+    JKRADCommand* command = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JKRADCommand();
     command->mDvdFile = dvdFile;
     command->_1C = p1;
     command->mBlock = nullptr;
@@ -72,7 +73,7 @@ JKRADCommand* JKRDvdAramRipper::callCommand_Async(JKRADCommand* command) {
         isCmdTrdNull = false;
     } else {
         dvdFile->mAramThread = OSGetCurrentThread();
-        JSUFileInputStream* stream = new (JKRGetSystemHeap(), -4) JSUFileInputStream(dvdFile);
+        JSUFileInputStream* stream = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JSUFileInputStream(dvdFile);
         dvdFile->mInputStream = stream;
         u32 fileSize = dvdFile->getFileSize();
         if (command->_18 && fileSize > command->_18) {

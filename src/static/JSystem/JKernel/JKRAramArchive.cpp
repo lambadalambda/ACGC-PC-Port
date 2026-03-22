@@ -6,6 +6,7 @@
 #include "JSystem/JKernel/JKRDecomp.h"
 #include "JSystem/JKernel/JKRDvdAramRipper.h"
 #include "JSystem/JKernel/JKRDvdRipper.h"
+#include "JSystem/JKernel/JKRMacro.h"
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
@@ -152,7 +153,9 @@ bool JKRAramArchive::open(s32 entryNum) {
     mStrTable = nullptr;
     mBlock = nullptr;
 
-    mDvdFile = new (JKRGetSystemHeap(), mMountDirection == MOUNT_DIRECTION_HEAD ? 4 : -4) JKRDvdFile(entryNum);
+    mDvdFile = new (JKRGetSystemHeap(),
+                    mMountDirection == MOUNT_DIRECTION_HEAD ? JKR_HEAP_OBJ_ALIGN_HEAD : JKR_HEAP_OBJ_ALIGN_TAIL)
+        JKRDvdFile(entryNum);
     if (mDvdFile == nullptr) {
         mMountMode = 0;
         return 0;

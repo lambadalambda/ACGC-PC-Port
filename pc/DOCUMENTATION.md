@@ -346,6 +346,7 @@ sh pc/tests/check_pc_asset_u8_load_bounds_contract.sh
 sh pc/tests/check_gbi_runtime_ptrs.sh
 sh pc/tests/check_jkr_runtime_ptr_contract.sh
 sh pc/tests/check_jkr_macro_runtime_ptr_contract.sh
+sh pc/tests/check_jkr_heap_object_alignment_contract.sh
 sh pc/tests/check_pc_aram_callback_overflow.sh
 sh pc/tests/check_pc_aram_host_pointer_guard.sh
 sh pc/tests/check_audio_ptr_overflow.sh

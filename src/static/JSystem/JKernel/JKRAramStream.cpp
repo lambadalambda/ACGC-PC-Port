@@ -5,6 +5,7 @@
 #include <dolphin/ar.h>
 
 #include "JSystem/JKernel/JKRAram.h"
+#include "JSystem/JKernel/JKRMacro.h"
 #include "JSystem/JSupport/JSUStream.h"
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
@@ -160,7 +161,7 @@ s32 JKRAramStream::writeToAram(JKRAramStreamCommand* command) {
  */
 JKRAramStreamCommand* JKRAramStream::write_StreamToAram_Async(JSUFileInputStream* stream, JKRAramBlock* addr, u32 size,
                                                               u32 offset) {
-    JKRAramStreamCommand* command = new (JKRGetSystemHeap(), -4) JKRAramStreamCommand();
+    JKRAramStreamCommand* command = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JKRAramStreamCommand();
     command->type = JKRAramStreamCommand::ECT_WRITE;
     command->mAddress = addr != nullptr ? addr->getAddress() : 0;
     command->mSize = size;
@@ -183,7 +184,7 @@ JKRAramStreamCommand* JKRAramStream::write_StreamToAram_Async(JSUFileInputStream
 
 JKRAramStreamCommand* JKRAramStream::write_StreamToAram_Async(JSUFileInputStream* stream, u32 addr, u32 size,
                                                               u32 offset) {
-    JKRAramStreamCommand* command = new (JKRGetSystemHeap(), -4) JKRAramStreamCommand();
+    JKRAramStreamCommand* command = new (JKRGetSystemHeap(), JKR_HEAP_OBJ_ALIGN_TAIL) JKRAramStreamCommand();
     command->type = JKRAramStreamCommand::ECT_WRITE;
     command->mAddress = addr;
     command->mSize = size;
