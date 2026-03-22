@@ -447,6 +447,7 @@ cmake --build /tmp/acgc-p2-config-64 -j2
 | `--no-framelimit` | Disable frame pacing |
 | `--model-viewer [N]` | Launch model viewer (optional start index) |
 | `--time HOUR` | Override in-game hour (0-23) |
+| `--selftest` | Print a startup sanity marker and exit before SDL/platform init |
 | `--help` / `-h` | Show help |
 
 ## Platform Support

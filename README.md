@@ -77,6 +77,7 @@ SDL2 game controllers are supported with automatic hotplug detection. Button map
 | `--no-framelimit` | Disable frame limiter (unlocked FPS) |
 | `--model-viewer [index]` | Launch debug model viewer (75 building/structure models) |
 | `--time HOUR` | Override in-game hour (0-23) |
+| `--selftest` | Run startup self-test and exit (assetless sanity check) |
 
 ## Settings
 
