@@ -13,6 +13,16 @@
 #include "pc_bswap.h"
 #define bswap32 pc_bswap32
 #define bswap16 pc_bswap16
+
+struct SDIFileEntryDisk {
+    u16 mFileID;
+    u16 mHash;
+    u32 mFlag;
+    u32 mDataOffset;
+    u32 mSize;
+    u32 mData;
+};
+static_assert(sizeof(SDIFileEntryDisk) == 0x14, "RARC SDIFileEntry disk layout must be 20 bytes");
 #endif
 
 JKRAramArchive::JKRAramArchive() : JKRArchive() {
@@ -33,12 +43,17 @@ JKRAramArchive::JKRAramArchive(s32 entryNum, EMountDirection mountDirection) : J
 JKRAramArchive::~JKRAramArchive() {
     if (mIsMounted == true) {
         if (mArcInfoBlock) {
+            SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
             SDIFileEntry* fileEntries = mFileEntries;
             for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
                 if (fileEntries->mData != nullptr) {
                     JKRFreeToHeap(mHeap, fileEntries->mData);
                 }
                 fileEntries++;
+            }
+            if (mFileEntries != raw_file_entries) {
+                JKRFreeToHeap(mHeap, mFileEntries);
+                mFileEntries = nullptr;
             }
             JKRFreeToHeap(mHeap, mArcInfoBlock);
             mArcInfoBlock = nullptr;
@@ -100,12 +115,17 @@ void JKRAramArchive::unmountFixed() {
         sCurrentVolume = nullptr;
 
     if (mArcInfoBlock) {
+        SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
         SDIFileEntry* fileEntries = mFileEntries;
         for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
             if (fileEntries->mData != nullptr) {
                 JKRFreeToHeap(mHeap, fileEntries->mData);
             }
             fileEntries++;
+        }
+        if (mFileEntries != raw_file_entries) {
+            JKRFreeToHeap(mHeap, mFileEntries);
+            mFileEntries = nullptr;
         }
         JKRFreeToHeap(mHeap, mArcInfoBlock);
         mArcInfoBlock = nullptr;
@@ -185,7 +205,6 @@ bool JKRAramArchive::open(s32 entryNum) {
 #endif
 
             mDirectories = (SDIDirEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->node_offset);
-            mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
             mStrTable = (const char*)((u8*)mArcInfoBlock + mArcInfoBlock->string_table_offset);
 
 #ifdef TARGET_PC
@@ -197,15 +216,39 @@ bool JKRAramArchive::open(s32 entryNum) {
                 mDirectories[i].mNum = bswap16(mDirectories[i].mNum);
                 mDirectories[i].mFirstIdx = bswap32(mDirectories[i].mFirstIdx);
             }
-            /* Byte-swap file entries */
-            for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-                mFileEntries[i].mFileID = bswap16(mFileEntries[i].mFileID);
-                mFileEntries[i].mHash = bswap16(mFileEntries[i].mHash);
-                mFileEntries[i].mFlag = bswap32(mFileEntries[i].mFlag);
-                mFileEntries[i].mDataOffset = bswap32(mFileEntries[i].mDataOffset);
-                mFileEntries[i].mSize = bswap32(mFileEntries[i].mSize);
-                /* mData is a host pointer, don't swap */
+
+            if (sizeof(void*) > 4) {
+                /* On LP64 hosts, SDIFileEntry is wider than the 32-bit on-disk RARC entry. */
+                SDIFileEntryDisk* disk_entries = (SDIFileEntryDisk*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                mFileEntries = (SDIFileEntry*)JKRAllocFromHeap(mHeap,
+                                                               sizeof(SDIFileEntry) * mArcInfoBlock->num_file_entries,
+                                                               32);
+                if (mFileEntries == nullptr) {
+                    mMountMode = 0;
+                    goto cleanup;
+                }
+
+                for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+                    mFileEntries[i].mFileID = bswap16(disk_entries[i].mFileID);
+                    mFileEntries[i].mHash = bswap16(disk_entries[i].mHash);
+                    mFileEntries[i].mFlag = bswap32(disk_entries[i].mFlag);
+                    mFileEntries[i].mDataOffset = bswap32(disk_entries[i].mDataOffset);
+                    mFileEntries[i].mSize = bswap32(disk_entries[i].mSize);
+                    mFileEntries[i].mData = nullptr;
+                }
+            } else {
+                mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+                    mFileEntries[i].mFileID = bswap16(mFileEntries[i].mFileID);
+                    mFileEntries[i].mHash = bswap16(mFileEntries[i].mHash);
+                    mFileEntries[i].mFlag = bswap32(mFileEntries[i].mFlag);
+                    mFileEntries[i].mDataOffset = bswap32(mFileEntries[i].mDataOffset);
+                    mFileEntries[i].mSize = bswap32(mFileEntries[i].mSize);
+                    /* mData is a host pointer, don't swap */
+                }
             }
+#else
+            mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
 #endif
 
             u32 aramSize = ALIGN_NEXT(mem->file_data_length, 32);
@@ -227,6 +270,16 @@ cleanup:
     if (mem != nullptr) {
         JKRFreeToSysHeap(mem);
     }
+#if defined(TARGET_PC)
+    if (mMountMode == 0 && sizeof(void*) > 4 && mArcInfoBlock != nullptr && mFileEntries != nullptr) {
+        SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+
+        if (mFileEntries != raw_file_entries) {
+            JKRFreeToHeap(mHeap, mFileEntries);
+            mFileEntries = nullptr;
+        }
+    }
+#endif
     if (mMountMode == 0) {
         JREPORTF(":::[%s: %d] Cannot alloc memory\n", __FILE__,
                  415); // TODO: macro

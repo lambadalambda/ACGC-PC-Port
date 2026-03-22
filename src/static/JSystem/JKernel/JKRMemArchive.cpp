@@ -7,6 +7,18 @@
 #include "JSystem/JKernel/JKRDvdRipper.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
+#ifdef TARGET_PC
+struct SDIFileEntryDisk {
+    u16 mFileID;
+    u16 mHash;
+    u32 mFlag;
+    u32 mDataOffset;
+    u32 mSize;
+    u32 mData;
+};
+static_assert(sizeof(SDIFileEntryDisk) == 0x14, "RARC SDIFileEntry disk layout must be 20 bytes");
+#endif
+
 JKRMemArchive::JKRMemArchive() : JKRArchive() {
 }
 
@@ -37,6 +49,15 @@ JKRMemArchive::JKRMemArchive(void* mem, u32 size, JKRMemBreakFlag breakFlag) : J
 
 JKRMemArchive::~JKRMemArchive() {
     if (mIsMounted == true) {
+        if (mArcInfoBlock) {
+            SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+
+            if (mFileEntries != raw_file_entries) {
+                JKRFreeToHeap(mHeap, mFileEntries);
+                mFileEntries = nullptr;
+            }
+        }
+
         if (mIsOpen && mArcHeader)
             JKRFreeToHeap(mHeap, mArcHeader);
 
@@ -81,12 +102,59 @@ bool JKRMemArchive::open(s32 entryNum, JKRArchive::EMountDirection mountDirectio
         JUT_ASSERT(mArcHeader->signature == 'RARC');
         mArcInfoBlock = (SArcDataInfo*)((u8*)mArcHeader + mArcHeader->header_length);
         mDirectories = (SDIDirEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->node_offset);
+
+#ifdef TARGET_PC
+        if (sizeof(void*) > 4) {
+            SDIFileEntryDisk* disk_entries =
+                (SDIFileEntryDisk*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+            mFileEntries =
+                (SDIFileEntry*)JKRAllocFromHeap(mHeap, sizeof(SDIFileEntry) * mArcInfoBlock->num_file_entries, 32);
+            if (mFileEntries == nullptr) {
+                mMountMode = UNKNOWN_MOUNT_MODE;
+            } else {
+                for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+                    mFileEntries[i].mFileID = disk_entries[i].mFileID;
+                    mFileEntries[i].mHash = disk_entries[i].mHash;
+                    mFileEntries[i].mFlag = disk_entries[i].mFlag;
+                    mFileEntries[i].mDataOffset = disk_entries[i].mDataOffset;
+                    mFileEntries[i].mSize = disk_entries[i].mSize;
+                    mFileEntries[i].mData = nullptr;
+                }
+            }
+        } else {
+            mFileEntries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+        }
+#else
         mFileEntries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+#endif
+
         mStrTable = (char*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->string_table_offset);
 
         mArchiveData = (u8*)((uintptr_t)mArcHeader + mArcHeader->header_length + mArcHeader->file_data_offset);
-        mIsOpen = true;
+        mIsOpen = mMountMode != UNKNOWN_MOUNT_MODE;
     }
+
+#if defined(TARGET_PC)
+    if (mMountMode == UNKNOWN_MOUNT_MODE && sizeof(void*) > 4 && mArcInfoBlock != nullptr && mFileEntries != nullptr) {
+        SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+
+        if (mFileEntries != raw_file_entries) {
+            JKRFreeToHeap(mHeap, mFileEntries);
+            mFileEntries = nullptr;
+        }
+    }
+#endif
+
+    if (mMountMode == UNKNOWN_MOUNT_MODE && mArcHeader != nullptr) {
+        JKRFreeToHeap(mHeap, mArcHeader);
+        mArcHeader = nullptr;
+        mArcInfoBlock = nullptr;
+        mDirectories = nullptr;
+        mFileEntries = nullptr;
+        mStrTable = nullptr;
+        mArchiveData = nullptr;
+    }
+
 #if DEBUG
     // OS Assert?
     if (mMountMode == UNKNOWN_MOUNT_MODE) {
@@ -97,15 +165,38 @@ bool JKRMemArchive::open(s32 entryNum, JKRArchive::EMountDirection mountDirectio
 }
 
 bool JKRMemArchive::open(void* buffer, u32 bufferSize, JKRMemBreakFlag flag) {
+    mHeap = JKRHeap::findFromRoot(buffer);
     mArcHeader = (SArcHeader*)buffer;
     JUT_ASSERT(mArcHeader->signature == 'RARC');
     mArcInfoBlock = (SArcDataInfo*)((u8*)mArcHeader + mArcHeader->header_length);
     mDirectories = (SDIDirEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->node_offset);
+
+#ifdef TARGET_PC
+    if (sizeof(void*) > 4) {
+        SDIFileEntryDisk* disk_entries = (SDIFileEntryDisk*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+        mFileEntries = (SDIFileEntry*)JKRAllocFromHeap(mHeap, sizeof(SDIFileEntry) * mArcInfoBlock->num_file_entries, 32);
+        if (mFileEntries == nullptr) {
+            return false;
+        }
+
+        for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+            mFileEntries[i].mFileID = disk_entries[i].mFileID;
+            mFileEntries[i].mHash = disk_entries[i].mHash;
+            mFileEntries[i].mFlag = disk_entries[i].mFlag;
+            mFileEntries[i].mDataOffset = disk_entries[i].mDataOffset;
+            mFileEntries[i].mSize = disk_entries[i].mSize;
+            mFileEntries[i].mData = nullptr;
+        }
+    } else {
+        mFileEntries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+    }
+#else
     mFileEntries = (SDIFileEntry*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->file_entry_offset);
+#endif
+
     mStrTable = (char*)((u8*)&mArcInfoBlock->num_nodes + mArcInfoBlock->string_table_offset);
     mArchiveData = (u8*)((uintptr_t)mArcHeader + mArcHeader->header_length + mArcHeader->file_data_offset);
     mIsOpen = (flag == MBF_1) ? true : false; // mIsOpen might be u8
-    mHeap = JKRHeap::findFromRoot(buffer);
     mCompression = JKRCOMPRESSION_NONE;
     return true;
 }

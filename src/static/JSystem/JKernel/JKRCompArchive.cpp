@@ -8,6 +8,18 @@
 #include "JSystem/JSystem.h"
 #include "JSystem/JUtility/JUTAssertion.h"
 
+#ifdef TARGET_PC
+struct SDIFileEntryDisk {
+    u16 mFileID;
+    u16 mHash;
+    u32 mFlag;
+    u32 mDataOffset;
+    u32 mSize;
+    u32 mData;
+};
+static_assert(sizeof(SDIFileEntryDisk) == 0x14, "RARC SDIFileEntry disk layout must be 20 bytes");
+#endif
+
 JKRCompArchive::JKRCompArchive(s32 entryNum, EMountDirection mountDirection) : JKRArchive(entryNum, MOUNT_COMP) {
     mMountDirection = mountDirection;
     if (!open(entryNum)) {
@@ -29,14 +41,24 @@ void stringGen() {
 
 JKRCompArchive::~JKRCompArchive() {
     if (mArcInfoBlock) {
+        SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
         SDIFileEntry* fileEntries = mFileEntries;
-        for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
-            u32 flag = (fileEntries->mFlag >> 24);
-            if ((flag & 16) == 0 && fileEntries->mData) {
-                JKRFreeToHeap(mHeap, fileEntries->mData);
+
+        if (fileEntries != nullptr) {
+            for (int i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+                u32 flag = (fileEntries->mFlag >> 24);
+                if ((flag & 16) == 0 && fileEntries->mData) {
+                    JKRFreeToHeap(mHeap, fileEntries->mData);
+                }
+                fileEntries++;
             }
-            fileEntries++;
         }
+
+        if (mFileEntries != nullptr && mFileEntries != raw_file_entries) {
+            JKRFreeToHeap(mHeap, mFileEntries);
+            mFileEntries = nullptr;
+        }
+
         JKRFreeToHeap(mHeap, mArcInfoBlock);
         mArcInfoBlock = nullptr;
     }
@@ -109,7 +131,33 @@ bool JKRCompArchive::open(s32 entryNum) {
                     }
 
                     mDirectories = (SDIDirEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->node_offset);
-                    mFileEntries = (SDIFileEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+
+#ifdef TARGET_PC
+                    if (sizeof(void*) > 4) {
+                        SDIFileEntryDisk* disk_entries =
+                            (SDIFileEntryDisk*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                        mFileEntries = (SDIFileEntry*)JKRAllocFromHeap(
+                            mHeap, sizeof(SDIFileEntry) * mArcInfoBlock->num_file_entries, 32);
+                        if (mFileEntries == nullptr) {
+                            mMountMode = 0;
+                            break;
+                        }
+
+                        for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+                            mFileEntries[i].mFileID = disk_entries[i].mFileID;
+                            mFileEntries[i].mHash = disk_entries[i].mHash;
+                            mFileEntries[i].mFlag = disk_entries[i].mFlag;
+                            mFileEntries[i].mDataOffset = disk_entries[i].mDataOffset;
+                            mFileEntries[i].mSize = disk_entries[i].mSize;
+                            mFileEntries[i].mData = nullptr;
+                        }
+                    } else {
+                        mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                    }
+#else
+                    mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+#endif
+
                     mStrTable = (const char*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->string_table_offset);
                     _68 = arcHeader->header_length + arcHeader->file_data_offset;
                 }
@@ -160,7 +208,33 @@ bool JKRCompArchive::open(s32 entryNum) {
                     }
                 }
                 mDirectories = (SDIDirEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->node_offset);
-                mFileEntries = (SDIFileEntry*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+
+#ifdef TARGET_PC
+                if (sizeof(void*) > 4) {
+                    SDIFileEntryDisk* disk_entries =
+                        (SDIFileEntryDisk*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                    mFileEntries =
+                        (SDIFileEntry*)JKRAllocFromHeap(mHeap, sizeof(SDIFileEntry) * mArcInfoBlock->num_file_entries, 32);
+                    if (mFileEntries == nullptr) {
+                        mMountMode = 0;
+                        break;
+                    }
+
+                    for (u32 i = 0; i < mArcInfoBlock->num_file_entries; i++) {
+                        mFileEntries[i].mFileID = disk_entries[i].mFileID;
+                        mFileEntries[i].mHash = disk_entries[i].mHash;
+                        mFileEntries[i].mFlag = disk_entries[i].mFlag;
+                        mFileEntries[i].mDataOffset = disk_entries[i].mDataOffset;
+                        mFileEntries[i].mSize = disk_entries[i].mSize;
+                        mFileEntries[i].mData = nullptr;
+                    }
+                } else {
+                    mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+                }
+#else
+                mFileEntries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+#endif
+
                 mStrTable = (const char*)((uintptr_t)mArcInfoBlock + mArcInfoBlock->string_table_offset);
                 _68 = arcHeader->header_length + arcHeader->file_data_offset;
                 break;
@@ -170,6 +244,16 @@ bool JKRCompArchive::open(s32 entryNum) {
     if (arcHeader) {
         JKRFreeToHeap(mHeap, arcHeader);
     }
+#if defined(TARGET_PC)
+    if (mMountMode == 0 && sizeof(void*) > 4 && mArcInfoBlock != nullptr && mFileEntries != nullptr) {
+        SDIFileEntry* raw_file_entries = (SDIFileEntry*)((u8*)mArcInfoBlock + mArcInfoBlock->file_entry_offset);
+
+        if (mFileEntries != raw_file_entries) {
+            JKRFreeToHeap(mHeap, mFileEntries);
+            mFileEntries = nullptr;
+        }
+    }
+#endif
     if (mMountMode == 0) {
         JREPORTF(0, ":::[%s: %d] Cannot alloc memory in mounting CompArchive\n", __FILE__, 567); // Macro?
         if (mDvdFile) {
