@@ -31,6 +31,12 @@ bool JUTGamePad::C3ButtonReset::sResetSwitchPushing = false;
 bool JUTGamePad::C3ButtonReset::sResetOccurred = false;
 s32 JUTGamePad::C3ButtonReset::sResetOccurredPort = 0;
 
+JUTGamePadRecordBase::JUTGamePadRecordBase() : mActive(false) {
+}
+
+JUTGamePadRecordBase::~JUTGamePadRecordBase() {
+}
+
 JUTGamePad::JUTGamePad(EPadPort port)
     : mButtons(), mMainStick(), mSubStick(), mRumble(this), mLink(this), mButtonReset() {
     this->mPortNum = port;
