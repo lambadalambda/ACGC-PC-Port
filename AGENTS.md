@@ -14,6 +14,7 @@ Modern macOS support is not a small platform shim. Treat it as a 64-bit portabil
 - `pc/DOCUMENTATION.md` for runtime architecture and the current PC port layer.
 - `docs/macos_port_assessment.md` for the current macOS blocker analysis.
 - `docs/macos_port_strategy.md` for the recommended repo strategy and prioritized blocker list.
+- `docs/lp64_findings.md` for a running log of LP64 issues, fixes, and validation notes.
 
 ## Core Working Rules
 
@@ -23,6 +24,7 @@ Modern macOS support is not a small platform shim. Treat it as a 64-bit portabil
 - Do not silently widen scope. If a task grows, split it into follow-up commits.
 - Avoid incidental formatting churn.
 - Do not hand-edit generated files when the real source of truth is a generator.
+- When modifying code, add concise intent comments for non-obvious or diagnostic logic so later sessions can evaluate whether the change worked.
 
 ## TDD First
 
@@ -112,10 +114,22 @@ When touching address-model code, make truncation explicit only as a temporary d
 
 Update docs when conclusions, workflows, or porting guidance change.
 
+Keep a running findings log in `docs/lp64_findings.md` so portability learnings are not lost.
+
+If `docs/lp64_findings.md` does not exist yet, create it as part of your first LP64 investigation/fix in the session.
+
+For each LP64-related bug fix or investigation result, add a concise entry with:
+
+- symptom/signature (error text, symbol, stack, or log marker)
+- root cause (confirmed or current best hypothesis)
+- fix approach and touched files
+- verification performed and follow-up work (if any)
+
 Most relevant files:
 
 - `docs/macos_port_assessment.md`
 - `docs/macos_port_strategy.md`
+- `docs/lp64_findings.md`
 - `pc/DOCUMENTATION.md`
 
 If a workaround is temporary, say so clearly and note what must happen to remove it.

@@ -323,7 +323,22 @@ extern s32 Nap_SendStart(void) {
     if (res != -1) {
         AG.thread_cmd_read_pos = AG.thread_cmd_write_pos;
     } else {
+#ifdef TARGET_PC
+        extern int g_pc_verbose;
+        static u32 s_full_queue_logs = 0;
+
+        /* Include queue state in early full-queue logs so watchdog tooling can
+         * distinguish transient pressure from a saturated queue that stops draining. */
+        if (g_pc_verbose != 0 && s_full_queue_logs < 128u) {
+            OSReport("SendStart::Mesg Full Queue rs=%d rt=%d valid=%d r=%u w=%u\n", AG.reset_status, AG.reset_timer,
+                     AG.thread_cmd_proc_mq.validCount, AG.thread_cmd_read_pos, AG.thread_cmd_write_pos);
+            s_full_queue_logs++;
+        } else {
+            OSReport("SendStart::Mesg Full Queue\n");
+        }
+#else
         OSReport("SendStart::Mesg Full Queue\n");
+#endif
         return -1;
     }
 
