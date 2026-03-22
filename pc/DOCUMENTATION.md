@@ -357,6 +357,7 @@ sh pc/tests/check_audio_driver_runtime_ptr_contract.sh
 sh pc/tests/check_audio_bank_runtime_ptr_contract.sh
 sh pc/tests/check_audio_command_payload_contract.sh
 sh pc/tests/check_audio_debug_format_contract.sh
+sh pc/tests/check_walk_log_throttle_contract.sh
 sh pc/tests/check_initial_menu_message_contract.sh
 sh pc/tests/check_irqmgr_message_contract.sh
 sh pc/tests/check_osmessage_token_narrowing_contract.sh

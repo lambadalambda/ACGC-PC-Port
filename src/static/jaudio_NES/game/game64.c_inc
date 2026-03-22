@@ -2042,6 +2042,10 @@ void Sou_WalkSe(u16 id, u16 angle, f32 distance, u8 reverb, f32 optVolume) {
     u16 v = 0;
     f32 freqScale = 1.f;
     f32 volume = 1.;
+#ifdef TARGET_PC
+    extern int g_pc_verbose;
+    static u32 s_walk_se_log_count = 0;
+#endif
 
     if (id == 0 || distance > SOU_ONGEN_AREA1) {
         // needed to match, probably stripped assert;
@@ -2072,7 +2076,10 @@ void Sou_WalkSe(u16 id, u16 angle, f32 distance, u8 reverb, f32 optVolume) {
     }
     sou_walk_flag++;
 #ifdef TARGET_PC
-    printf("[WALK_SE] final_id=0x%04X vol=%.2f optVol=%.2f\n", id, volume, optVolume);
+    if (g_pc_verbose != 0 && s_walk_se_log_count < 48u) {
+        printf("[WALK_SE] final_id=0x%04X vol=%.2f optVol=%.2f\n", id, volume, optVolume);
+        s_walk_se_log_count++;
+    }
 #endif
     Sou_TrgStart(id, volume, optVolume, freqScale, pan, reverb, distance);
 }
@@ -2080,6 +2087,12 @@ void Sou_WalkSe(u16 id, u16 angle, f32 distance, u8 reverb, f32 optVolume) {
 void Na_PlyWalkSe(u16 id, u16 angle, f32 distance) {
     u8 reverb = 0;
     f32 optVolume = 1.f;
+#ifdef TARGET_PC
+    extern int g_pc_verbose;
+    static u32 s_walk_req_log_count = 0;
+    static u32 s_walk_blocked_log_count = 0;
+#endif
+
     if (sou_scene_mode) {
         switch (sou_player_dash) {
             case 1: {
@@ -2094,13 +2107,19 @@ void Na_PlyWalkSe(u16 id, u16 angle, f32 distance) {
         }
 
 #ifdef TARGET_PC
-        printf("[WALK] id=0x%04X dash=%d\n", id, sou_player_dash);
+        if (g_pc_verbose != 0 && s_walk_req_log_count < 48u) {
+            printf("[WALK] id=0x%04X dash=%d\n", id, sou_player_dash);
+            s_walk_req_log_count++;
+        }
 #endif
         Sou_WalkSe(id, angle, distance, reverb, optVolume);
     }
 #ifdef TARGET_PC
     else {
-        printf("[WALK] BLOCKED: sou_scene_mode=0 id=0x%04X\n", id);
+        if (g_pc_verbose != 0 && s_walk_blocked_log_count < 12u) {
+            printf("[WALK] BLOCKED: sou_scene_mode=0 id=0x%04X\n", id);
+            s_walk_blocked_log_count++;
+        }
     }
 #endif
 }
