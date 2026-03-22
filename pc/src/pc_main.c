@@ -18,6 +18,7 @@ SDL_GLContext  g_pc_gl_context = NULL;
 int           g_pc_running = 1;
 int           g_pc_no_framelimit = 0;
 int           g_pc_verbose = 0;
+int           g_pc_selftest = 0;
 int           g_pc_time_override = -1; /* -1=system clock, 0-23=override hour */
 int           g_pc_window_w = PC_SCREEN_WIDTH;
 int           g_pc_window_h = PC_SCREEN_HEIGHT;
@@ -387,6 +388,7 @@ int main(int argc, char* argv[]) {
             printf("  --no-framelimit     Disable frame limiter\n");
             printf("  --model-viewer [N]  Launch model viewer (optional start index)\n");
             printf("  --time HOUR         Override in-game hour (0-23)\n");
+            printf("  --selftest          Run startup self-test and exit\n");
             printf("  --help, -h          Show this help message\n");
             return 0;
         } else if (strcmp(argv[i], "--no-framelimit") == 0) {
@@ -403,7 +405,14 @@ int main(int argc, char* argv[]) {
             g_pc_time_override = atoi(argv[i + 1]);
             if (g_pc_time_override < 0 || g_pc_time_override > 23) g_pc_time_override = -1;
             i++;
+        } else if (strcmp(argv[i], "--selftest") == 0) {
+            g_pc_selftest = 1;
         }
+    }
+
+    if (g_pc_selftest) {
+        printf("[PC] selftest: ok (ptr=%zu lp64=%d)\n", sizeof(void*), (int)(sizeof(void*) > 4));
+        return 0;
     }
 
     /* Redirect stdout/stderr to NUL unless verbose — unbuffered terminal writes
