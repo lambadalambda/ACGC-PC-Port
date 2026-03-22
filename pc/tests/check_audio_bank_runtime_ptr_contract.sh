@@ -27,7 +27,7 @@ check_absent() {
     fi
 }
 
-check_contains "src/static/jaudio_NES/internal/channel.c" '#define JAUDIO_U32_ADDR_PTR\(type, value\) \(\(type\*\)\(uintptr_t\)\(u32\)\(value\)\)' 'channel bank pointer reconstruction helper'
+check_contains "src/static/jaudio_NES/internal/channel.c" '#define JAUDIO_U32_ADDR_PTR\(type, value\) \(\(type\*\)\(uintptr_t\)\(value\)\)' 'channel bank pointer reconstruction helper'
 check_contains "src/static/jaudio_NES/internal/channel.c" 'AG.voice_info\[bankId\]\.percussion\[idx\] = JAUDIO_U32_ADDR_PTR\(perctable, table\);' 'channel percussion bank pointer'
 check_contains "src/static/jaudio_NES/internal/channel.c" 'AG.voice_info\[bankId\]\.effects\[idx\] = \*JAUDIO_U32_ADDR_PTR\(percvoicetable, table\);' 'channel effects bank pointer'
 check_contains "src/static/jaudio_NES/internal/channel.c" 'AG.voice_info\[bankId\]\.instruments\[idx\] = JAUDIO_U32_ADDR_PTR\(voicetable, table\);' 'channel instrument bank pointer'
@@ -41,13 +41,13 @@ check_contains "include/jaudio_NES/audiostruct.h" 'u16 effect_capacity;' 'voicei
 check_contains "src/static/jaudio_NES/internal/system.c" 'static BOOL pc_init_voiceinfo_shadow\(voiceinfo\* vinfo\)' 'voiceinfo shadow init returns status'
 check_contains "src/static/jaudio_NES/internal/system.c" 'pc_init_voiceinfo_shadow\(vinfo\)' 'bank load shadow init'
 check_contains "src/static/jaudio_NES/internal/system.c" 'pc_reset_voiceinfo_shadow\(vinfo\);' 'bank load shadow reset'
-check_contains "src/static/jaudio_NES/internal/system.c" 'pc_init_voiceinfo_shadow\(&AG.voice_info\[i\]\)' 'audio init shadow allocation'
+check_contains "src/static/jaudio_NES/internal/system.c" 'pc_init_voiceinfo_shadow\(vinfo\)' 'audio init shadow allocation'
 check_contains "src/static/jaudio_NES/internal/system.c" 'pc_reset_voiceinfo_shadow\(vinfo\);' 'bank shadow cleared before use'
-check_contains "src/static/jaudio_NES/internal/system.c" 'pc_bank_deserialize_perctable\(percvt, U32_ADDR_PTR\(PCPercTable32, ctrl_base \+ inst_ofs\), vinfo, ctrl_base,' 'percussion entries deserialize through LP64 shadow'
+check_contains "src/static/jaudio_NES/internal/system.c" 'pc_bank_deserialize_perctable\(percvt, U32_ADDR_PTR\(PCPercTable32, OFS2RAM\(ctrl_base, inst_ofs\)\), vinfo,' 'percussion entries deserialize through LP64 shadow'
 check_contains "src/static/jaudio_NES/internal/system.c" 'pc_bank_deserialize_percvoicetable\(&vinfo->effects\[i\], &sfx_table\[i\], vinfo, ctrl_base, wave_media\);' 'sfx entries deserialize through LP64 shadow'
-check_contains "src/static/jaudio_NES/internal/system.c" 'pc_bank_deserialize_voicetable\(inst, U32_ADDR_PTR\(PCVoiceTable32, \*BANK_ENTRY\(ctrl_base, i\)\), vinfo,' 'instrument entries deserialize through LP64 shadow'
+check_contains "src/static/jaudio_NES/internal/system.c" 'pc_bank_deserialize_voicetable\(inst, U32_ADDR_PTR\(PCVoiceTable32, OFS2RAM\(ctrl_base, ofs\)\), vinfo,' 'instrument entries deserialize through LP64 shadow'
 check_contains "src/static/jaudio_NES/internal/system.c" 'if \(!pc_init_voiceinfo_shadow\(vinfo\)\) \{' 'bank load shadow allocation guard'
-check_contains "src/static/jaudio_NES/internal/system.c" 'if \(!pc_init_voiceinfo_shadow\(&AG.voice_info\[i\]\)\) \{' 'audio init shadow allocation guard'
+check_contains "src/static/jaudio_NES/internal/system.c" 'if \(!pc_init_voiceinfo_shadow\(vinfo\)\) \{' 'audio init shadow allocation guard'
 check_contains "src/static/jaudio_NES/internal/system.c" 'OSReport\("JAUDIO LP64 shadow allocation failed for bank %d\\n", bank_id\);' 'bank load allocation failure report'
 
 check_absent "src/static/jaudio_NES/internal/channel.c" 'AG.voice_info\[bankId\]\.percussion\[idx\] = \(perctable\*\)table;' 'legacy channel percussion cast'

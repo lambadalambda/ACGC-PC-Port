@@ -6,32 +6,32 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 FILE="$REPO_ROOT/src/static/jaudio_NES/internal/driver.c"
 
-if ! rg -q 'static Acmd\* Nas_SaveBufferAuto\(Acmd\* cmd, u16 ofs, u16 size, u32 startAddr\);' "$FILE"; then
+if ! rg -q 'static Acmd\* Nas_SaveBufferAuto\(Acmd\* cmd, u16 ofs, u16 size, uintptr_t startAddr\);' "$FILE"; then
     printf '%s\n' 'missing jaudio driver save-buffer declaration width contract' >&2
     exit 1
 fi
 
-if ! rg -q 'static Acmd\* Nas_SaveBufferAuto\(Acmd\* cmd, u16 dmem, u16 size, u32 startAddr\) \{' "$FILE"; then
+if ! rg -q 'static Acmd\* Nas_SaveBufferAuto\(Acmd\* cmd, u16 dmem, u16 size, uintptr_t startAddr\) \{' "$FILE"; then
     printf '%s\n' 'missing jaudio driver save-buffer definition width contract' >&2
     exit 1
 fi
 
-if ! rg -q 'u32 startUnaligned = startAddr & 15;' "$FILE"; then
+if ! rg -q 'u32 startUnaligned = \(u32\)\(startAddr & 15u\);' "$FILE"; then
     printf '%s\n' 'missing jaudio driver start alignment unsigned contract' >&2
     exit 1
 fi
 
-if ! rg -q 'static void Nas_LoadBuffer2\(Acmd\* cmd, s32 dst, s32 len, u32 src\) \{' "$FILE"; then
+if ! rg -q 'static void Nas_LoadBuffer2\(Acmd\* cmd, s32 dst, s32 len, const void\* src\) \{' "$FILE"; then
     printf '%s\n' 'missing jaudio driver load-buffer source width contract' >&2
     exit 1
 fi
 
-if ! rg -q 'static void Nas_SaveBuffer2\(Acmd\* cmd, s32 src, s32 len, u32 dst\) \{' "$FILE"; then
+if ! rg -q 'static void Nas_SaveBuffer2\(Acmd\* cmd, s32 src, s32 len, void\* dst\) \{' "$FILE"; then
     printf '%s\n' 'missing jaudio driver save-buffer destination width contract' >&2
     exit 1
 fi
 
-if ! rg -q 'static void Nas_PCM8dec\(Acmd\* cmd, s32 flags, u32 state\) \{' "$FILE"; then
+if ! rg -q 'static void Nas_PCM8dec\(Acmd\* cmd, s32 flags, void\* state\) \{' "$FILE"; then
     printf '%s\n' 'missing jaudio driver pcm8 state width contract' >&2
     exit 1
 fi

@@ -7,17 +7,17 @@ REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 EMU64_FILE="$REPO_ROOT/src/static/libforest/emu64/emu64.c"
 UTILITY_FILE="$REPO_ROOT/src/static/libforest/emu64/emu64_utility.c"
 
-if ! rg -q 'now_setimg\.setimg2\.imgaddr\s*=\s*this->seg2k0\(setimg2->imgaddr\)\s*;' "$EMU64_FILE"; then
-    printf '%s\n' 'missing emu64 setimg seg2k0 cast cleanup contract' >&2
+if ! rg -q 'this->texture_info\[tile\]\.img_addr = \(void\*\)this->seg2k0\(this->now_setimg\.setimg2\.imgaddr\);' "$EMU64_FILE"; then
+    printf '%s\n' 'missing emu64 setimg seg2k0 resolution contract' >&2
     exit 1
 fi
 
-if rg -q 'now_setimg\.setimg2\.imgaddr = \(u32\)this->seg2k0\(setimg2->imgaddr\);' "$EMU64_FILE"; then
-    printf '%s\n' 'legacy emu64 setimg u32 cast still present' >&2
+if rg -q '\(u32\)this->seg2k0\(this->now_setimg\.setimg2\.imgaddr\)' "$EMU64_FILE"; then
+    printf '%s\n' 'legacy emu64 setimg seg2k0 u32 cast still present' >&2
     exit 1
 fi
 
-if ! rg -q 'u32\s+resolved\s*=\s*this->segments\[seg\]\s*\+\s*offset\s*;' "$UTILITY_FILE"; then
+if ! rg -q 'uintptr_t\s+resolved\s*=\s*this->segments\[seg\]\s*\+\s*\(uintptr_t\)offset\s*;' "$UTILITY_FILE"; then
     printf '%s\n' 'missing emu64 utility resolved segment cast cleanup contract' >&2
     exit 1
 fi
