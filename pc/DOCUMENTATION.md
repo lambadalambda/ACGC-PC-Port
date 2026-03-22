@@ -429,6 +429,7 @@ sh pc/tests/check_mail_strlen_pointer_arithmetic_contract.sh
 sh pc/tests/check_emu64_segment_cast_contract.sh
 sh pc/tests/check_m_scene_exchange_size_width_contract.sh
 sh pc/tests/check_m_player_demo_label_narrowing_contract.sh
+sh pc/tests/check_m_collision_bg_decal_circle_bounds_contract.sh
 sh pc/tests/check_pc_gx_runtime_ptr_contract.sh
 sh pc/tests/check_pc_crash_and_image_addr_contract.sh
 sh pc/tests/check_jkr_archive_file_entry_layout_contract.sh

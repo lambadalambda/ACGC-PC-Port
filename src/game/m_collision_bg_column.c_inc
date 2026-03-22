@@ -79,10 +79,10 @@ extern int mCoBG_RegistDecalCircle(const xyz_t* pos, f32 start_radius, f32 end_r
                 // because we don't break/return after finding a free
                 // circle and we clear the WHOLE array, we can clear into
                 // mCoBG_decal_circle's data.
-#ifndef BUGFIXES
-                bzero(regist, sizeof(mCoBG_regist_circle_info));
-#else
+#if defined(TARGET_PC) || defined(BUGFIXES)
                 bzero(regist, sizeof(mCoBG_regist_circle_info_c));
+#else
+                bzero(regist, sizeof(mCoBG_regist_circle_info));
 #endif
                 bzero(col_circle, sizeof(mCoBG_column_c));
 
@@ -98,7 +98,7 @@ extern int mCoBG_RegistDecalCircle(const xyz_t* pos, f32 start_radius, f32 end_r
                 // @BUG - shouldn't this exit immediately?
                 // As it stands, all free 'decal circle' collision columns
                 // will be utilized.
-#ifdef BUGFIXES
+#if defined(TARGET_PC) || defined(BUGFIXES)
                 return i;
 #endif
             }
@@ -115,10 +115,10 @@ extern void mCoBG_InitDecalCircle(void) {
     // @BUG - they incorrectly clear 3x the memory necessary.
     // I'm guessing that they did 3 * sizeof(array) rather than
     // 3 * sizeof(struct).
-#ifndef BUGFIXES
-    bzero(mCoBG_regist_circle_info, 3 * sizeof(mCoBG_regist_circle_info));
+#if defined(TARGET_PC) || defined(BUGFIXES)
+    bzero(mCoBG_regist_circle_info, sizeof(mCoBG_regist_circle_info));
 #else
-    bzero(mCoBG_regist_circle_info, sizeof(mCoBG_regist_circle_info_c));
+    bzero(mCoBG_regist_circle_info, 3 * sizeof(mCoBG_regist_circle_info));
 #endif
     bzero(mCoBG_decal_circle, sizeof(mCoBG_decal_circle));
     mCoBG_regist_decal_circle_count = 0;
