@@ -124,6 +124,15 @@ static s16 AD4[16] = {
 static void Jac_Resample16(s16* input_L_channel, s16* input_R_channel, s16* output_interleaved, s32 input_sample_count,
                            s32 output_sample_count, s16* history_buffer, u16* position_p, s32 is_first_block);
 
+static void jac_resample_store_state(s16* dst, const s16* ring, s32 ring_index) {
+    s32 start = ring_index - 4;
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        dst[i] = ring[(start + i) & 7];
+    }
+}
+
 extern void RspStart2(u32* task, s32 tasks, s32 mode) {
     static u32* taskp;
     static s32 alltasks;
@@ -369,7 +378,7 @@ extern s32 RspStart(u32* pTaskCmds, s32 allTasks) {
                     *var_r6++ = var_r15;
                 }
                 spC[var_r8] = var_r7 & 0x7FFF;
-                Jac_bcopy(&spC[var_r8 - 4], pc_audio_cmd_ptr_decode_word(cmdLo), 8 * sizeof(s16));
+                jac_resample_store_state((s16*)pc_audio_cmd_ptr_decode_word(cmdLo), spC, var_r8);
                 break;
             }
 

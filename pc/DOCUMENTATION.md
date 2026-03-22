@@ -420,6 +420,7 @@ sh pc/tests/check_jaudio_fastcopy_pointer_format_contract.sh
 sh pc/tests/check_jaudio_cmdstack_queue_pointer_contract.sh
 sh pc/tests/check_jaudio_channel_addr_macro_contract.sh
 sh pc/tests/check_jaudio_subsys_callback_macro_contract.sh
+sh pc/tests/check_jaudio_resample_state_wrap_contract.sh
 sh pc/tests/check_jaudio_driver_savebuffer_addr_contract.sh
 sh pc/tests/check_jaudio_driver_aux_buffer_addr_contract.sh
 sh pc/tests/check_ins_goki_item_slot_contract.sh
