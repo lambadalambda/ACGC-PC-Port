@@ -18,6 +18,16 @@ static int S_now_demono = mEv_TITLEDEMO_LOGO;
 static int S_tdemo_frame;
 static u16 S_titledemo_to_play;
 
+static int mTD_demo_index_clamped(void) {
+    int index = mEv_CheckTitleDemo() - mEv_TITLEDEMO_START1;
+
+    if (index < 0 || index >= mTD_TITLE_DEMO_NUM) {
+        index = 0;
+    }
+
+    return index;
+}
+
 static u16 get_demo_header(int titledemo_no, int key) {
     static u16* pact_data_head_pt[mTD_TITLE_DEMO_NUM] = { pact0_head_table, pact1_head_table, pact2_head_table,
                                                             pact3_head_table, pact4_head_table };
@@ -42,8 +52,9 @@ extern void mTD_player_keydata_init(GAME_PLAY* play) {
     PLAYER_ACTOR* player = get_player_actor_withoutCheck(play);
 
     if (mEv_IsTitleDemo()) {
+        int demo_idx = mTD_demo_index_clamped();
         u16 angle;
-        mActor_name_t tool = get_demo_header(mEv_CheckTitleDemo() - mEv_TITLEDEMO_START1, mTD_HEADER_TOOL);
+        mActor_name_t tool = get_demo_header(demo_idx, mTD_HEADER_TOOL);
 
         if (tool == ITM_AXE) {
             tool = ITM_AXE;
@@ -54,7 +65,7 @@ extern void mTD_player_keydata_init(GAME_PLAY* play) {
         }
 
         mPlib_SetData2_controller_data_for_title_demo(tool);
-        angle = get_demo_header(mEv_CheckTitleDemo() - mEv_TITLEDEMO_START1, mTD_HEADER_ROTATION);
+        angle = get_demo_header(demo_idx, mTD_HEADER_ROTATION);
 
         player->actor_class.shape_info.rotation.y = angle;
         player->actor_class.world.angle.y = angle;
@@ -67,8 +78,20 @@ static u16 get_tdemo_keydata(int frame) {
     /* BUG: this was probably meant to be marked as static */
     u16* pact_data_keydata_pt[mTD_TITLE_DEMO_NUM] = { pact0_key_data, pact1_key_data, pact2_key_data, pact3_key_data,
                                                       pact4_key_data };
+    int demo_idx = mTD_demo_index_clamped();
+    int keydata_count = get_demo_header(demo_idx, mTD_HEADER_SIZE);
 
-    return pact_data_keydata_pt[mEv_CheckTitleDemo() - mEv_TITLEDEMO_START1][frame];
+    if (keydata_count <= 0) {
+        keydata_count = 1;
+    }
+
+    if (frame < 0) {
+        frame = 0;
+    } else if (frame >= keydata_count) {
+        frame = keydata_count - 1;
+    }
+
+    return pact_data_keydata_pt[demo_idx][frame];
 }
 
 /* @fakematch? - the weirdness with btn_a needing to be assigned to a u8 then int needs to be investigated */

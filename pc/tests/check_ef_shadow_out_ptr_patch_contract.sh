@@ -19,6 +19,11 @@ check_contains "src/data/model/ef_shadow_out.c" 'ef_shadow_out_modelT\[4\]\.word
 check_contains "src/data/model/ef_shadow_out.c" 'ef_shadow_out_modelT\[18\]\.words\.w1 = SEGMENT_ADDR\(ANIME_1_TXT_SEG, 0\);' 'ef shadow segment display list pointer patched'
 check_contains "src/data/model/ef_shadow_out.c" 'ef_shadow_out_modelT\[20\]\.words\.w1 = pc_gbi_ptr_encode\(ef_shadow_out_v\);' 'ef shadow vertex pointer patched'
 
+check_contains "src/data/model/ef_shadow_in2.c" 'void pc_patch_ef_shadow_in_modelT\(void\)' 'ef shadow-in LP64 patch helper exists'
+check_contains "src/data/model/ef_shadow_in2.c" 'ef_shadow_in_modelT\[6\]\.words\.w1 = pc_gbi_ptr_encode\(ef_shadow_in_0\);' 'ef shadow-in texture pointer patched'
+check_contains "src/data/model/ef_shadow_in2.c" 'ef_shadow_in_modelT\[13\]\.words\.w1 = pc_gbi_ptr_encode\(ef_shadow_in_v\);' 'ef shadow-in vertex pointer patched'
+check_contains "src/data/model/ef_shadow_in2.c" 'pc_patch_ef_shadow_in_modelT\(\);' 'ef shadow-in loader applies patch helper'
+
 check_contains "src/game/m_actor_shadow.c" 'extern void pc_patch_ef_shadow_out_modelT\(void\);' 'actor shadow declares ef shadow patch helper'
 check_contains "src/game/m_actor_shadow.c" 'pc_patch_ef_shadow_out_modelT\(\);' 'actor shadow applies ef shadow patch before draw'
 

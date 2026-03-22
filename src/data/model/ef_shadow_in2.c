@@ -44,8 +44,27 @@ Gfx ef_shadow_in_modelT[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_shadow_in_modelT(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_shadow_in_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_shadow_in_0);
+    ef_shadow_in_modelT[13].words.w1 = pc_gbi_ptr_encode(ef_shadow_in_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_shadow_in_modelT(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_ef_shadow_in2_c(void) {
     pc_load_asset("assets/ef_shadow_in2/ef_shadow_in_v.bin", ef_shadow_in_v, 0x40, 0xB6A6B8, 0, 2);
+    pc_patch_ef_shadow_in_modelT();
 }
 #endif

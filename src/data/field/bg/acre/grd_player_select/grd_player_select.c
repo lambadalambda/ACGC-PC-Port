@@ -101,6 +101,32 @@ extern Gfx grd_player_select_model[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_player_select_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_player_select_modelT[5].words.w1 = pc_gbi_ptr_encode(rom_open_spot2_tex_rgb_i4);
+    grd_player_select_modelT[7].words.w1 = pc_gbi_ptr_encode(rom_open_spot_tex);
+    grd_player_select_modelT[9].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0x0);
+    grd_player_select_modelT[11].words.w1 = pc_gbi_ptr_encode(&grd_player_select_v[12]);
+    grd_player_select_modelT[15].words.w1 = pc_gbi_ptr_encode(rom_open_shade_tex);
+    grd_player_select_modelT[17].words.w1 = pc_gbi_ptr_encode(&grd_player_select_v[16]);
+
+    grd_player_select_model[4].words.w1 = pc_gbi_ptr_encode(rom_open_pal);
+    grd_player_select_model[5].words.w1 = pc_gbi_ptr_encode(rom_open_floor_tex);
+    grd_player_select_model[8].words.w1 = pc_gbi_ptr_encode(&grd_player_select_v[0]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_player_select_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_player_select_grd_player_select_c(void) {
     pc_load_asset("assets/field/bg/rom_open_pal.bin", rom_open_pal, 0x20, 0xC15580, 0, 1);
@@ -109,5 +135,6 @@ void _pc_load_src_data_field_bg_acre_grd_player_select_grd_player_select_c(void)
     pc_load_asset("assets/field/bg/rom_open_spot2_tex_rgb_i4.bin", rom_open_spot2_tex_rgb_i4, 0x200, 0xC161A0, 0, 0);
     pc_load_asset("assets/field/bg/rom_open_spot_tex.bin", rom_open_spot_tex, 0x800, 0xC163A0, 0, 0);
     pc_load_asset("assets/field/bg/grd_player_select_v.bin", grd_player_select_v, 0x140, 0xC16BA0, 0, 2);
+    pc_patch_grd_player_select_models();
 }
 #endif

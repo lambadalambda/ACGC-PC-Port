@@ -2,6 +2,8 @@
 #include "pc_platform.h"
 #include "pc_keybindings.h"
 #include <dolphin/pad.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /* analog stick constants */
 #define STICK_MAGNITUDE     80
@@ -11,11 +13,136 @@
 
 static SDL_GameController* g_controller = NULL;
 
+static int pc_pad_log_enabled(void);
+
+static int pc_pad_parse_env_int(const char* name, int default_value) {
+    const char* value = getenv(name);
+
+    if (value == NULL || value[0] == '\0') {
+        return default_value;
+    }
+
+    {
+        char* end = NULL;
+        long parsed = strtol(value, &end, 10);
+
+        if (end == value || (end != NULL && end[0] != '\0')) {
+            return default_value;
+        }
+
+        return (int)parsed;
+    }
+}
+
+static int pc_pad_autopress_a_apply(u16* buttons) {
+    static int configured = 0;
+    static int enabled = 0;
+    static int start_frame = 120;
+    static int every_frames = 20;
+    static int hold_frames = 2;
+    static int frame_counter = 0;
+
+    int pressed = 0;
+
+    if (!configured) {
+        const char* env = getenv("PC_AUTOPRESS_A");
+        enabled = (env != NULL && env[0] != '\0' && env[0] != '0') ? 1 : 0;
+        start_frame = pc_pad_parse_env_int("PC_AUTOPRESS_A_START", 120);
+        every_frames = pc_pad_parse_env_int("PC_AUTOPRESS_A_EVERY", 20);
+        hold_frames = pc_pad_parse_env_int("PC_AUTOPRESS_A_HOLD", 2);
+
+        if (start_frame < 0) {
+            start_frame = 0;
+        }
+        if (every_frames < 1) {
+            every_frames = 1;
+        }
+        if (hold_frames < 1) {
+            hold_frames = 1;
+        }
+        if (hold_frames > every_frames) {
+            hold_frames = every_frames;
+        }
+
+        if (enabled && (pc_pad_log_enabled() || g_pc_verbose)) {
+            printf("[PC][pad] auto A enabled: start=%d every=%d hold=%d\n", start_frame, every_frames, hold_frames);
+        }
+
+        configured = 1;
+    }
+
+    if (enabled) {
+        int frame = frame_counter;
+        if (frame >= start_frame) {
+            int phase = (frame - start_frame) % every_frames;
+            if (phase < hold_frames) {
+                *buttons |= PAD_BUTTON_A;
+                pressed = 1;
+            }
+        }
+    }
+
+    frame_counter++;
+    return pressed;
+}
+
+static int pc_pad_log_enabled(void) {
+    static int enabled = -1;
+
+    if (enabled >= 0) {
+        return enabled;
+    }
+
+    {
+        const char* env = getenv("PC_LOG_GAMEPAD_INPUTS");
+        enabled = (env != NULL && env[0] != '\0' && env[0] != '0') ? 1 : 0;
+    }
+
+    return enabled;
+}
+
+static void pc_pad_log_state_if_changed(const char* source, u16 buttons, s8 stickX, s8 stickY, s8 cstickX, s8 cstickY,
+                                        u8 lt, u8 rt) {
+    static int has_prev = 0;
+    static u16 prev_buttons = 0;
+    static s8 prev_stickX = 0;
+    static s8 prev_stickY = 0;
+    static s8 prev_cstickX = 0;
+    static s8 prev_cstickY = 0;
+    static u8 prev_lt = 0;
+    static u8 prev_rt = 0;
+
+    if (!pc_pad_log_enabled()) {
+        return;
+    }
+
+    if (has_prev && prev_buttons == buttons && prev_stickX == stickX && prev_stickY == stickY &&
+        prev_cstickX == cstickX && prev_cstickY == cstickY && prev_lt == lt && prev_rt == rt) {
+        return;
+    }
+
+    printf("[PC][pad] src=%s btn=0x%04X lx=%d ly=%d rx=%d ry=%d lt=%u rt=%u\n", source, buttons, (int)stickX,
+           (int)stickY, (int)cstickX, (int)cstickY, (unsigned int)lt, (unsigned int)rt);
+
+    prev_buttons = buttons;
+    prev_stickX = stickX;
+    prev_stickY = stickY;
+    prev_cstickX = cstickX;
+    prev_cstickY = cstickY;
+    prev_lt = lt;
+    prev_rt = rt;
+    has_prev = 1;
+}
+
 BOOL PADInit(void) {
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
         if (SDL_IsGameController(i)) {
             g_controller = SDL_GameControllerOpen(i);
             if (g_controller) {
+                if (pc_pad_log_enabled()) {
+                    printf("[PC][pad] controller opened at init: index=%d name=%s\n", i,
+                           SDL_GameControllerName(g_controller));
+                }
                 break;
             }
         }
@@ -30,6 +157,9 @@ u32 PADRead(PADStatus* status) {
     u16 buttons = 0;
     s8 stickX = 0, stickY = 0;
     s8 cstickX = 0, cstickY = 0;
+    u8 lt = 0;
+    u8 rt = 0;
+    const char* log_source = "keyboard";
 
     /* buttons (from keybindings.ini) */
     PCKeybindings* kb = &g_pc_keybindings;
@@ -65,7 +195,13 @@ u32 PADRead(PADStatus* status) {
         for (int i = 0; i < SDL_NumJoysticks(); i++) {
             if (SDL_IsGameController(i)) {
                 g_controller = SDL_GameControllerOpen(i);
-                if (g_controller) break;
+                if (g_controller) {
+                    if (pc_pad_log_enabled()) {
+                        printf("[PC][pad] controller hotplug open: index=%d name=%s\n", i,
+                               SDL_GameControllerName(g_controller));
+                    }
+                    break;
+                }
             }
         }
     }
@@ -74,9 +210,13 @@ u32 PADRead(PADStatus* status) {
         if (!SDL_GameControllerGetAttached(g_controller)) {
             SDL_GameControllerClose(g_controller);
             g_controller = NULL;
+            if (pc_pad_log_enabled()) {
+                printf("[PC][pad] controller detached\n");
+            }
         }
     }
     if (g_controller) {
+        log_source = "sdl-gamecontroller";
         if (SDL_GameControllerGetButton(g_controller, SDL_CONTROLLER_BUTTON_A)) buttons |= PAD_BUTTON_A;
         if (SDL_GameControllerGetButton(g_controller, SDL_CONTROLLER_BUTTON_B)) buttons |= PAD_BUTTON_B;
         if (SDL_GameControllerGetButton(g_controller, SDL_CONTROLLER_BUTTON_X)) buttons |= PAD_BUTTON_X;
@@ -116,13 +256,20 @@ u32 PADRead(PADStatus* status) {
             cstickY = (s8)sry;
         }
 
-        u8 lt = (u8)(SDL_GameControllerGetAxis(g_controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) >> 7);
-        u8 rt = (u8)(SDL_GameControllerGetAxis(g_controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) >> 7);
+        lt = (u8)(SDL_GameControllerGetAxis(g_controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) >> 7);
+        rt = (u8)(SDL_GameControllerGetAxis(g_controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) >> 7);
         if (lt > TRIGGER_THRESHOLD) buttons |= PAD_TRIGGER_L;
         if (rt > TRIGGER_THRESHOLD) buttons |= PAD_TRIGGER_R;
-        status[0].triggerLeft = lt;
-        status[0].triggerRight = rt;
     }
+
+    if (pc_pad_autopress_a_apply(&buttons)) {
+        log_source = "autopress-a";
+    }
+
+    status[0].triggerLeft = lt;
+    status[0].triggerRight = rt;
+
+    pc_pad_log_state_if_changed(log_source, buttons, stickX, stickY, cstickX, cstickY, lt, rt);
 
     status[0].button = buttons;
     status[0].stickX = stickX;

@@ -48,4 +48,10 @@ check_contains "src/actor/ac_weather_sakura.c" 'pc_patch_ef_hanabira01_00_models
 check_contains "src/data/model/point_light.c" 'void pc_patch_point_light_models\(void\)' 'point-light LP64 patch helper exists'
 check_contains "src/game/m_lights.c" 'pc_patch_point_light_models\(\);' 'light renderer applies point-light patch helper'
 
+check_contains "src/data/npc/model/mdl/end_1.c" 'static void pc_patch_end_1_models\(void\)' 'end_1 NPC LP64 patch helper exists'
+check_contains "src/data/npc/model/mdl/end_1.c" 'Lfoot1_end_model\[0\]\.words\.w1 = SEGMENT_ADDR\(ANIME_6_TXT_SEG, 0x0\);' 'end_1 left-foot matrix segment pointer patched'
+check_contains "src/data/npc/model/mdl/end_1.c" 'Lfoot1_end_model\[11\]\.words\.w1 = pc_gbi_ptr_encode\(&end_1_v\[319\]\);' 'end_1 left-foot vertex pointer patched'
+check_contains "src/data/npc/model/mdl/end_1.c" 'base_end_model\[39\]\.words\.w1 = pc_gbi_ptr_encode\(&end_1_v\[439\]\);' 'end_1 base final vertex pointer patched'
+check_contains "src/data/npc/model/mdl/end_1.c" 'pc_patch_end_1_models\(\);' 'end_1 loader applies patch helper'
+
 printf '%s\n' 'check_misc_model_ptr_patch_contract: OK'
