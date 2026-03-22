@@ -342,6 +342,7 @@ For guarded 64-bit bringup work, the smallest useful checks are:
 ```bash
 sh pc/tests/check_type_widths.sh
 sh pc/tests/check_static_ptr_contract.sh
+sh pc/tests/check_pc_asset_u8_load_bounds_contract.sh
 sh pc/tests/check_gbi_runtime_ptrs.sh
 sh pc/tests/check_jkr_runtime_ptr_contract.sh
 sh pc/tests/check_jkr_macro_runtime_ptr_contract.sh

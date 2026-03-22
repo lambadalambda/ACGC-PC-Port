@@ -23,7 +23,8 @@ static u8 tol_umb18_kasa1_tex_txt[] = {
 #endif
 
 #ifdef TARGET_PC
-static u8 tol_umb18_kasa2_tex_txt[0x40];
+static u8 tol_umb18_kasa2_tex_txt[0x80];
+_Static_assert(sizeof(tol_umb18_kasa2_tex_txt) == 0x80, "tol_umb18_kasa2_tex_txt size must match loader");
 #else
 static u8 tol_umb18_kasa2_tex_txt[] = {
 #include "assets/tol_umb_18/tol_umb18_kasa2_tex_txt.inc"
