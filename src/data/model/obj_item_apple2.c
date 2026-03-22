@@ -47,11 +47,31 @@ Gfx apple_DL_vtx[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_item_apple2_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    apple_DL_mode[3].words.w1 = pc_gbi_ptr_encode(obj_item_apple_pal);
+    apple_DL_mode[4].words.w1 = pc_gbi_ptr_encode(obj_item_apple_tex);
+    apple_DL_vtx[0].words.w1 = pc_gbi_ptr_encode(obj_item_apple_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_item_apple2_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_obj_item_apple2_c(void) {
     pc_load_asset("assets/obj_item_apple2/obj_item_apple_pal.bin", obj_item_apple_pal, 0x20, 0x66AB20, 0, 1);
     pc_load_asset("assets/obj_item_apple2/obj_item_apple_tex.bin", obj_item_apple_tex, 0x200, 0x66AB40, 0, 0);
     pc_load_asset("assets/obj_item_apple2/obj_item_apple_v.bin", obj_item_apple_v, 0x40, 0x66AD40, 0, 2);
+    pc_patch_obj_item_apple2_models();
 }
 #endif

@@ -260,8 +260,42 @@ extern Gfx grd_s_t_sh_1_model[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_s_t_sh_1_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_t_sh_1_model[3].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_t_sh_1_model[4].words.w1 = pc_gbi_ptr_encode(bush_a_tex_dummy);
+    grd_s_t_sh_1_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[143]);
+    grd_s_t_sh_1_model[13].words.w1 = pc_gbi_ptr_encode(bush_b_tex_dummy);
+    grd_s_t_sh_1_model[15].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[0]);
+    grd_s_t_sh_1_model[19].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_t_sh_1_model[20].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_t_sh_1_model[22].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[19]);
+    grd_s_t_sh_1_model[31].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[51]);
+    grd_s_t_sh_1_model[39].words.w1 = pc_gbi_ptr_encode(rail_pal_dummy);
+    grd_s_t_sh_1_model[40].words.w1 = pc_gbi_ptr_encode(rail_tex_dummy);
+    grd_s_t_sh_1_model[42].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[78]);
+    grd_s_t_sh_1_model[50].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_t_sh_1_model[51].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_t_sh_1_model[53].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[98]);
+    grd_s_t_sh_1_model[59].words.w1 = pc_gbi_ptr_encode(stone_tex_dummy);
+    grd_s_t_sh_1_model[61].words.w1 = pc_gbi_ptr_encode(&grd_s_t_sh_1_v[128]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_s_t_sh_1_model(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_t_sh_1_grd_s_t_sh_1_c(void) {
     pc_load_asset("assets/field/bg/grd_s_t_sh_1_v.bin", grd_s_t_sh_1_v, 0xA20, 0xA60878, 0, 2);
+    pc_patch_grd_s_t_sh_1_model();
 }
 #endif

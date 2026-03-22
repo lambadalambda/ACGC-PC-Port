@@ -6,6 +6,7 @@
 #include "sys_matrix.h"
 
 extern Gfx ef_turi_hamon01_00_modelT[];
+extern void pc_patch_ef_turi_hamon01_00_models(void);
 
 static void eTH_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1);
 static void eTH_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
@@ -103,6 +104,8 @@ static void eTH_mv(eEC_Effect_c* effect, GAME* game) {
 
 static void eTH_dw(eEC_Effect_c* effect, GAME* game) {
     xyz_t scale = effect->scale;
+
+    pc_patch_ef_turi_hamon01_00_models();
 
     OPEN_DISP(game->graph);
 

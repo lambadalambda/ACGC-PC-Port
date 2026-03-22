@@ -11,11 +11,19 @@ static void aUKI_rotate_calc(UKI_ACTOR* uki) {
 extern Gfx tol_uki1_model[];
 extern Gfx tol_uki2_model[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_tol_uki_12_models(void);
+#endif
+
 static void aUKI_actor_draw(ACTOR* actorx, GAME* game) {
     UKI_ACTOR* uki = (UKI_ACTOR*)actorx;
     ACTOR* player_actor = GET_PLAYER_ACTOR_GAME_ACTOR(game);
     GRAPH* graph = game->graph;
     mActor_name_t item;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_tol_uki_12_models();
+#endif
 
     OPEN_POLY_OPA_DISP(graph);
 

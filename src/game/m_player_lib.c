@@ -1316,11 +1316,21 @@ extern int mPlib_get_player_actor_request_main_index(GAME* game) {
 
 extern cKF_Skeleton_R_c cKF_bs_r_boy_1;
 extern cKF_Skeleton_R_c cKF_bs_r_grl_1;
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_boy_model_display_lists(void);
+extern void pc_patch_girl_model_display_lists(void);
+#endif
 
 extern cKF_Skeleton_R_c* mPlib_get_player_mdl_p(void) {
     if (Now_Private->gender == mPr_SEX_MALE) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        pc_patch_boy_model_display_lists();
+#endif
         return &cKF_bs_r_boy_1;
     } else {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        pc_patch_girl_model_display_lists();
+#endif
         return &cKF_bs_r_grl_1;
     }
 }

@@ -403,8 +403,50 @@ extern Gfx grd_s_m_1_modelT[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_s_m_1_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_m_1_model[3].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_C, 0);
+    grd_s_m_1_model[5].words.w1 = pc_gbi_ptr_encode(beach2_tex_dummy2);
+    grd_s_m_1_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[134]);
+    grd_s_m_1_model[20].words.w1 = pc_gbi_ptr_encode(beach_pal_dummy2);
+    grd_s_m_1_model[21].words.w1 = pc_gbi_ptr_encode(sand_tex_dummy);
+    grd_s_m_1_model[25].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[0]);
+    grd_s_m_1_model[32].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_m_1_model[33].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_m_1_model[35].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[25]);
+    grd_s_m_1_model[44].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_m_1_model[46].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[57]);
+    grd_s_m_1_model[52].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[87]);
+    grd_s_m_1_model[58].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_C, 0);
+    grd_s_m_1_model[60].words.w1 = pc_gbi_ptr_encode(beach1_tex_dummy2);
+    grd_s_m_1_model[62].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[109]);
+
+    grd_s_m_1_modelT[4].words.w1 = pc_gbi_ptr_encode(wave1_tex_dummy);
+    grd_s_m_1_modelT[6].words.w1 = pc_gbi_ptr_encode(wave2_tex_dummy);
+    grd_s_m_1_modelT[8].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_B, 0);
+    grd_s_m_1_modelT[10].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[161]);
+    grd_s_m_1_modelT[21].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[193]);
+    grd_s_m_1_modelT[24].words.w1 = pc_gbi_ptr_encode(wave1_tex_dummy);
+    grd_s_m_1_modelT[26].words.w1 = pc_gbi_ptr_encode(wave3_tex_dummy);
+    grd_s_m_1_modelT[28].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_D, 0);
+    grd_s_m_1_modelT[29].words.w1 = pc_gbi_ptr_encode(&grd_s_m_1_v[200]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_s_m_1_model(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_m_1_grd_s_m_1_c(void) {
     pc_load_asset("assets/field/bg/grd_s_m_1_v.bin", grd_s_m_1_v, 0xE00, 0x9F4F98, 0, 2);
+    pc_patch_grd_s_m_1_model();
 }
 #endif

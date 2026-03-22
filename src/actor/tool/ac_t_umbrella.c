@@ -6,6 +6,10 @@
 #include "m_rcp.h"
 #include "m_common_data.h"
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_tol_umb_01_models(void);
+#endif
+
 enum {
     aTUMB_ACTION_TAKEOUT_BEFORE,
     aTUMB_ACTION_OPENING,  // Placeholder. Unknown use.
@@ -293,6 +297,10 @@ static void aTUMB_actor_draw(ACTOR* actor, GAME* game) {
     UMBRELLA_MODEL* umbrella_model;
     ACTOR* parent;
     Gfx* gfx;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_tol_umb_01_models();
+#endif
 
     umbrella = (UMBRELLA_ACTOR*)actor;
     parent = actor->parent_actor;

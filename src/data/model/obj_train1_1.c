@@ -202,3 +202,51 @@ s16 cKF_ds_obj_train1_1_tbl[] = { 1,  -5500, 0, 25, -5500, 0, 1, 1500,  0,    25
 cKF_Animation_R_c cKF_ba_r_obj_train1_1 = {
     cKF_ckcb_r_obj_train1_1_tbl, cKF_ds_obj_train1_1_tbl, cKF_kn_obj_train1_1_tbl, cKF_c_obj_train1_1_tbl, -1, 25
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_train1_1_model_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_train1_1_t3_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t2_tex_txt);
+    obj_train1_1_t3_model[3].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[93]);
+    obj_train1_1_t3_model[8].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[108]);
+
+    obj_train1_1_t2_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t3_tex_txt);
+    obj_train1_1_t2_model[3].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[71]);
+
+    obj_train1_1_t1_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t1_tex_txt);
+    obj_train1_1_t1_model[3].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[16]);
+    obj_train1_1_t1_model[9].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[47]);
+
+    obj_train1_1_wheel2_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t3_tex_txt);
+    obj_train1_1_wheel2_model[3].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[8]);
+
+    obj_train1_1_rod1_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t3_tex_txt);
+    obj_train1_1_rod1_model[3].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[4]);
+
+    obj_train1_1_rod2_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t3_tex_txt);
+    obj_train1_1_rod2_model[3].words.w1 = pc_gbi_ptr_encode(obj_train1_1_v);
+
+    obj_train1_1_wheel1_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t3_tex_txt);
+    obj_train1_1_wheel1_model[3].words.w1 = pc_gbi_ptr_encode(&obj_train1_1_v[12]);
+
+    obj_train1_2_t2_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t3_tex_txt_tansui);
+    obj_train1_2_t2_model[2].words.w1 = pc_gbi_ptr_encode(&obj_train_2_v[29]);
+
+    obj_train1_2_t1_model[0].words.w1 = pc_gbi_ptr_encode(obj_train1_t2_tex_txt);
+    obj_train1_2_t1_model[2].words.w1 = pc_gbi_ptr_encode(obj_train_2_v);
+
+    obj_train1_2_model[3].words.w1 = anime_1_txt;
+    obj_train1_2_model[6].words.w1 = pc_gbi_ptr_encode(obj_train1_2_t2_model);
+    obj_train1_2_model[7].words.w1 = pc_gbi_ptr_encode(obj_train1_2_t1_model);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_train1_1_model_display_lists(void) {
+}
+#endif

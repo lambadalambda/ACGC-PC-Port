@@ -42,3 +42,22 @@ Gfx obj_s_stoneA_gfx_model[] = {
     gsSPNTriangles_5b(2, 8, 9, 2, 3, 8, 3, 7, 8, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_stoneA_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_stoneA_mat_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_stoneA_pal);
+    obj_s_stoneA_mat_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_stoneA_tex);
+    obj_s_stoneA_gfx_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_stoneA_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_stoneA_models(void) {
+}
+#endif

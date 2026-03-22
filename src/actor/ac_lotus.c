@@ -50,6 +50,10 @@ ClObjPipe_c pipeinfo;
 
 extern cKF_Skeleton_R_c cKF_bs_r_obj_s_lotus;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_s_lotus_models(void);
+#endif
+
 static void aLOT_setup_action(LOTUS_ACTOR* lotus, int action);
 static int aLOT_getPalNo();
 
@@ -60,6 +64,11 @@ static void aLOT_actor_ct(ACTOR* actor, GAME* game) {
 
     lotus = (LOTUS_ACTOR*)actor;
     water_height = mCoBG_GetWaterHeight_File(actor->world.position, __FILE__, 265);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_s_lotus_models();
+#endif
+
     cKF_SkeletonInfo_R_ct(&lotus->structure_class.keyframe, &cKF_bs_r_obj_s_lotus, NULL, lotus->structure_class.work_area, lotus->structure_class.morph_area);
 
     ClObjPipe_ct(game, &pipeinfo);

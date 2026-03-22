@@ -58,6 +58,7 @@ static u8 aSHR_shadow_vtx_fix_flg_table[16] = {
 
 extern Vtx obj_shrine_shadow_v[];
 extern Gfx obj_shrine_shadow_model[];
+extern void pc_patch_obj_shrine_shadow_models(void);
 
 static bIT_ShadowData_c aSHR_shadow_data = {
   16,
@@ -94,6 +95,8 @@ static void aSHR_actor_ct(ACTOR* actorx, GAME* game) {
   SHRINE_ACTOR* shrine = (SHRINE_ACTOR*)actorx;
   GAME_PLAY* play = (GAME_PLAY*)game;
   int winter;
+
+  pc_patch_obj_shrine_shadow_models();
 
   shrine->structure_class.season = Common_Get(time).season;
   winter = shrine->structure_class.season == mTM_SEASON_WINTER;

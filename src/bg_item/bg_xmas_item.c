@@ -221,6 +221,53 @@ static void bXI_draw_loop_type1_xtree(GRAPH* graph, Gfx** gfx_pp, bg_item_draw_l
 extern u16 obj_g_hole_pal[];
 extern u16 obj_b_hole_pal[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_s_fenceL_models(void);
+extern void pc_patch_obj_fenceL_shadow_models(void);
+extern void pc_patch_obj_s_sightmap_models(void);
+extern void pc_patch_obj_sightmap_shadow_models(void);
+extern void pc_patch_obj_s_notice_models(void);
+extern void pc_patch_obj_notice_shadow_models(void);
+extern void pc_patch_obj_s_stoneA_models(void);
+extern void pc_patch_obj_stoneA_shadow_models(void);
+extern void pc_patch_obj_s_stoneB_models(void);
+extern void pc_patch_obj_s_stoneC_models(void);
+extern void pc_patch_obj_s_stoneD_models(void);
+extern void pc_patch_obj_s_melody_models(void);
+extern void pc_patch_obj_melody_shadow_models(void);
+extern void pc_patch_obj_tree5_shadow_models(void);
+extern void pc_patch_obj_f_tree5_models(void);
+
+static void bIT_patch_lp64_bg_item_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    pc_patch_obj_s_fenceL_models();
+    pc_patch_obj_fenceL_shadow_models();
+    pc_patch_obj_s_sightmap_models();
+    pc_patch_obj_sightmap_shadow_models();
+    pc_patch_obj_s_notice_models();
+    pc_patch_obj_notice_shadow_models();
+    pc_patch_obj_s_stoneA_models();
+    pc_patch_obj_stoneA_shadow_models();
+    pc_patch_obj_s_stoneB_models();
+    pc_patch_obj_s_stoneC_models();
+    pc_patch_obj_s_stoneD_models();
+    pc_patch_obj_s_melody_models();
+    pc_patch_obj_melody_shadow_models();
+    pc_patch_obj_tree5_shadow_models();
+    pc_patch_obj_f_tree5_models();
+
+    s_patched = TRUE;
+}
+#else
+static void bIT_patch_lp64_bg_item_models(void) {
+}
+#endif
+
 static void bXI_actor_ct(ACTOR* actorx, GAME* game) {
     BG_XMAS_ITEM_ACTOR* bg_item = (BG_XMAS_ITEM_ACTOR*)actorx;
     bg_item_common_c* common;
@@ -229,6 +276,8 @@ static void bXI_actor_ct(ACTOR* actorx, GAME* game) {
     int max;
     int event_type;
     PLAYER_ACTOR* player;
+
+    bIT_patch_lp64_bg_item_models();
 
     common = &bg_item->common;
     common_info = &common->common_info;

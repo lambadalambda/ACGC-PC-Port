@@ -26,3 +26,20 @@ Gfx obj_melody_shadowT_mat_model[] = {
 };
 
 Gfx obj_melody_shadowT_gfx_model[] = { gsSPNTrianglesInit_5b(2, 0, 1, 2, 0, 2, 3, 0, 0, 0), gsSPEndDisplayList() };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_melody_shadow_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_melody_shadowT_mat_model[1].words.w1 = pc_gbi_ptr_encode(obj_melody_shadow_tex);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_melody_shadow_models(void) {
+}
+#endif

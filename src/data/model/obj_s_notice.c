@@ -42,9 +42,29 @@ Gfx obj_s_noticeT_gfx_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_notice_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_noticeT_mat_model[1].words.w1 = pc_gbi_ptr_encode(obj_notice_pal);
+    obj_s_noticeT_mat_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_notice_tex);
+    obj_s_noticeT_gfx_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_notice_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_notice_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_obj_s_notice_c(void) {
     pc_load_asset("assets/obj_s_notice/obj_notice_pal.bin", obj_notice_pal, 0x20, 0x3E30C0, 0, 1);
+    pc_patch_obj_s_notice_models();
 }
 #endif

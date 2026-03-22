@@ -15,6 +15,10 @@ extern Gfx ef_ame02_02_modelT[];
 extern Gfx ef_ame02_03_modelT[];
 extern Gfx ef_ame02_04_modelT[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_ame02_00_models(void);
+#endif
+
 static Gfx* aWeather_rain_picha_disp[] = {
     ef_ame02_00_modelT,
     ef_ame02_01_modelT,
@@ -128,6 +132,10 @@ static void aWeatherRain_MakePicha(ACTOR* actor, GAME* game, xyz_t pos) {
 }
 
 static void aWeatherRain_set(GAME* game) {
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_ef_ame02_00_models();
+#endif
 
     _texture_z_light_fog_prim_xlu(game->graph);
 

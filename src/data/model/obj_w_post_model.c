@@ -160,3 +160,36 @@ cKF_Joint_R_c cKF_je_r_obj_w_post_tbl[] = { { obj_w_post_main_model, 2, cKF_JOIN
                                             { obj_w_post_front_model, 0, cKF_JOINT_FLAG_DISP_OPA, { 0, 0, 0 } } };
 
 cKF_Skeleton_R_c cKF_bs_r_obj_w_post = { ARRAY_COUNT(cKF_je_r_obj_w_post_tbl), 4, cKF_je_r_obj_w_post_tbl };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_w_post_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_w_post_main_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_post_pal);
+    obj_w_post_main_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_post_side1_tex_txt);
+    obj_w_post_main_model[8].words.w1 = pc_gbi_ptr_encode(&obj_w_post_v[16]);
+    obj_w_post_main_model[13].words.w1 = pc_gbi_ptr_encode(obj_w_post_leg1_tex_txt);
+    obj_w_post_main_model[18].words.w1 = pc_gbi_ptr_encode(obj_w_post_inside1_tex_txt);
+    obj_w_post_main_model[20].words.w1 = pc_gbi_ptr_encode(&obj_w_post_v[41]);
+
+    obj_w_post_front_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_post_pal);
+    obj_w_post_front_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_post_front1_tex_txt);
+    obj_w_post_front_model[9].words.w1 = pc_gbi_ptr_encode(&obj_w_post_v[8]);
+    obj_w_post_front_model[11].words.w1 = pc_gbi_ptr_encode(obj_w_post_front2_tex_txt);
+
+    obj_w_post_flag_saki_model[0].words.w1 = pc_gbi_ptr_encode(&obj_w_post_v[4]);
+
+    obj_w_post_flag_ne_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_post_pal);
+    obj_w_post_flag_ne_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_post_flag1_tex_txt);
+    obj_w_post_flag_ne_model[9].words.w1 = pc_gbi_ptr_encode(obj_w_post_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_w_post_models(void) {
+}
+#endif

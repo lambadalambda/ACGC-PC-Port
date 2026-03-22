@@ -94,3 +94,25 @@ Gfx ef_ame02_04_modelT[] = {
     gsSP2Triangles(0, 1, 2, 0, 1, 3, 2, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_ame02_00_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_ame02_setmode[5].words.w1 = pc_gbi_ptr_encode(ef_ame02_0);
+    ef_ame02_00_modelT[0].words.w1 = pc_gbi_ptr_encode(ef_ame02_00_v);
+    ef_ame02_01_modelT[0].words.w1 = pc_gbi_ptr_encode(ef_ame02_01_v);
+    ef_ame02_02_modelT[0].words.w1 = pc_gbi_ptr_encode(ef_ame02_02_v);
+    ef_ame02_03_modelT[0].words.w1 = pc_gbi_ptr_encode(ef_ame02_03_v);
+    ef_ame02_04_modelT[0].words.w1 = pc_gbi_ptr_encode(ef_ame02_04_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_ame02_00_models(void) {
+}
+#endif

@@ -630,9 +630,60 @@ Gfx obj_w_shrine_base_model[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_obj_s_shrine_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_shrine_trunk_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_pal);
+    obj_s_shrine_trunk_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_t3_tex_txt);
+    obj_s_shrine_trunk_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[252]);
+    obj_s_shrine_trunk_model[17].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[284]);
+
+    obj_s_shrine_statue_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_pal);
+    obj_s_shrine_statue_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_t4_tex_txt);
+    obj_s_shrine_statue_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[409]);
+    obj_s_shrine_statue_model[19].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[441]);
+    obj_s_shrine_statue_model[26].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[473]);
+    obj_s_shrine_statue_model[34].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[505]);
+
+    obj_s_shrine_leaf_model[3].words.w1 = SEGMENT_ADDR(ANIME_2_TXT_SEG, 0);
+    obj_s_shrine_leaf_model[4].words.w1 = SEGMENT_ADDR(ANIME_3_TXT_SEG, 0);
+    obj_s_shrine_leaf_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[227]);
+
+    obj_s_shrine_figure_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_pal);
+    obj_s_shrine_figure_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_t2_tex_txt);
+    obj_s_shrine_figure_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[369]);
+    obj_s_shrine_figure_model[17].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[401]);
+
+    obj_s_shrine_bubble_model[5].words.w1 = pc_gbi_ptr_encode(obj_w_shrine_bubble_tex_pic_i4);
+    obj_s_shrine_bubble_model[7].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0);
+    obj_s_shrine_bubble_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[405]);
+
+    obj_s_shrine_base_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_pal);
+    obj_s_shrine_base_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_shrine_t1_tex_txt);
+    obj_s_shrine_base_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[18]);
+    obj_s_shrine_base_model[15].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[50]);
+    obj_s_shrine_base_model[22].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[82]);
+    obj_s_shrine_base_model[28].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[114]);
+    obj_s_shrine_base_model[35].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[146]);
+    obj_s_shrine_base_model[42].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[177]);
+    obj_s_shrine_base_model[48].words.w1 = pc_gbi_ptr_encode(&obj_s_shrine_v[207]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_obj_s_shrine_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_obj_s_shrine_c(void) {
     pc_load_asset("assets/obj_s_shrine/obj_s_shrine_pal.bin", obj_s_shrine_pal, 0x20, 0x86C0E0, 0, 1);
     pc_load_asset("assets/obj_s_shrine/obj_w_shrine_pal.bin", obj_w_shrine_pal, 0x20, 0x8707A0, 0, 1);
+    pc_patch_obj_s_shrine_models();
 }
 #endif

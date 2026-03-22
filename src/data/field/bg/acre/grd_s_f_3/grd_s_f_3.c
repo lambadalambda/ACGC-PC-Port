@@ -175,8 +175,38 @@ extern Gfx grd_s_f_3_model[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_s_f_3_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_f_3_model[3].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_f_3_model[4].words.w1 = pc_gbi_ptr_encode(bush_a_tex_dummy);
+    grd_s_f_3_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_f_3_v[113]);
+    grd_s_f_3_model[12].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_f_3_model[13].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_f_3_model[15].words.w1 = pc_gbi_ptr_encode(&grd_s_f_3_v[0]);
+    grd_s_f_3_model[23].words.w1 = pc_gbi_ptr_encode(&grd_s_f_3_v[32]);
+    grd_s_f_3_model[27].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_f_3_model[29].words.w1 = pc_gbi_ptr_encode(&grd_s_f_3_v[50]);
+    grd_s_f_3_model[35].words.w1 = pc_gbi_ptr_encode(&grd_s_f_3_v[82]);
+    grd_s_f_3_model[39].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_f_3_model[40].words.w1 = pc_gbi_ptr_encode(bush_b_tex_dummy);
+    grd_s_f_3_model[42].words.w1 = pc_gbi_ptr_encode(&grd_s_f_3_v[100]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_s_f_3_model(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_f_3_grd_s_f_3_c(void) {
     pc_load_asset("assets/field/bg/grd_s_f_3_v.bin", grd_s_f_3_v, 0x7E0, 0x9D7160, 0, 2);
+    pc_patch_grd_s_f_3_model();
 }
 #endif

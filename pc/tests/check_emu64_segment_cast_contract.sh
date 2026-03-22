@@ -7,7 +7,7 @@ REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 EMU64_FILE="$REPO_ROOT/src/static/libforest/emu64/emu64.c"
 UTILITY_FILE="$REPO_ROOT/src/static/libforest/emu64/emu64_utility.c"
 
-if ! rg -q 'this->texture_info\[tile\]\.img_addr = \(void\*\)this->seg2k0\(this->now_setimg\.setimg2\.imgaddr\);' "$EMU64_FILE"; then
+if ! rg -q 'this->texture_info\[tile\]\.img_addr = \(void\*\)this->seg2k0\((this->now_setimg\.setimg2\.imgaddr|img_addr_raw)\);' "$EMU64_FILE"; then
     printf '%s\n' 'missing emu64 setimg seg2k0 resolution contract' >&2
     exit 1
 fi

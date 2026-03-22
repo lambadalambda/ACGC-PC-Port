@@ -58,3 +58,21 @@ Gfx ef_koke_suiteki01_00_modelT[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 1, 3, 2, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_koke_suiteki01_00_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_koke_suiteki01_00_modelT[5].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    ef_koke_suiteki01_00_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_koke_suiteki01_00_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_koke_suiteki01_00_models(void) {
+}
+#endif

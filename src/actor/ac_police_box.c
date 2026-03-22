@@ -45,6 +45,11 @@ static u8 aPBOX_shadow_vtx_fix_flg_table0[] = {
 extern Vtx obj_s_kouban_shadow_v[];
 extern Gfx obj_s_kouban_shadow_model[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_kouban_models(void);
+extern void pc_patch_obj_s_kouban_shadow_models(void);
+#endif
+
 // clang-format off
 static bIT_ShadowData_c aPBOX_shadow_data = {
     20,
@@ -75,6 +80,11 @@ static void aPBOX_actor_ct(ACTOR* actor, GAME* game) {
     STRUCTURE_ACTOR* box;
 
     box = (STRUCTURE_ACTOR*)actor;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_kouban_models();
+    pc_patch_obj_s_kouban_shadow_models();
+#endif
 
     box->season = Common_Get(time.season);
     aPBOX_set_bgOffset(box, 0);

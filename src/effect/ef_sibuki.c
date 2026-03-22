@@ -6,6 +6,7 @@
 #include "sys_matrix.h"
 
 extern Gfx ef_sibuki01_00_modelT[];
+extern void pc_patch_ef_sibuki01_00_models(void);
 
 extern u8 ef_sibuki01_1_int_i4[];
 extern u8 ef_sibuki01_2_int_i4[];
@@ -68,6 +69,8 @@ static void eSibuki_dw(eEC_Effect_c* effect, GAME* game) {
     xyz_t scale = effect->scale;
     s16 idx = (12 - effect->timer) >> 1;
     idx = CLAMP(idx, 0, 5);
+
+    pc_patch_ef_sibuki01_00_models();
 
     if (eSibuki_DrawSibukiPtn[idx] != NULL) {
         mtx = (Mtx*)GRAPH_ALLOC_TYPE(game->graph, Mtx, 1);

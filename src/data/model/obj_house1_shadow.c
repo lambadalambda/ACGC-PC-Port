@@ -171,3 +171,33 @@ Gfx obj_s_house5_shadow_model[] = {
     gsSPNTriangles_5b(24, 26, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_house_shadow_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_house1_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_house1_shadow);
+    obj_house1_shadow_model[5].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_s_house2_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house2_shadow_tex_txt);
+    obj_s_house2_shadow_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_s_house3_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house3_shadow_tex_txt);
+    obj_s_house3_shadow_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_s_house4_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house4_shadow_tex_txt);
+    obj_s_house4_shadow_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_s_house5_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house5_shadow_tex_txt);
+    obj_s_house5_shadow_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_house_shadow_models(void) {
+}
+#endif

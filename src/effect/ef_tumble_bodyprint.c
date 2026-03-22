@@ -79,6 +79,7 @@ static void eTumbleBodyPrint_mv(eEC_Effect_c* effect, GAME* game) {
 }
 
 extern Gfx ef_bodyprint01_00_modelT[];
+extern void pc_patch_ef_bodyprint01_00_models(void);
 
 static void eTumbleBodyPrint_dw(eEC_Effect_c* effect, GAME* game) {
     s16 counter = 800 - effect->timer;
@@ -89,6 +90,8 @@ static void eTumbleBodyPrint_dw(eEC_Effect_c* effect, GAME* game) {
     } else {
         a = (int)eEC_CLIP->calc_adjust_proc(counter, 500, 799, 150.0f, 0.0f);
     }
+
+    pc_patch_ef_bodyprint01_00_models();
 
     OPEN_DISP(game->graph);
 

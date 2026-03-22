@@ -10,6 +10,9 @@
 
 extern Gfx ef_shadow_out_modelT[];
 extern Gfx ef_shadow_in_modelT[];
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_shadow_out_modelT(void);
+#endif
 
 int mActorShadow_OperateScrollLimit(int value, int step, int limit) {
     if (step != 0) {
@@ -264,6 +267,9 @@ void mActorShadow_DrawActorShadow(ACTOR* actor, Shadow_Info* shadow, GAME_PLAY* 
     if ((shadow->kind == 0) && (id == 0)) {
         texscroll = mActorShadow_SetTexScroll(actor, shadow, game);
         if (texscroll != NULL) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+            pc_patch_ef_shadow_out_modelT();
+#endif
             gSPSegment(NEXT_SHADOW_DISP, 0x08, texscroll);
             gSPDisplayList(NEXT_SHADOW_DISP, ef_shadow_out_modelT);
         }

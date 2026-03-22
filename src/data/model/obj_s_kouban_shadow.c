@@ -37,3 +37,21 @@ Gfx obj_s_kouban_shadow_model[] = {
     gsSPNTriangles_5b(12, 14, 15, 16, 17, 18, 16, 18, 19, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_kouban_shadow_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_kouban_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_shadow_tex_txt);
+    obj_s_kouban_shadow_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_kouban_shadow_models(void) {
+}
+#endif

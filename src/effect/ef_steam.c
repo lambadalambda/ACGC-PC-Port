@@ -87,12 +87,15 @@ static void eSteam_mv(eEC_Effect_c* effect, GAME* game) {
 }
 
 extern Gfx ef_dust01_modelT[];
+extern void pc_patch_ef_dust01_00_models(void);
 
 static void eSteam_dw(eEC_Effect_c* effect, GAME* game) {
     s16 counter = 30 - effect->timer;
     s16 idx = CLAMP(counter >> 1, 0, 14);
     int tex0 = Steam_tex_indx[idx].tex0;
     int tex1 = Steam_tex_indx[idx].tex1;
+
+    pc_patch_ef_dust01_00_models();
 
     effect->scale.x = eEC_CLIP->calc_adjust_proc(counter, 0, 30, 0.005f, effect->offset.x);
     effect->scale.y = effect->scale.z = effect->scale.x;

@@ -16,6 +16,7 @@ static void eFuro_Yuge_dw(eEC_Effect_c* effect, GAME* game);
 // clang-format off
 
 extern Gfx ef_dust01_0[], ef_dust01_1[], ef_dust01_2[], ef_dust01_3[], ef_dust01_modelT[];
+extern void pc_patch_ef_dust01_00_models(void);
 
 Gfx* eFuro_Yuge_texture_table[] = { 
     ef_dust01_0, 
@@ -114,6 +115,8 @@ static void eFuro_Yuge_dw(eEC_Effect_c* effect, GAME* game) {
     s16 half_timer = CLAMP(frames_alive >> 1, 0, EFFECT_LIFETIME / 2);
     int texIdx1 = eFuro_Yuge_2tile_texture_idx[half_timer][0];
     int texIdx2 = eFuro_Yuge_2tile_texture_idx[half_timer][1];
+
+    pc_patch_ef_dust01_00_models();
 
     effect->scale.x =
         eEC_CLIP->calc_adjust_proc(frames_alive, 0, EFFECT_LIFETIME, GETREG(TAKREG, 0x37) * 0.0001f + 0.0015f,

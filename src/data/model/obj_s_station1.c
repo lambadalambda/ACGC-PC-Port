@@ -117,6 +117,75 @@ cKF_Joint_R_c cKF_je_r_obj_s_station1_tbl[] = { { obj_s_station1_t1_model, 4, cK
 
 cKF_Skeleton_R_c cKF_bs_r_obj_s_station1 = { ARRAY_COUNT(cKF_je_r_obj_s_station1_tbl), 5, cKF_je_r_obj_s_station1_tbl };
 
+extern u8 obj_w_station1_t3_tex_txt[];
+extern u8 obj_w_station1_t2_tex_txt[];
+extern u8 obj_w_station1_t1_tex_txt[];
+extern Vtx obj_w_station1_v[];
+extern Gfx obj_w_station1_t3_model[];
+extern Gfx obj_w_station1_t2_model[];
+extern Gfx obj_w_station1_t1_model[];
+extern Gfx obj_w_station1_short_model[];
+extern Gfx obj_w_station1_long_model[];
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_station1_model_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_station1_t3_model[1].words.w1 = anime_1_txt;
+    obj_s_station1_t3_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_station1_t3_tex_txt);
+    obj_s_station1_t3_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_station1_v[8]);
+    obj_s_station1_t3_model[10].words.w1 = pc_gbi_ptr_encode(&obj_s_station1_v[40]);
+
+    obj_s_station1_t2_model[1].words.w1 = anime_1_txt;
+    obj_s_station1_t2_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_station1_t2_tex_txt);
+    obj_s_station1_t2_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_station1_v[68]);
+
+    obj_s_station1_t1_model[1].words.w1 = anime_1_txt;
+    obj_s_station1_t1_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_station1_t1_tex_txt);
+    obj_s_station1_t1_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_station1_v[78]);
+    obj_s_station1_t1_model[10].words.w1 = pc_gbi_ptr_encode(&obj_s_station1_v[108]);
+
+    obj_s_station1_short_model[1].words.w1 = anime_1_txt;
+    obj_s_station1_short_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_station1_t3_tex_txt);
+    obj_s_station1_short_model[5].words.w1 = pc_gbi_ptr_encode(obj_s_station1_v);
+
+    obj_s_station1_long_model[1].words.w1 = anime_1_txt;
+    obj_s_station1_long_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_station1_t3_tex_txt);
+    obj_s_station1_long_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_station1_v[4]);
+
+    obj_w_station1_t3_model[1].words.w1 = anime_1_txt;
+    obj_w_station1_t3_model[2].words.w1 = pc_gbi_ptr_encode(obj_w_station1_t3_tex_txt);
+    obj_w_station1_t3_model[5].words.w1 = pc_gbi_ptr_encode(&obj_w_station1_v[8]);
+    obj_w_station1_t3_model[10].words.w1 = pc_gbi_ptr_encode(&obj_w_station1_v[40]);
+
+    obj_w_station1_t2_model[1].words.w1 = anime_1_txt;
+    obj_w_station1_t2_model[2].words.w1 = pc_gbi_ptr_encode(obj_w_station1_t2_tex_txt);
+    obj_w_station1_t2_model[5].words.w1 = pc_gbi_ptr_encode(&obj_w_station1_v[56]);
+
+    obj_w_station1_t1_model[1].words.w1 = anime_1_txt;
+    obj_w_station1_t1_model[2].words.w1 = pc_gbi_ptr_encode(obj_w_station1_t1_tex_txt);
+    obj_w_station1_t1_model[5].words.w1 = pc_gbi_ptr_encode(&obj_w_station1_v[69]);
+    obj_w_station1_t1_model[10].words.w1 = pc_gbi_ptr_encode(&obj_w_station1_v[101]);
+
+    obj_w_station1_short_model[1].words.w1 = anime_1_txt;
+    obj_w_station1_short_model[2].words.w1 = pc_gbi_ptr_encode(obj_w_station1_t3_tex_txt);
+    obj_w_station1_short_model[5].words.w1 = pc_gbi_ptr_encode(obj_w_station1_v);
+
+    obj_w_station1_long_model[1].words.w1 = anime_1_txt;
+    obj_w_station1_long_model[2].words.w1 = pc_gbi_ptr_encode(obj_w_station1_t3_tex_txt);
+    obj_w_station1_long_model[5].words.w1 = pc_gbi_ptr_encode(&obj_w_station1_v[4]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_station1_model_display_lists(void) {
+}
+#endif
+
 u8 cKF_ckcb_r_obj_s_station1_tbl[] = { 0, 0, 0, 0, 0, 0, 0 };
 
 s16 cKF_c_obj_s_station1_tbl[] = { 0, 0, 0, 0, 0, 0, 0, 0, 900, 0, 0, 0, 0, 0, 900, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

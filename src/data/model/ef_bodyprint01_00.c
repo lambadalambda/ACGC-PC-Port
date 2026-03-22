@@ -116,3 +116,30 @@ Gfx ef_footprint01_02_modelT[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 1, 3, 2, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_bodyprint01_00_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_bodyprint01_00_modelT[3].words.w1 = pc_gbi_ptr_encode(ef_bodyprint01_0);
+    ef_bodyprint01_00_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_bodyprint01_00_v);
+
+    ef_footprint01_00_modelT[3].words.w1 = pc_gbi_ptr_encode(ef_footprint01_0);
+    ef_footprint01_00_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_footprint01_00_v);
+
+    ef_turn_footprint_modelT[3].words.w1 = pc_gbi_ptr_encode(ef_footprint01_1);
+    ef_turn_footprint_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_turn_footprint_v);
+
+    ef_footprint01_02_modelT[3].words.w1 = pc_gbi_ptr_encode(ef_footprint01_2);
+    ef_footprint01_02_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_footprint01_02_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_bodyprint01_00_models(void) {
+}
+#endif

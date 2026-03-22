@@ -28,6 +28,8 @@ extern Gfx reserve_DL_model[];
 extern Gfx reserve_winter_DL_model[];
 extern Gfx obj_s_attentionT_model[];
 extern Gfx obj_w_attentionT_model[];
+extern void pc_patch_obj_s_buildsite_models(void);
+extern void pc_patch_reserve_shadow_models(void);
 
 static void aRSV_set_bgOffset(ACTOR*, int);
 static void aRSV_setup_action(ACTOR* actor, int type);
@@ -35,6 +37,9 @@ static void aRSV_setup_action(ACTOR* actor, int type);
 static void aRSV_actor_ct(ACTOR* actor, GAME* game) {
     RESERVE_ACTOR* reserve = (RESERVE_ACTOR*)actor;
     mActor_name_t id;
+
+    pc_patch_obj_s_buildsite_models();
+    pc_patch_reserve_shadow_models();
 
     reserve->structure_class.season = Common_Get(time.season);
 

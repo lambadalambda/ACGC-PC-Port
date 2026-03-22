@@ -58,3 +58,23 @@ Gfx ef_shadow_out_modelT[] = {
     gsSP2Triangles(0, 1, 2, 0, 1, 3, 2, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_shadow_out_modelT(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_shadow_out_modelT[4].words.w1 = pc_gbi_ptr_encode(ef_shadow_out_0_int_i4);
+    ef_shadow_out_modelT[11].words.w1 = pc_gbi_ptr_encode(ef_shadow_out_1_int_i4);
+    ef_shadow_out_modelT[18].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    ef_shadow_out_modelT[20].words.w1 = pc_gbi_ptr_encode(ef_shadow_out_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_shadow_out_modelT(void) {
+}
+#endif

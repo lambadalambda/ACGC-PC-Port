@@ -117,6 +117,9 @@ static void initial_menu_patch_logo_gfx_once(void) {
   }
 
   pc_patch_logo_nin_gfx();
+  logo_initial_dl[6].words.w1 = pc_gbi_ptr_encode(&logo_projection);
+  logo_initial_dl[7].words.w1 = pc_gbi_ptr_encode(&lookat);
+  logo_initial_dl[8].words.w1 = pc_gbi_ptr_encode(&default_model_scale);
   s_patched = 1;
 }
 #endif

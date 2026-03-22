@@ -11,6 +11,7 @@ static f32 eKasamizutama_scale_table[] = {
 
 extern Gfx ef_koke_suiteki01_0_int_i4[];
 extern Gfx ef_koke_suiteki01_00_modelT[];
+extern void pc_patch_ef_koke_suiteki01_00_models(void);
 
 static void eKasamizutama_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1);
 static void eKasamizutama_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
@@ -62,6 +63,8 @@ static void eKasamizutama_mv(eEC_Effect_c* effect, GAME* game) {
 static void eKasamizutama_dw(eEC_Effect_c* effect, GAME* game) {
     s16 remain = 20 - effect->timer;
     s16 frame = remain >> 1;
+
+    pc_patch_ef_koke_suiteki01_00_models();
     
     effect->scale.x = effect->scale.y = effect->scale.z = eKasamizutama_scale_table[frame] * 0.005f;
     _texture_z_light_fog_prim_xlu(game->graph);

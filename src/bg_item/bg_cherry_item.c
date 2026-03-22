@@ -211,6 +211,53 @@ static int bIT_actor_hole_effect_entry(bg_item_hole_c* hole, mActor_name_t fg_it
 extern u16 obj_g_hole_pal[];
 extern u16 obj_b_hole_pal[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_s_fenceL_models(void);
+extern void pc_patch_obj_fenceL_shadow_models(void);
+extern void pc_patch_obj_s_sightmap_models(void);
+extern void pc_patch_obj_sightmap_shadow_models(void);
+extern void pc_patch_obj_s_notice_models(void);
+extern void pc_patch_obj_notice_shadow_models(void);
+extern void pc_patch_obj_s_stoneA_models(void);
+extern void pc_patch_obj_stoneA_shadow_models(void);
+extern void pc_patch_obj_s_stoneB_models(void);
+extern void pc_patch_obj_s_stoneC_models(void);
+extern void pc_patch_obj_s_stoneD_models(void);
+extern void pc_patch_obj_s_melody_models(void);
+extern void pc_patch_obj_melody_shadow_models(void);
+extern void pc_patch_obj_tree5_shadow_models(void);
+extern void pc_patch_obj_f_tree5_models(void);
+
+static void bIT_patch_lp64_bg_item_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    pc_patch_obj_s_fenceL_models();
+    pc_patch_obj_fenceL_shadow_models();
+    pc_patch_obj_s_sightmap_models();
+    pc_patch_obj_sightmap_shadow_models();
+    pc_patch_obj_s_notice_models();
+    pc_patch_obj_notice_shadow_models();
+    pc_patch_obj_s_stoneA_models();
+    pc_patch_obj_stoneA_shadow_models();
+    pc_patch_obj_s_stoneB_models();
+    pc_patch_obj_s_stoneC_models();
+    pc_patch_obj_s_stoneD_models();
+    pc_patch_obj_s_melody_models();
+    pc_patch_obj_melody_shadow_models();
+    pc_patch_obj_tree5_shadow_models();
+    pc_patch_obj_f_tree5_models();
+
+    s_patched = TRUE;
+}
+#else
+static void bIT_patch_lp64_bg_item_models(void) {
+}
+#endif
+
 static void bCI_actor_ct(ACTOR* actorx, GAME* game) {
     BG_ITEM_ACTOR* bg_item = (BG_ITEM_ACTOR*)actorx;
     bg_item_common_c* common;
@@ -221,6 +268,8 @@ static void bCI_actor_ct(ACTOR* actorx, GAME* game) {
     PLAYER_ACTOR* player;
     mFI_block_tbl_c* block_table;
     bg_item_tbl_c* info_table;
+
+    bIT_patch_lp64_bg_item_models();
 
     common = &bg_item->common;
     common_info = &common->common_info;

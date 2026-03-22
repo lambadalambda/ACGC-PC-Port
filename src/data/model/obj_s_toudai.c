@@ -472,3 +472,72 @@ s16 cKF_ds_obj_w_toudai_tbl[] = { 1, 0, 1080, 100, 3564, 1080 };
 cKF_Animation_R_c cKF_ba_r_obj_w_toudai = {
     cKF_ckcb_r_obj_w_toudai_tbl, cKF_ds_obj_w_toudai_tbl, cKF_kn_obj_w_toudai_tbl, cKF_c_obj_w_toudai_tbl, -1, 100
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_toudai_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_toudai_mirror_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_glass_tex_pic_ci4_pal);
+    obj_s_toudai_mirror_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_glass_tex_pic_ci4);
+    obj_s_toudai_mirror_model[7].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[143]);
+    obj_s_toudai_glass_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_glass_tex_pic_ci4_pal);
+    obj_s_toudai_glass_model[5].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_glass_tex_pic_ci4);
+    obj_s_toudai_glass_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[133]);
+    obj_s_toudai_body_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_toudai_body_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_dai_tex_txt);
+    obj_s_toudai_body_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[27]);
+    obj_s_toudai_body_model[8].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_dou_tex_txt);
+    obj_s_toudai_body_model[13].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_plate_tex_txt);
+    obj_s_toudai_body_model[15].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[56]);
+    obj_s_toudai_body_model[18].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_side_tex_txt);
+    obj_s_toudai_body_model[23].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_tesuri_tex_txt);
+    obj_s_toudai_body_model[25].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[77]);
+    obj_s_toudai_body_model[31].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_yane_tex_txt);
+    obj_s_toudai_body_model[33].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[95]);
+    obj_s_toudai_body_model[40].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[127]);
+    obj_s_toudai_light_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_light_tex_txt);
+    obj_s_toudai_light_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[6]);
+    obj_s_toudai_lenz_model[5].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_glass_tex_pic_ci4_pal);
+    obj_s_toudai_lenz_model[6].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_glass_tex_pic_ci4);
+    obj_s_toudai_lenz_model[9].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_v);
+    obj_s_toudai_arm_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_toudai_arm_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_toudai_arm_tex_txt);
+    obj_s_toudai_arm_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_toudai_v[24]);
+
+    obj_w_toudai_mirror_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_glass_tex_pic_ci4_pal);
+    obj_w_toudai_mirror_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_glass_tex_pic_ci4);
+    obj_w_toudai_mirror_model[7].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[143]);
+    obj_w_toudai_glass_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_glass_tex_pic_ci4_pal);
+    obj_w_toudai_glass_model[5].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_glass_tex_pic_ci4);
+    obj_w_toudai_glass_model[8].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[133]);
+    obj_w_toudai_body_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_w_toudai_body_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_dai_tex_txt);
+    obj_w_toudai_body_model[4].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[27]);
+    obj_w_toudai_body_model[8].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_dou_tex_txt);
+    obj_w_toudai_body_model[13].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_plate_tex_txt);
+    obj_w_toudai_body_model[15].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[56]);
+    obj_w_toudai_body_model[18].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_side_tex_txt);
+    obj_w_toudai_body_model[23].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_tesuri_tex_txt);
+    obj_w_toudai_body_model[25].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[77]);
+    obj_w_toudai_body_model[31].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_yane_tex_txt);
+    obj_w_toudai_body_model[33].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[95]);
+    obj_w_toudai_body_model[40].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[127]);
+    obj_w_toudai_light_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_light_tex_txt);
+    obj_w_toudai_light_model[6].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[6]);
+    obj_w_toudai_lenz_model[5].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_glass_tex_pic_ci4_pal);
+    obj_w_toudai_lenz_model[6].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_glass_tex_pic_ci4);
+    obj_w_toudai_lenz_model[9].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_v);
+    obj_w_toudai_arm_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_w_toudai_arm_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_toudai_arm_tex_txt);
+    obj_w_toudai_arm_model[4].words.w1 = pc_gbi_ptr_encode(&obj_w_toudai_v[24]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_toudai_models(void) {
+}
+#endif

@@ -242,3 +242,60 @@ Gfx obj_w_kouban_model[] = {
     gsSPDisplayList(obj_w_kouban_t1_model),    gsSPDisplayList(obj_w_kouban_neon_model),
     gsSPDisplayList(obj_w_kouban_light_model), gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_kouban_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_kouban_window_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_window_tex_txt);
+    obj_s_kouban_window_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_kouban_v[44]);
+    obj_s_kouban_t3_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_kouban_t3_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t3_tex_txt);
+    obj_s_kouban_t3_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_v);
+    obj_s_kouban_t2_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_kouban_t2_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t2_tex_txt);
+    obj_s_kouban_t2_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_kouban_v[48]);
+    obj_s_kouban_t1_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_kouban_t1_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t1_tex_txt);
+    obj_s_kouban_t1_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_kouban_v[14]);
+    obj_s_kouban_neon_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_kouban_neon_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t1_tex_txt);
+    obj_s_kouban_neon_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_kouban_v[40]);
+    obj_s_kouban_light_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_kouban_v[10]);
+    obj_s_kouban_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t3_model);
+    obj_s_kouban_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t2_model);
+    obj_s_kouban_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_t1_model);
+    obj_s_kouban_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_neon_model);
+    obj_s_kouban_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_kouban_light_model);
+
+    obj_w_kouban_window_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_window_tex_txt);
+    obj_w_kouban_window_model[6].words.w1 = pc_gbi_ptr_encode(&obj_w_kouban_v[40]);
+    obj_w_kouban_t3_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_w_kouban_t3_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t3_tex_txt);
+    obj_w_kouban_t3_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_v);
+    obj_w_kouban_t2_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_w_kouban_t2_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t2_tex_txt);
+    obj_w_kouban_t2_model[4].words.w1 = pc_gbi_ptr_encode(&obj_w_kouban_v[48]);
+    obj_w_kouban_t1_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_w_kouban_t1_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t1_tex_txt);
+    obj_w_kouban_t1_model[4].words.w1 = pc_gbi_ptr_encode(&obj_w_kouban_v[10]);
+    obj_w_kouban_neon_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_w_kouban_neon_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t1_tex_txt);
+    obj_w_kouban_neon_model[8].words.w1 = pc_gbi_ptr_encode(&obj_w_kouban_v[36]);
+    obj_w_kouban_light_model[4].words.w1 = pc_gbi_ptr_encode(&obj_w_kouban_v[44]);
+    obj_w_kouban_model[0].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t3_model);
+    obj_w_kouban_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t2_model);
+    obj_w_kouban_model[2].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_t1_model);
+    obj_w_kouban_model[3].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_neon_model);
+    obj_w_kouban_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_kouban_light_model);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_kouban_models(void) {
+}
+#endif

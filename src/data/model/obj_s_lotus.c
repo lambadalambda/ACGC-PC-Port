@@ -190,3 +190,56 @@ s16 cKF_ds_obj_s_lotus_tbl[] = {
 cKF_Animation_R_c cKF_ba_r_obj_s_lotus = {
     cKF_ckcb_r_obj_s_lotus_tbl, cKF_ds_obj_s_lotus_tbl, cKF_kn_obj_s_lotus_tbl, cKF_c_obj_s_lotus_tbl, -1, 129
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_lotus_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_lotus_flower1_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_flower1_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_flower_tex_txt);
+    obj_s_lotus_flower1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_lotus_v);
+    obj_s_lotus_flower1_model[10].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[32]);
+    obj_s_lotus_flower1_model[16].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[64]);
+
+    obj_s_lotus_leafH_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafH_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafH_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[76]);
+
+    obj_s_lotus_leafG_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafG_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafG_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[86]);
+
+    obj_s_lotus_leafF_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafF_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafF_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[96]);
+
+    obj_s_lotus_leafE_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafE_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafE_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[106]);
+
+    obj_s_lotus_leafD_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafD_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafD_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[116]);
+
+    obj_s_lotus_leafC_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafC_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafC_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[126]);
+
+    obj_s_lotus_leafB_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafB_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafB_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[136]);
+
+    obj_s_lotus_leafA_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_lotus_leafA_model[1].words.w1 = pc_gbi_ptr_encode(obj_lotus_leaf_tex_txt);
+    obj_s_lotus_leafA_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_lotus_v[146]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_lotus_models(void) {
+}
+#endif

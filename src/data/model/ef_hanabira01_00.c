@@ -40,3 +40,21 @@ Gfx ef_hanabira01_00_modelT[] = {
     gsSP1Triangle(0, 2, 3, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_hanabira01_00_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_hanabira01_00_setmode[5].words.w1 = pc_gbi_ptr_encode(ef_hanabira01_0);
+    ef_hanabira01_00_modelT[0].words.w1 = pc_gbi_ptr_encode(ef_hanabira01_00_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_hanabira01_00_models(void) {
+}
+#endif

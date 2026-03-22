@@ -186,6 +186,11 @@ extern cKF_Animation_R_c cKF_ba_r_obj_w_station2;
 extern cKF_Animation_R_c cKF_ba_r_obj_s_station3;
 extern cKF_Animation_R_c cKF_ba_r_obj_w_station3;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_station1_model_display_lists(void);
+extern void pc_patch_station_shadow_models(void);
+#endif
+
 static void aSTA_setup_action(STATION_ACTOR* station, int action);
 static void aSTC_clip_ct(void);
 static void aSTC_clip_dt(void);
@@ -202,6 +207,11 @@ static void aSTA_actor_ct(ACTOR* actorx, GAME* game) {
     STATION_ACTOR* station = (STATION_ACTOR*)actorx;
     int season;
     int type = Save_Get(station_type);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_station1_model_display_lists();
+    pc_patch_station_shadow_models();
+#endif
 
     station->struct_class.season = Common_Get(time).season;
     season = station->struct_class.season == mTM_SEASON_WINTER;

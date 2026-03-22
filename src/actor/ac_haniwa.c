@@ -26,6 +26,10 @@ extern cKF_Animation_R_c cKF_ba_r_hnw_move;
 extern u8 hnw_tmem_txt[];
 extern u16 hnw_face[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_hnw_models(void);
+#endif
+
 static void aHNW_actor_ct(ACTOR* actor, GAME* game);
 static void aHNW_actor_dt(ACTOR* actor, GAME* game);
 static void aHNW_actor_init(ACTOR* actor, GAME* game);
@@ -55,6 +59,10 @@ static StatusData_c AcHaniwaStatusData = { 0, 20, 30, 0, MASSTYPE_HEAVY };
 static void aHNW_actor_ct(ACTOR* actor, GAME* game) {
     HANIWA_ACTOR* haniwa = (HANIWA_ACTOR*)actor;
     cKF_SkeletonInfo_R_c* keyframe = &haniwa->common_actor_class.anime.keyframe;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_hnw_models();
+#endif
 
     cKF_SkeletonInfo_R_ct(keyframe, &cKF_bs_r_hnw, NULL, haniwa->keyframe_work_area, haniwa->keyframe_morph_area);
     {
@@ -93,6 +101,15 @@ static void aHNW_actor_draw(ACTOR* actor, GAME* game) {
     cKF_SkeletonInfo_R_c* keyframe = &haniwa->common_actor_class.anime.keyframe;
     GRAPH* g = game->graph;
     Mtx* m = GRAPH_ALLOC_TYPE(g, Mtx, keyframe->skeleton->num_shown_joints);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    static int s_hnw_tex_patched = FALSE;
+
+    if (!s_hnw_tex_patched) {
+        hnw_tex_model[0].words.w1 = pc_gbi_ptr_encode(hnw_face);
+        s_hnw_tex_patched = TRUE;
+    }
+#endif
 
     if (m != NULL) {
         int house_idx = haniwa->house_idx;

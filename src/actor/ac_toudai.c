@@ -93,9 +93,19 @@ static void aTOU_fgunit_off(ACTOR* actor) {
 extern cKF_Skeleton_R_c cKF_bs_r_obj_s_toudai;
 extern cKF_Skeleton_R_c cKF_bs_r_obj_w_toudai;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_toudai_models(void);
+extern void pc_patch_obj_s_toudai_shadow_models(void);
+#endif
+
 static void aTOU_actor_ct(ACTOR* actor, GAME* game) {
     static cKF_Skeleton_R_c* skl[] = { &cKF_bs_r_obj_s_toudai, &cKF_bs_r_obj_w_toudai };
     TOUDAI_ACTOR* light = (TOUDAI_ACTOR*)actor;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_toudai_models();
+    pc_patch_obj_s_toudai_shadow_models();
+#endif
 
     light->season = Common_Get(time.season);
     cKF_SkeletonInfo_R_ct(&light->keyframe, skl[light->season == mTM_SEASON_WINTER], NULL, light->work, light->target);

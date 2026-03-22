@@ -170,6 +170,11 @@ extern cKF_Skeleton_R_c cKF_bs_r_obj_w_house3;
 extern cKF_Skeleton_R_c cKF_bs_r_obj_w_house4;
 extern cKF_Skeleton_R_c cKF_bs_r_obj_w_house5;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_s_house_models(void);
+extern void pc_patch_obj_house_shadow_models(void);
+#endif
+
 // clang-format off
 static cKF_Skeleton_R_c* aHUS_house_model_normal[] = {
     &cKF_bs_r_obj_s_house1,
@@ -208,6 +213,11 @@ static void aHUS_actor_ct(ACTOR* actorx, GAME* game) {
     s16 shape;
     s16 pal;
     int idx = mNpc_SearchAnimalinfo(Save_Get(animals), NPC_START + (actorx->npc_id - NPC_HOUSE_START), ANIMAL_NUM_MAX);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_s_house_models();
+    pc_patch_obj_house_shadow_models();
+#endif
 
     if (idx >= 0) {
         aHUS_SET_LOOKS(house, mNpc_GetLooks(Common_Get(npclist[idx]).name));

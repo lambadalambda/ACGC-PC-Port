@@ -9,6 +9,10 @@
 #include "m_rcp.h"
 #include "sys_matrix.h"
 
+#ifdef TARGET_PC
+#include "pc_platform.h"
+#endif
+
 static void Bg_Draw_Actor_ct(ACTOR* actorx, GAME* game);
 static void Bg_Draw_Actor_dt(ACTOR* actorx, GAME* game);
 static void Bg_Draw_Actor_move(ACTOR* actorx, GAME* game);
@@ -342,6 +346,24 @@ static Gfx aFD_cull_set_model[] ATTRIBUTE_ALIGN(32) = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+static void aFD_patch_cull_set_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    aFD_cull_set_gfx[1].words.w1 = pc_gbi_ptr_encode(&aFD_culling_vtx[0]);
+    aFD_cull_set_model[0].words.w1 = pc_gbi_ptr_encode(aFD_cull_set_gfx);
+    aFD_cull_set_model[1].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_A, 0);
+    s_patched = TRUE;
+}
+#else
+static void aFD_patch_cull_set_model(void) {
+}
+#endif
+
 static EVW_ANIME_SCROLL aFD_texture_scroll2_data[2] = { { 1, -1, 32, 32 }, { -1, -2, 32, 32 } };
 
 static EVW_ANIME_DATA aFD_evw_data = { -4, EVW_ANIME_TYPE_SCROLL2, aFD_texture_scroll2_data };
@@ -407,6 +429,8 @@ static int aFD_SetMarinScrollXluSegment(ACTOR* actorx, GAME* game, int bx, int b
 
 static void aFD_DrawBg(Gfx* gfx, int exists, GAME* game) {
     if (gfx != NULL) {
+        aFD_patch_cull_set_model();
+
         OPEN_DISP(game->graph);
 
         gSPSegment(NEXT_BG_OPA_DISP, G_MWO_SEGMENT_A, gfx); /* Bg display list is called in between culling microcode */

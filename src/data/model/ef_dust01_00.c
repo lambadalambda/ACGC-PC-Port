@@ -89,3 +89,30 @@ Gfx ef_haro01_00_modelT[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 0, 3, 1, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_dust01_00_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_dust01_modelT[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    ef_dust01_modelT[5].words.w1 = SEGMENT_ADDR(ANIME_2_TXT_SEG, 0);
+    ef_dust01_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_dust01_00_v);
+
+    ef_dust01_stew_modelT[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    ef_dust01_stew_modelT[5].words.w1 = SEGMENT_ADDR(ANIME_2_TXT_SEG, 0);
+    ef_dust01_stew_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_dust01_00_v);
+
+    ef_haro01_00_modelT[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    ef_haro01_00_modelT[5].words.w1 = SEGMENT_ADDR(ANIME_2_TXT_SEG, 0);
+    ef_haro01_00_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_dust01_00_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_dust01_00_models(void) {
+}
+#endif

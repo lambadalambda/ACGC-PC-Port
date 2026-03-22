@@ -268,3 +268,38 @@ Gfx obj_myhome4_shadowWT_model[] = {
     gsSPNTriangles_5b(15, 17, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_myhome_shadow_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_myhome1_shadowET_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome1_shadowE);
+    obj_myhome1_shadowET_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_myhome1_shadowWT_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome1_shadowW);
+    obj_myhome1_shadowWT_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_myhome2_shadowET_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome2_shadowE);
+    obj_myhome2_shadowET_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_myhome2_shadowWT_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome2_shadowW);
+    obj_myhome2_shadowWT_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_myhome3_shadowET_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome3_shadowE);
+    obj_myhome3_shadowET_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_myhome3_shadowWT_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome3_shadowW);
+    obj_myhome3_shadowWT_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    obj_myhome4_shadowET_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome4_shadowE);
+    obj_myhome4_shadowET_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_myhome4_shadowWT_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome4_shadowW);
+    obj_myhome4_shadowWT_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_myhome_shadow_models(void) {
+}
+#endif

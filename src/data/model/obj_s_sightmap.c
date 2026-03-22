@@ -42,9 +42,29 @@ Gfx obj_s_sightmapT_gfx_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_sightmap_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_sightmapT_mat_model[1].words.w1 = pc_gbi_ptr_encode(obj_sightmap_pal);
+    obj_s_sightmapT_mat_model[2].words.w1 = pc_gbi_ptr_encode(obj_s_sightmap_tex);
+    obj_s_sightmapT_gfx_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_sightmap_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_sightmap_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_obj_s_sightmap_c(void) {
     pc_load_asset("assets/obj_s_sightmap/obj_sightmap_pal.bin", obj_sightmap_pal, 0x20, 0x3EA840, 0, 1);
+    pc_patch_obj_s_sightmap_models();
 }
 #endif

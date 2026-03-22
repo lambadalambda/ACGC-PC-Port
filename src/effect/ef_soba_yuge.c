@@ -6,6 +6,7 @@
 
 extern Gfx ef_dust01_modelT[];
 extern Gfx ef_dust01_stew_modelT[];
+extern void pc_patch_ef_dust01_00_models(void);
 
 extern u8 ef_dust01_0[];
 extern u8 ef_dust01_1[];
@@ -128,6 +129,8 @@ static void eSoba_Yuge_dw(eEC_Effect_c* effect, GAME* game) {
     s16 idx = CLAMP(timer >> 1, 0, 22);
     int texIdx1 = eSoba_Yuge_2tile_texture_idx[idx].tex0;
     int texIdx2 = eSoba_Yuge_2tile_texture_idx[idx].tex1;
+
+    pc_patch_ef_dust01_00_models();
 
     if (effect->arg1 == 0) {
         effect->scale.x = eEC_CLIP->calc_adjust_proc(timer, 0, 44, GETREG(TAKREG, 0x37) * 0.0001f + 0.001f,

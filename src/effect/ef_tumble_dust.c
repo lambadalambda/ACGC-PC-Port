@@ -142,6 +142,7 @@ static u8 eTDT_prim_f[15] = {
 };
 
 extern Gfx ef_dust01_modelT[];
+extern void pc_patch_ef_dust01_00_models(void);
 
 static void eTumbleDust_dw(eEC_Effect_c* effect, GAME* game) {
     s16 counter = 30 - effect->timer;
@@ -149,6 +150,8 @@ static void eTumbleDust_dw(eEC_Effect_c* effect, GAME* game) {
     int tex0 = eTDT_2tile_texture_idx[idx].tex0;
     int tex1 = eTDT_2tile_texture_idx[idx].tex1;
     u8 a;
+
+    pc_patch_ef_dust01_00_models();
 
     effect->scale.x = eEC_CLIP->calc_adjust_proc(counter, 0, 30, 0.005f, effect->offset.x);
     a = (int)eEC_CLIP->calc_adjust_proc(counter, 8, 30, 255.0f, 120.0f);

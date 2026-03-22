@@ -2129,6 +2129,116 @@ cKF_Animation_R_c cKF_ba_r_obj_w_house5_out = { cKF_ckcb_r_obj_w_house5_out_tbl,
                                                 -1,
                                                 51 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_house_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_house1_windowL_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house1_window_txt);
+    obj_s_house1_windowL_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[4]);
+    obj_s_house1_windowR_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house1_window_txt);
+    obj_s_house1_windowR_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[8]);
+    obj_s_house1_light_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house1_light_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house1_t1_tex_txt);
+    obj_s_house1_light_model[7].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[12]);
+    obj_s_house1_t4_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house1_t4_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house1_t4_tex_txt);
+    obj_s_house1_t4_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[111]);
+    obj_s_house1_t3_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house1_t3_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house1_t3_tex_txt);
+    obj_s_house1_t3_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[28]);
+    obj_s_house1_t2_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house1_t2_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house1_t2_tex_txt);
+    obj_s_house1_t2_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[39]);
+    obj_s_house1_t2_model[14].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[71]);
+    obj_s_house1_t1_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house1_t1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house1_t1_tex_txt);
+    obj_s_house1_t1_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[75]);
+    obj_s_house1_t1_model[14].words.w1 = pc_gbi_ptr_encode(&obj_s_house1_v[107]);
+    obj_s_house1_door_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house1_door_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house1_t1_tex_txt);
+    obj_s_house1_door_model[8].words.w1 = pc_gbi_ptr_encode(obj_s_house1_v);
+
+    obj_s_house2_window_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house2_window_tex_txt);
+    obj_s_house2_window_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[4]);
+    obj_s_house2_light_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house2_light_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house2_t1_tex_txt);
+    obj_s_house2_light_model[7].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[29]);
+    obj_s_house2_t3_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house2_t3_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house2_t3_tex_txt);
+    obj_s_house2_t3_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[61]);
+    obj_s_house2_t3_model[14].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[93]);
+    obj_s_house2_t2_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house2_t2_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house2_t2_tex_txt);
+    obj_s_house2_t2_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[12]);
+    obj_s_house2_t1_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house2_t1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house2_t1_tex_txt);
+    obj_s_house2_t1_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[44]);
+    obj_s_house2_name_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house2_name_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house2_name_tex_txt);
+    obj_s_house2_name_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house2_v[105]);
+    obj_s_house2_door_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house2_door_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house2_t3_tex_txt);
+    obj_s_house2_door_model[8].words.w1 = pc_gbi_ptr_encode(obj_s_house2_v);
+
+    obj_s_house3_windowL_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house3_window_tex_txt);
+    obj_s_house3_windowL_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[40]);
+    obj_s_house3_windowR_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house3_window_tex_txt);
+    obj_s_house3_windowR_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[44]);
+    obj_s_house3_light_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house3_light_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house3_t1_tex_txt);
+    obj_s_house3_light_model[7].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[25]);
+    obj_s_house3_t3_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house3_t3_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house3_t3_tex_txt);
+    obj_s_house3_t3_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[48]);
+    obj_s_house3_t3_model[14].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[80]);
+    obj_s_house3_t2_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house3_t2_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house3_t2_tex_txt);
+    obj_s_house3_t2_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[11]);
+    obj_s_house3_t1_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house3_t1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house3_t1_tex_txt);
+    obj_s_house3_t1_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[4]);
+    obj_s_house3_name_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house3_name_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house3_name_tex_txt);
+    obj_s_house3_name_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house3_v[96]);
+    obj_s_house3_door_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house3_door_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house3_t3_tex_txt);
+    obj_s_house3_door_model[8].words.w1 = pc_gbi_ptr_encode(obj_s_house3_v);
+
+    obj_s_house4_windowL_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house4_window_tex_txt);
+    obj_s_house4_windowL_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[77]);
+    obj_s_house4_windowR_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_house4_window_tex_txt);
+    obj_s_house4_windowR_model[6].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[81]);
+    obj_s_house4_light_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house4_light_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house4_t1_tex_txt);
+    obj_s_house4_light_model[7].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[63]);
+    obj_s_house4_t3_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house4_t3_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house4_t3_tex_txt);
+    obj_s_house4_t3_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[29]);
+    obj_s_house4_t3_model[15].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[59]);
+    obj_s_house4_t2_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house4_t2_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house4_t2_tex_txt);
+    obj_s_house4_t2_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[11]);
+    obj_s_house4_t1_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house4_t1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house4_t1_tex_txt);
+    obj_s_house4_t1_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[4]);
+    obj_s_house4_name_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house4_name_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house4_name_tex_txt);
+    obj_s_house4_name_model[8].words.w1 = pc_gbi_ptr_encode(&obj_s_house4_v[85]);
+    obj_s_house4_door_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_house4_door_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_house4_t3_tex_txt);
+    obj_s_house4_door_model[8].words.w1 = pc_gbi_ptr_encode(obj_s_house4_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_house_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_obj_s_house1_c(void) {

@@ -59,3 +59,21 @@ Gfx obj_attention_shadowT_model[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 0, 2, 3, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_reserve_shadow_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    reserve_shadow_model[3].words.w1 = pc_gbi_ptr_encode(obj_buildsite_shadow_tex);
+    reserve_shadow_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_reserve_shadow_models(void) {
+}
+#endif

@@ -13,6 +13,10 @@ extern Gfx ef_hanabira01_00_setmode[];
 
 extern Gfx ef_hanabira01_00_modelT[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_hanabira01_00_models(void);
+#endif
+
 static void aWeatherSakura_make(ACTOR*, GAME*);
 static void aWeatherSakura_ct(aWeather_Priv*, GAME*);
 static void aWeatherSakura_move(aWeather_Priv*, GAME*);
@@ -155,6 +159,9 @@ static void aWeatherSakura_move(aWeather_Priv* priv, GAME* game) {
 }
 
 static void aWeatherSakura_set(GAME* game) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_ef_hanabira01_00_models();
+#endif
 
     _texture_z_light_fog_prim_xlu(game->graph);
 

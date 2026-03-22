@@ -654,6 +654,10 @@ extern Gfx kasa_umb32_model[];
 extern Gfx e_umb_w_model[];
 extern Gfx kasa_umb_w_model[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_tol_umb_01_models(void);
+#endif
+
 static void mIV_pl_shape_item_draw_umbrella(Submenu* submenu, GAME* game) {
     // clang-format off
     static mIV_umbrella_data_c pl_umb_data[] = {
@@ -703,6 +707,10 @@ static void mIV_pl_shape_item_draw_umbrella(Submenu* submenu, GAME* game) {
     int umbrella_idx = submenu->overlay->segment.umbrella_ids[submenu->overlay->segment.player_umbrella_bank_idx];
     mIV_umbrella_data_c* pl_umb_data_p = &pl_umb_data[umbrella_idx];
     int umbrella_item_kind = mPlayer_ITEM_KIND_UMBRELLA00 + umbrella_idx;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_tol_umb_01_models();
+#endif
 
     _texture_z_light_fog_prim_npc(graph);
 

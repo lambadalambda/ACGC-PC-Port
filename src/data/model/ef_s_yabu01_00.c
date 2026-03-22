@@ -192,3 +192,22 @@ Gfx ef_s_palm_modelT[] = {
     gsSPNTriangles_5b(0, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_s_yabu01_00_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_s_yabu01_00_modelT[3].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    ef_s_yabu01_00_modelT[4].words.w1 = pc_gbi_ptr_encode(ef_s_yabu01_0);
+    ef_s_yabu01_00_modelT[7].words.w1 = pc_gbi_ptr_encode(ef_s_yabu01_00_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_s_yabu01_00_models(void) {
+}
+#endif

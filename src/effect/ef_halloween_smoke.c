@@ -3,6 +3,7 @@
 #include "m_common_data.h"
 
 extern Gfx ef_haro01_00_modelT[];
+extern void pc_patch_ef_dust01_00_models(void);
 extern u8 ef_dust01_0[];
 extern u8 ef_dust01_1[];
 extern u8 ef_dust01_2[];
@@ -89,6 +90,8 @@ static void eHalloween_Smoke_dw(eEC_Effect_c* effect, GAME* game) {
     int tex_idx = frame >> 1;
     int tile_idx0 = eHalloween_2tile_texture_idx[tex_idx][0];
     int tile_idx1 = eHalloween_2tile_texture_idx[tex_idx][1];
+
+    pc_patch_ef_dust01_00_models();
 
     OPEN_DISP(game->graph);
 

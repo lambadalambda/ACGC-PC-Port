@@ -17,3 +17,20 @@ Gfx obj_s_tree5_apple_appleT_gfx_model[] = {
     gsSPNTriangles_5b(4, 6, 7, 8, 9, 10, 8, 10, 11, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_tree5_apple_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_tree5_apple_appleT_gfx_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_tree5_apple_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_tree5_apple_models(void) {
+}
+#endif

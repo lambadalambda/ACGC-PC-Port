@@ -32,8 +32,18 @@ extern cKF_Animation_R_c cKF_ba_r_obj_train1_1;
 
 extern Gfx obj_train1_2_model[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_train1_1_model_display_lists(void);
+extern void pc_patch_obj_train1_3_model_display_lists(void);
+#endif
+
 static void aTR0_actor_ct(ACTOR* actor, GAME* GAME) {
     TRAIN0_ACTOR* train0 = (TRAIN0_ACTOR*)actor;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_train1_1_model_display_lists();
+    pc_patch_obj_train1_3_model_display_lists();
+#endif
 
     cKF_SkeletonInfo_R_ct(&train0->keyframe, &cKF_bs_r_obj_train1_1, NULL, train0->work_area, train0->morph_area);
     cKF_SkeletonInfo_R_init(&train0->keyframe, train0->keyframe.skeleton, &cKF_ba_r_obj_train1_1, 1.0f, 25.0f, 1.0f,

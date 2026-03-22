@@ -59,6 +59,11 @@ extern cKF_Animation_R_c cKF_ba_r_obj_s_post_flag_on_wait1;
 extern cKF_Animation_R_c cKF_ba_r_obj_s_post_open1;
 extern cKF_Animation_R_c cKF_ba_r_obj_s_post;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_s_post_models(void);
+extern void pc_patch_obj_w_post_models(void);
+#endif
+
 typedef struct {
     cKF_Animation_R_c* anim;
     f32 start;
@@ -100,6 +105,11 @@ static void aMBX_actor_ct(ACTOR* actorx, GAME* game) {
     int season = Common_Get(time.season) == mTM_SEASON_WINTER;
     int idx = actorx->npc_id - ACTOR_PROP_MAILBOX0;
     cKF_Skeleton_R_c* skeleton_p = aMBX_skeleton[season];
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_s_post_models();
+    pc_patch_obj_w_post_models();
+#endif
 
     cKF_SkeletonInfo_R_ct(&actor->kf0, skeleton_p, NULL, actor->joint0, actor->morph0);
     cKF_SkeletonInfo_R_ct(&actor->kf1, skeleton_p, NULL, actor->joint1, actor->morph1);
@@ -143,10 +153,32 @@ static Gfx post_flag_saki_model_type1[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_mailbox_saki_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    post_flag_saki_model_type0[0].words.w1 = pc_gbi_ptr_encode(post_flag_saki_common_DL);
+    post_flag_saki_model_type0[2].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    post_flag_saki_model_type1[0].words.w1 = pc_gbi_ptr_encode(post_flag_saki_common_DL);
+    post_flag_saki_model_type1[2].words.w1 = SEGMENT_ADDR(ANIME_2_TXT_SEG, 0);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_mailbox_saki_models(void) {
+}
+#endif
+
 static int aMBX_actor_draw_before(GAME* game, cKF_SkeletonInfo_R_c* keyframe, int joint_idx, Gfx** joint_shape,
                                   u8* joint_flags, void* arg, s_xyz* joint_rot, xyz_t* joint_pos) {
     static Gfx* post_flag_saki_model[] = { post_flag_saki_model_type0, post_flag_saki_model_type1 };
     MAILBOX_ACTOR* actor = (MAILBOX_ACTOR*)arg;
+
+    pc_patch_mailbox_saki_models();
 
     if (joint_idx == 3) {
         GRAPH* graph = game->graph;

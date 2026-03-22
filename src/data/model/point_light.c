@@ -34,6 +34,24 @@ Gfx point_light_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_point_light_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    point_light_init_model[0].words.w1 = pc_gbi_ptr_encode(elf_layA0_txt);
+    point_light_model[1].words.w1 = pc_gbi_ptr_encode(point_light_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_point_light_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 u8 elf_layA0_txt[0x800];
 #else

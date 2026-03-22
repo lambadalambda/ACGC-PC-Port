@@ -34,3 +34,21 @@ Gfx obj_s_yubinkyoku_shadow_2_model[] = {
     gsSPNTriangles_5b(10, 12, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_yubinkyoku_shadow_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_yubinkyoku_shadow_2_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_shadow_tex_txt);
+    obj_s_yubinkyoku_shadow_2_model[6].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_yubinkyoku_shadow_models(void) {
+}
+#endif

@@ -72,3 +72,26 @@ Gfx e_umb01_model[] = {
     gsSPNTriangles_5b(19, 15, 12, 23, 24, 25, 11, 25, 9, 25, 11, 23),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_tol_umb_01_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    kasa_umb01_model[3].words.w1 = pc_gbi_ptr_encode(tol_umb_01_pal);
+    kasa_umb01_model[4].words.w1 = pc_gbi_ptr_encode(tol_umb_01_kasa1_tex_txt);
+    kasa_umb01_model[8].words.w1 = pc_gbi_ptr_encode(tol_umb_01_v);
+
+    e_umb01_model[3].words.w1 = pc_gbi_ptr_encode(tol_umb_01_pal);
+    e_umb01_model[4].words.w1 = pc_gbi_ptr_encode(tol_umb_01_tuka_tex_txt);
+    e_umb01_model[8].words.w1 = pc_gbi_ptr_encode(&tol_umb_01_v[30]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_tol_umb_01_models(void) {
+}
+#endif

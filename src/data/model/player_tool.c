@@ -3430,6 +3430,46 @@ Gfx tol_fan8_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_player_tool_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    main1_sao_model[3].words.w1 = pc_gbi_ptr_encode(tol_sao_1_pal);
+    main1_sao_model[4].words.w1 = pc_gbi_ptr_encode(tol_sao_1_main1_tex_txt);
+    main1_sao_model[8].words.w1 = pc_gbi_ptr_encode(&tol_sao_1_v[52]);
+
+    main2_sao_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0);
+    main2_sao_model[3].words.w1 = pc_gbi_ptr_encode(&tol_sao_1_v[34]);
+    main2_sao_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, sizeof(Mtx));
+    main2_sao_model[8].words.w1 = pc_gbi_ptr_encode(tol_sao_1_pal);
+    main2_sao_model[9].words.w1 = pc_gbi_ptr_encode(tol_sao_1_main1_tex_txt);
+    main2_sao_model[12].words.w1 = pc_gbi_ptr_encode(&tol_sao_1_v[37]);
+
+    main3_sao_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, sizeof(Mtx));
+    main3_sao_model[3].words.w1 = pc_gbi_ptr_encode(&tol_sao_1_v[16]);
+    main3_sao_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, sizeof(Mtx) * 2);
+    main3_sao_model[8].words.w1 = pc_gbi_ptr_encode(tol_sao_1_pal);
+    main3_sao_model[9].words.w1 = pc_gbi_ptr_encode(tol_sao_1_main1_tex_txt);
+    main3_sao_model[12].words.w1 = pc_gbi_ptr_encode(&tol_sao_1_v[19]);
+
+    main4_sao_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, sizeof(Mtx) * 2);
+    main4_sao_model[3].words.w1 = pc_gbi_ptr_encode(tol_sao_1_v);
+    main4_sao_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, sizeof(Mtx) * 3);
+    main4_sao_model[8].words.w1 = pc_gbi_ptr_encode(tol_sao_1_pal);
+    main4_sao_model[9].words.w1 = pc_gbi_ptr_encode(tol_sao_1_main1_tex_txt);
+    main4_sao_model[12].words.w1 = pc_gbi_ptr_encode(&tol_sao_1_v[3]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_player_tool_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_player_tool_c(void) {
@@ -3487,5 +3527,6 @@ void _pc_load_src_data_model_player_tool_c(void) {
     pc_load_asset("assets/player_tool/tol_fan7_tex_txt.bin", tol_fan7_tex_txt, 0x400, 0x67AC40, 0, 0);
     pc_load_asset("assets/player_tool/tol_fan8_pal.bin", tol_fan8_pal, 0x20, 0x67B140, 0, 1);
     pc_load_asset("assets/player_tool/tol_fan8_tex_txt.bin", tol_fan8_tex_txt, 0x400, 0x67B160, 0, 0);
+    pc_patch_player_tool_models();
 }
 #endif

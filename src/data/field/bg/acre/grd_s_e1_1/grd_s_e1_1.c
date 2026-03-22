@@ -190,8 +190,32 @@ extern Gfx grd_s_e1_1_model[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_s_e1_1_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_e1_1_model[3].words.w1 = pc_gbi_ptr_encode(cliff_pal_dummy);
+    grd_s_e1_1_model[4].words.w1 = pc_gbi_ptr_encode(cliff_tex_dummy);
+    grd_s_e1_1_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_e1_1_v[0]);
+    grd_s_e1_1_model[20].words.w1 = pc_gbi_ptr_encode(&grd_s_e1_1_v[32]);
+    grd_s_e1_1_model[31].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_e1_1_model[32].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_e1_1_model[34].words.w1 = pc_gbi_ptr_encode(&grd_s_e1_1_v[63]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_s_e1_1_model(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_e1_1_grd_s_e1_1_c(void) {
     pc_load_asset("assets/field/bg/grd_s_e1_1_v.bin", grd_s_e1_1_v, 0x560, 0x9CD770, 0, 2);
+    pc_patch_grd_s_e1_1_model();
 }
 #endif

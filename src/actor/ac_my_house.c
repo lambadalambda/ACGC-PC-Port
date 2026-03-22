@@ -133,6 +133,11 @@ extern cKF_Skeleton_R_c cKF_bs_r_obj_w_myhome3;
 extern cKF_Skeleton_R_c cKF_bs_r_obj_s_myhome4;
 extern cKF_Skeleton_R_c cKF_bs_r_obj_w_myhome4;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_myhome_models(void);
+extern void pc_patch_obj_myhome_shadow_models(void);
+#endif
+
 static void aMHS_actor_ct(ACTOR* actorx, GAME* game) {
     static cKF_Skeleton_R_c* skl[mHm_HOMESIZE_NUM - 1][2] = {
         { &cKF_bs_r_obj_s_myhome1, &cKF_bs_r_obj_w_myhome1 },
@@ -149,6 +154,11 @@ static void aMHS_actor_ct(ACTOR* actorx, GAME* game) {
     int size = Save_Get(homes[house_idx]).size_info.size;
     int season;
     s16 param_2 = 50;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_myhome_models();
+    pc_patch_obj_myhome_shadow_models();
+#endif
 
     my_house->season = Common_Get(time.season);
     season = my_house->season == mTM_SEASON_WINTER;

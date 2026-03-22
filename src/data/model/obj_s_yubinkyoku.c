@@ -386,3 +386,43 @@ cKF_Animation_R_c cKF_ba_r_obj_w_yubinkyoku_out = { cKF_ckcb_r_obj_w_yubinkyoku_
                                                     cKF_c_obj_w_yubinkyoku_out_tbl,
                                                     -1,
                                                     51 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_yubinkyoku_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_yubinkyoku_window_model[3].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_window_tex_txt);
+    obj_s_yubinkyoku_window_model[7].words.w1 = pc_gbi_ptr_encode(&obj_s_yubinkyoku_v[13]);
+
+    obj_s_yubinkyoku_light_model[4].words.w1 = pc_gbi_ptr_encode(&obj_s_yubinkyoku_v[37]);
+
+    obj_s_yubinkyoku_t3_1_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_yubinkyoku_t3_1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_t3_txt);
+    obj_s_yubinkyoku_t3_1_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_yubinkyoku_v[25]);
+
+    obj_s_yubinkyoku_t2_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_yubinkyoku_t2_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_t2_txt);
+    obj_s_yubinkyoku_t2_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_yubinkyoku_v[17]);
+
+    obj_s_yubinkyoku_t1_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_yubinkyoku_t1_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_t1_txt);
+    obj_s_yubinkyoku_t1_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_yubinkyoku_v[4]);
+
+    obj_s_yubinkyoku_neon_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_yubinkyoku_neon_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_t3_txt);
+    obj_s_yubinkyoku_neon_model[9].words.w1 = pc_gbi_ptr_encode(&obj_s_yubinkyoku_v[29]);
+
+    obj_s_yubinkyoku_door_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    obj_s_yubinkyoku_door_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_t3_txt);
+    obj_s_yubinkyoku_door_model[8].words.w1 = pc_gbi_ptr_encode(obj_s_yubinkyoku_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_yubinkyoku_models(void) {
+}
+#endif

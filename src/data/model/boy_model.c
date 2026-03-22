@@ -425,6 +425,144 @@ Gfx base_boy_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_boy_model_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    /* head_boy_model */
+    head_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (7) * sizeof(Mtx));
+    head_boy_model[3].words.w1 = pc_gbi_ptr_encode(boy_1_v);
+    head_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (12) * sizeof(Mtx));
+    head_boy_model[8].words.w1 = anime_4_txt;
+    head_boy_model[9].words.w1 = anime_3_txt;
+    head_boy_model[13].words.w1 = pc_gbi_ptr_encode(&boy_1_v[8]);
+    head_boy_model[17].words.w1 = anime_5_txt;
+    head_boy_model[18].words.w1 = pc_gbi_ptr_encode(boy_1_horn_tex_txt);
+    head_boy_model[20].words.w1 = pc_gbi_ptr_encode(&boy_1_v[21]);
+    head_boy_model[29].words.w1 = pc_gbi_ptr_encode(boy_1_skin_tex_txt);
+    head_boy_model[31].words.w1 = pc_gbi_ptr_encode(&boy_1_v[43]);
+    head_boy_model[41].words.w1 = anime_4_txt;
+    head_boy_model[42].words.w1 = anime_3_txt;
+    head_boy_model[44].words.w1 = pc_gbi_ptr_encode(&boy_1_v[68]);
+    head_boy_model[54].words.w1 = anime_5_txt;
+    head_boy_model[55].words.w1 = anime_1_txt;
+    head_boy_model[57].words.w1 = pc_gbi_ptr_encode(&boy_1_v[94]);
+    head_boy_model[61].words.w1 = anime_2_txt;
+
+    /* Rarm2_boy_model */
+    Rarm2_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (10) * sizeof(Mtx));
+    Rarm2_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[169]);
+    Rarm2_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (11) * sizeof(Mtx));
+    Rarm2_boy_model[8].words.w1 = anime_5_txt;
+    Rarm2_boy_model[9].words.w1 = pc_gbi_ptr_encode(boy_1_skin_tex_txt);
+    Rarm2_boy_model[12].words.w1 = pc_gbi_ptr_encode(&boy_1_v[172]);
+
+    /* Rarm1_boy_model */
+    Rarm1_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (7) * sizeof(Mtx));
+    Rarm1_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[193]);
+    Rarm1_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (10) * sizeof(Mtx));
+    Rarm1_boy_model[8].words.w1 = anime_4_txt;
+    Rarm1_boy_model[9].words.w1 = anime_3_txt;
+    Rarm1_boy_model[13].words.w1 = pc_gbi_ptr_encode(&boy_1_v[197]);
+    Rarm1_boy_model[17].words.w1 = anime_5_txt;
+    Rarm1_boy_model[18].words.w1 = pc_gbi_ptr_encode(boy_1_hole_tex_txt);
+    Rarm1_boy_model[22].words.w1 = pc_gbi_ptr_encode(boy_1_skin_tex_txt);
+    Rarm1_boy_model[24].words.w1 = pc_gbi_ptr_encode(&boy_1_v[219]);
+
+    /* Larm2_boy_model */
+    Larm2_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (8) * sizeof(Mtx));
+    Larm2_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[113]);
+    Larm2_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (9) * sizeof(Mtx));
+    Larm2_boy_model[8].words.w1 = anime_5_txt;
+    Larm2_boy_model[9].words.w1 = pc_gbi_ptr_encode(boy_1_skin_tex_txt);
+    Larm2_boy_model[12].words.w1 = pc_gbi_ptr_encode(&boy_1_v[116]);
+
+    /* Larm1_boy_model */
+    Larm1_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (7) * sizeof(Mtx));
+    Larm1_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[137]);
+    Larm1_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (8) * sizeof(Mtx));
+    Larm1_boy_model[8].words.w1 = anime_4_txt;
+    Larm1_boy_model[9].words.w1 = anime_3_txt;
+    Larm1_boy_model[13].words.w1 = pc_gbi_ptr_encode(&boy_1_v[141]);
+    Larm1_boy_model[17].words.w1 = anime_5_txt;
+    Larm1_boy_model[18].words.w1 = pc_gbi_ptr_encode(boy_1_hole_tex_txt);
+    Larm1_boy_model[22].words.w1 = pc_gbi_ptr_encode(boy_1_skin_tex_txt);
+    Larm1_boy_model[24].words.w1 = pc_gbi_ptr_encode(&boy_1_v[0xa3]);
+
+    /* chest_boy_model */
+    chest_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0);
+    chest_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[225]);
+    chest_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (7) * sizeof(Mtx));
+    chest_boy_model[8].words.w1 = anime_4_txt;
+    chest_boy_model[9].words.w1 = anime_3_txt;
+    chest_boy_model[13].words.w1 = pc_gbi_ptr_encode(&boy_1_v[232]);
+
+    /* Rfoot3_boy_model */
+    Rfoot3_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (5) * sizeof(Mtx));
+    Rfoot3_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[303]);
+    Rfoot3_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (6) * sizeof(Mtx));
+    Rfoot3_boy_model[8].words.w1 = anime_5_txt;
+    Rfoot3_boy_model[9].words.w1 = pc_gbi_ptr_encode(boy_1_shoe_tex_txt);
+    Rfoot3_boy_model[12].words.w1 = pc_gbi_ptr_encode(&boy_1_v[307]);
+    Rfoot3_boy_model[17].words.w1 = pc_gbi_ptr_encode(boy_1_bottom_tex_txt);
+
+    /* Rffot2_boy_model */
+    Rffot2_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (4) * sizeof(Mtx));
+    Rffot2_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[330]);
+    Rffot2_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (5) * sizeof(Mtx));
+    Rffot2_boy_model[8].words.w1 = anime_5_txt;
+    Rffot2_boy_model[9].words.w1 = pc_gbi_ptr_encode(boy_1_foot_tex_txt);
+    Rffot2_boy_model[12].words.w1 = pc_gbi_ptr_encode(&boy_1_v[334]);
+
+    /* Lfoot3_boy_model */
+    Lfoot3_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (2) * sizeof(Mtx));
+    Lfoot3_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[252]);
+    Lfoot3_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (3) * sizeof(Mtx));
+    Lfoot3_boy_model[8].words.w1 = anime_5_txt;
+    Lfoot3_boy_model[9].words.w1 = pc_gbi_ptr_encode(boy_1_shoe_tex_txt);
+    Lfoot3_boy_model[12].words.w1 = pc_gbi_ptr_encode(&boy_1_v[256]);
+    Lfoot3_boy_model[17].words.w1 = pc_gbi_ptr_encode(boy_1_bottom_tex_txt);
+
+    /* Lfoot2_boy_model */
+    Lfoot2_boy_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (1) * sizeof(Mtx));
+    Lfoot2_boy_model[3].words.w1 = pc_gbi_ptr_encode(&boy_1_v[279]);
+    Lfoot2_boy_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, (2) * sizeof(Mtx));
+    Lfoot2_boy_model[8].words.w1 = anime_5_txt;
+    Lfoot2_boy_model[9].words.w1 = pc_gbi_ptr_encode(boy_1_foot_tex_txt);
+    Lfoot2_boy_model[12].words.w1 = pc_gbi_ptr_encode(&boy_1_v[283]);
+
+    /* Rfoot1_boy_model */
+    Rfoot1_boy_model[3].words.w1 = anime_5_txt;
+    Rfoot1_boy_model[4].words.w1 = pc_gbi_ptr_encode(boy_1_foot_tex_txt);
+    Rfoot1_boy_model[8].words.w1 = pc_gbi_ptr_encode(&boy_1_v[345]);
+
+    /* Lfoot1_boy_model */
+    Lfoot1_boy_model[3].words.w1 = anime_5_txt;
+    Lfoot1_boy_model[4].words.w1 = pc_gbi_ptr_encode(boy_1_foot_tex_txt);
+    Lfoot1_boy_model[8].words.w1 = pc_gbi_ptr_encode(&boy_1_v[294]);
+
+    /* base_boy_model */
+    base_boy_model[3].words.w1 = anime_5_txt;
+    base_boy_model[4].words.w1 = pc_gbi_ptr_encode(boy_1_pants_tex_txt);
+    base_boy_model[8].words.w1 = pc_gbi_ptr_encode(&boy_1_v[354]);
+    base_boy_model[12].words.w1 = pc_gbi_ptr_encode(boy_1_hole_tex_txt);
+    base_boy_model[16].words.w1 = pc_gbi_ptr_encode(boy_1_pants_tex_txt);
+    base_boy_model[21].words.w1 = pc_gbi_ptr_encode(boy_1_hole_tex_txt);
+    base_boy_model[24].words.w1 = pc_gbi_ptr_encode(&boy_1_v[383]);
+    base_boy_model[28].words.w1 = anime_4_txt;
+    base_boy_model[29].words.w1 = anime_3_txt;
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_boy_model_display_lists(void) {
+}
+#endif
+
 cKF_Joint_R_c cKF_je_r_boy_1_tbl[] = {
     { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, { 0, 1000, 0 } },
     { base_boy_model, 4, cKF_JOINT_FLAG_DISP_OPA, { 0, 0, 0 } },

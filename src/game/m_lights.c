@@ -9,6 +9,10 @@ Light_buffer light_list_buf;
 extern Gfx point_light_init_model[];
 extern Gfx point_light_model[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_point_light_models(void);
+#endif
+
 static void Light_point_color_set(Lights* lights, u8 r, u8 g, u8 b, s16 radius);
 static void Global_light_list_ct(Global_light* light);
 static void Global_light_ambient_set(Global_light* light, u8 r, u8 g, u8 b);
@@ -355,6 +359,10 @@ extern void Light_list_point_draw(GAME_PLAY* play) {
 
     OPEN_DISP(g);
     dl = gfx_softsprite_prim_xlu(NOW_POLY_XLU_DISP);
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_point_light_models();
+#endif
 
     gDPSetAlphaDither(dl++, G_AD_NOISE);
     gDPSetColorDither(dl++, G_CD_MAGICSQ);

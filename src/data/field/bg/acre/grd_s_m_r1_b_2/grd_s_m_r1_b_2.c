@@ -406,8 +406,66 @@ extern Gfx grd_s_m_r1_b_2_modelT[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_s_m_r1_b_2_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_m_r1_b_2_model[3].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_C, 0);
+    grd_s_m_r1_b_2_model[5].words.w1 = pc_gbi_ptr_encode(beach2_tex_dummy2);
+    grd_s_m_r1_b_2_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[210]);
+    grd_s_m_r1_b_2_model[16].words.w1 = pc_gbi_ptr_encode(bridge_2_pal_dummy);
+    grd_s_m_r1_b_2_model[17].words.w1 = pc_gbi_ptr_encode(bridge_2_tex_dummy);
+    grd_s_m_r1_b_2_model[21].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[168]);
+    grd_s_m_r1_b_2_model[29].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[200]);
+    grd_s_m_r1_b_2_model[33].words.w1 = pc_gbi_ptr_encode(cliff_pal_dummy);
+    grd_s_m_r1_b_2_model[34].words.w1 = pc_gbi_ptr_encode(river_tex_dummy);
+    grd_s_m_r1_b_2_model[36].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[0]);
+    grd_s_m_r1_b_2_model[43].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[31]);
+    grd_s_m_r1_b_2_model[50].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[63]);
+    grd_s_m_r1_b_2_model[52].words.w1 = pc_gbi_ptr_encode(beach_pal_dummy2);
+    grd_s_m_r1_b_2_model[53].words.w1 = pc_gbi_ptr_encode(sand_tex_dummy);
+    grd_s_m_r1_b_2_model[55].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[66]);
+    grd_s_m_r1_b_2_model[58].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_m_r1_b_2_model[59].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_m_r1_b_2_model[61].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[77]);
+    grd_s_m_r1_b_2_model[65].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_m_r1_b_2_model[67].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[95]);
+    grd_s_m_r1_b_2_model[74].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[126]);
+    grd_s_m_r1_b_2_model[83].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_C, 0);
+    grd_s_m_r1_b_2_model[85].words.w1 = pc_gbi_ptr_encode(beach1_tex_dummy2);
+    grd_s_m_r1_b_2_model[87].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[158]);
+
+    grd_s_m_r1_b_2_modelT[4].words.w1 = pc_gbi_ptr_encode(wave1_tex_dummy);
+    grd_s_m_r1_b_2_modelT[6].words.w1 = pc_gbi_ptr_encode(wave2_tex_dummy);
+    grd_s_m_r1_b_2_modelT[8].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_B, 0);
+    grd_s_m_r1_b_2_modelT[9].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[228]);
+    grd_s_m_r1_b_2_modelT[14].words.w1 = pc_gbi_ptr_encode(wave1_tex_dummy);
+    grd_s_m_r1_b_2_modelT[16].words.w1 = pc_gbi_ptr_encode(wave3_tex_dummy);
+    grd_s_m_r1_b_2_modelT[18].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_D, 0);
+    grd_s_m_r1_b_2_modelT[19].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[244]);
+    grd_s_m_r1_b_2_modelT[26].words.w1 = pc_gbi_ptr_encode(sprashC_tex_dummy);
+    grd_s_m_r1_b_2_modelT[28].words.w1 = pc_gbi_ptr_encode(sprashA_tex_dummy);
+    grd_s_m_r1_b_2_modelT[30].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_9, 0);
+    grd_s_m_r1_b_2_modelT[31].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[259]);
+    grd_s_m_r1_b_2_modelT[37].words.w1 = pc_gbi_ptr_encode(water_1_tex_dummy);
+    grd_s_m_r1_b_2_modelT[39].words.w1 = pc_gbi_ptr_encode(water_2_tex_dummy);
+    grd_s_m_r1_b_2_modelT[41].words.w1 = SEGMENT_ADDR(G_MWO_SEGMENT_8, 0);
+    grd_s_m_r1_b_2_modelT[42].words.w1 = pc_gbi_ptr_encode(&grd_s_m_r1_b_2_v[266]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_s_m_r1_b_2_model(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_m_r1_b_2_grd_s_m_r1_b_2_c(void) {
     pc_load_asset("assets/field/bg/grd_s_m_r1_b_2_v.bin", grd_s_m_r1_b_2_v, 0x1190, 0xA07768, 0, 2);
+    pc_patch_grd_s_m_r1_b_2_model();
 }
 #endif

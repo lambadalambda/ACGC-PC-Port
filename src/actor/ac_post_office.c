@@ -67,6 +67,11 @@ static bIT_ShadowData_c aPOFF_shadow_data = {
 extern cKF_Skeleton_R_c cKF_bs_r_obj_s_yubinkyoku;
 extern cKF_Skeleton_R_c cKF_bs_r_obj_w_yubinkyoku;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_s_yubinkyoku_models(void);
+extern void pc_patch_obj_s_yubinkyoku_shadow_models(void);
+#endif
+
 static void aPOFF_set_bgOffset(STRUCTURE_ACTOR* office, int idx);
 static void aPOFF_setup_animation(STRUCTURE_ACTOR* office, f32 speed);
 static void aPOFF_setup_action(STRUCTURE_ACTOR* office, int action);
@@ -76,6 +81,11 @@ static void aPOFF_actor_ct(ACTOR* actor, GAME* game) {
     static cKF_Skeleton_R_c* skl[] = { &cKF_bs_r_obj_s_yubinkyoku, &cKF_bs_r_obj_w_yubinkyoku };
 
     STRUCTURE_ACTOR* office;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_s_yubinkyoku_models();
+    pc_patch_obj_s_yubinkyoku_shadow_models();
+#endif
 
     office = (STRUCTURE_ACTOR*)actor;
     office->season = Common_Get(time.season);

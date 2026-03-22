@@ -138,3 +138,26 @@ Gfx obj_w_attentionT_model[] = {
     gsSPNTriangles_5b(4, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_buildsite_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    reserve_DL_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    reserve_DL_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_buildsite_tex);
+    reserve_DL_model[4].words.w1 = pc_gbi_ptr_encode(obj_s_buildsite_v);
+
+    reserve_winter_DL_model[0].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0);
+    reserve_winter_DL_model[1].words.w1 = pc_gbi_ptr_encode(obj_w_buildsite_tex);
+    reserve_winter_DL_model[4].words.w1 = pc_gbi_ptr_encode(obj_w_buildsite_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_buildsite_models(void) {
+}
+#endif

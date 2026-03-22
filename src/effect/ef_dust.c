@@ -179,6 +179,7 @@ static u8 eDT_prim_f[18] = {
 };
 
 extern Gfx ef_dust01_modelT[];
+extern void pc_patch_ef_dust01_00_models(void);
 
 static void eDT_dw(eEC_Effect_c* effect, GAME* game) {
     s16 counter = (18 - effect->timer) >> 1;
@@ -188,6 +189,8 @@ static void eDT_dw(eEC_Effect_c* effect, GAME* game) {
     int tex1;
 
     counter = CLAMP(counter, 0, 9);
+
+    pc_patch_ef_dust01_00_models();
 
     
     tex0 = eDT_2tile_texture_idx[counter].tex0;

@@ -99,10 +99,13 @@ static void eFootPrint_mv(eEC_Effect_c* effect, GAME* game) {
 }
 
 extern Gfx ef_footprint01_00_modelT[];
+extern void pc_patch_ef_bodyprint01_00_models(void);
 
 static void eFootPrint_dw(eEC_Effect_c* effect, GAME* game) {
     u8 alpha = (int)(*eEC_CLIP->calc_adjust_proc)(160 - effect->timer, 118, 159, 150.0f, 0.0f);
     f32 scale;
+
+    pc_patch_ef_bodyprint01_00_models();
 
     OPEN_DISP(game->graph);
 

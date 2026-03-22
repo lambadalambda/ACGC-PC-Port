@@ -26,6 +26,7 @@ extern Gfx ef_s_cedar_modelT[];
 extern Gfx ef_s_palm_modelT[];
 extern Gfx ef_s_tree01_00_modelT[];
 extern Gfx ef_s_yabu01_00_modelT[];
+extern void pc_patch_ef_s_yabu01_00_models(void);
 
 static void eBushHappa_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1) {
     s16 x = ABS(arg0);
@@ -150,7 +151,8 @@ static void eBushHappa_dw(eEC_Effect_c* effect, GAME* game) {
     u16* golden_pal;
     u16* palm_pal;
 
-    
+    pc_patch_ef_s_yabu01_00_models();
+
     if (field_pal != NULL) {
         u8 alpha;
         cedar_pal = NULL;

@@ -15,8 +15,106 @@
 
 #ifdef TARGET_PC
 #include "pc_platform.h"
+#if defined(__APPLE__) || defined(__linux__)
+#include <dlfcn.h>
+#define PC_EMU64_HAVE_DLADDR 1
+#else
+#define PC_EMU64_HAVE_DLADDR 0
+#endif
+#include <string.h>
 
 static jmp_buf pc_dl_crash_jmpbuf;
+#endif
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+typedef struct {
+    u32 task_index;
+    u32 detail_logs;
+    u32 dl_addr0_skips;
+    u32 vtx_addr0;
+    u32 vtx_seg2k0_null;
+    u32 mtx_addr0;
+    u32 mtx_seg2k0_null;
+    u32 setimg_addr0;
+    u32 setimg_seg2k0_null;
+    u32 tlut_addr0;
+} pc_emu64_zero_diag_t;
+
+static pc_emu64_zero_diag_t s_pc_emu64_zero_diag;
+static u32 s_pc_emu64_zero_diag_task_seq = 0;
+
+static void pc_emu64_zero_diag_reset(void) {
+    bzero(&s_pc_emu64_zero_diag, sizeof(s_pc_emu64_zero_diag));
+    s_pc_emu64_zero_diag.task_index = s_pc_emu64_zero_diag_task_seq++;
+}
+
+static void pc_emu64_zero_operand_log(const char* tag, const void* cmd, u32 raw_addr, u32 w0, u32 w1, int stack_level) {
+    typedef struct {
+        const char* tag;
+        const void* cmd;
+        u32 raw_addr;
+    } pc_emu64_zero_seen_t;
+
+    static pc_emu64_zero_seen_t s_seen[2048];
+    static u32 s_seen_count = 0;
+
+    const char* symbol_name = "?";
+    uintptr_t symbol_delta = 0;
+    u32 i;
+
+    for (i = 0; i < s_seen_count; i++) {
+        if (s_seen[i].cmd == cmd && s_seen[i].raw_addr == raw_addr && strcmp(s_seen[i].tag, tag) == 0) {
+            return;
+        }
+    }
+
+    if (g_pc_verbose == 0 || s_pc_emu64_zero_diag.detail_logs >= 2048u) {
+        return;
+    }
+
+    if (s_seen_count >= ARRAY_COUNT(s_seen)) {
+        return;
+    }
+
+    s_seen[s_seen_count].tag = tag;
+    s_seen[s_seen_count].cmd = cmd;
+    s_seen[s_seen_count].raw_addr = raw_addr;
+    s_seen_count++;
+
+#if PC_EMU64_HAVE_DLADDR
+    {
+        Dl_info info = {};
+        if (dladdr(cmd, &info) != 0 && info.dli_sname != nullptr && info.dli_saddr != nullptr) {
+            symbol_name = info.dli_sname;
+            symbol_delta = (uintptr_t)cmd - (uintptr_t)info.dli_saddr;
+        }
+    }
+#endif
+
+    OSReport("[PC][emu64][zero] %s cmd=%p raw=%08x w0=%08x w1=%08x stack=%d sym=%s+0x%lx\n", tag, cmd, raw_addr,
+             w0, w1, stack_level, symbol_name, (unsigned long)symbol_delta);
+    s_pc_emu64_zero_diag.detail_logs++;
+}
+
+static void pc_emu64_zero_diag_report(u32 cmds_processed, u32 triangles) {
+    if (g_pc_verbose == 0) {
+        return;
+    }
+
+    if (s_pc_emu64_zero_diag.dl_addr0_skips == 0 && s_pc_emu64_zero_diag.vtx_addr0 == 0 &&
+        s_pc_emu64_zero_diag.vtx_seg2k0_null == 0 && s_pc_emu64_zero_diag.mtx_addr0 == 0 &&
+        s_pc_emu64_zero_diag.mtx_seg2k0_null == 0 && s_pc_emu64_zero_diag.setimg_addr0 == 0 &&
+        s_pc_emu64_zero_diag.setimg_seg2k0_null == 0 && s_pc_emu64_zero_diag.tlut_addr0 == 0) {
+        return;
+    }
+
+    OSReport("[PC][emu64][taskdiag] task=%u cmds=%u tris=%u dl0=%u vtx0=%u vtxnull=%u mtx0=%u mtxnull=%u "
+             "setimg0=%u setimgnull=%u tlut0=%u\n",
+             s_pc_emu64_zero_diag.task_index, cmds_processed, triangles, s_pc_emu64_zero_diag.dl_addr0_skips,
+             s_pc_emu64_zero_diag.vtx_addr0, s_pc_emu64_zero_diag.vtx_seg2k0_null, s_pc_emu64_zero_diag.mtx_addr0,
+             s_pc_emu64_zero_diag.mtx_seg2k0_null, s_pc_emu64_zero_diag.setimg_addr0,
+             s_pc_emu64_zero_diag.setimg_seg2k0_null, s_pc_emu64_zero_diag.tlut_addr0);
+}
 #endif
 
 // this pragma may be unnecessary
@@ -3458,6 +3556,10 @@ void emu64::dl_G_DL(void) {
     if (gfx->dma.addr == 0) {
         static int null_dl_count = 0;
 
+        s_pc_emu64_zero_diag.dl_addr0_skips++;
+        pc_emu64_zero_operand_log("G_DL", this->gfx_p, gfx->dma.addr, gfx->words.w0, gfx->words.w1,
+                                  this->DL_stack_level);
+
         if (g_pc_verbose != 0 && null_dl_count < 8) {
             uintptr_t parent = 0;
             uintptr_t parent_cmd_ptr = 0;
@@ -3713,7 +3815,17 @@ void emu64::dl_G_SETTILE_DOLPHIN() {
     this->settilesize_dolphin_cmds[tile].isDolphin = 1;
 
     /* Set texture info for use in GC texture object initialization */
-    this->texture_info[tile].img_addr = (void*)this->seg2k0(this->now_setimg.setimg2.imgaddr);
+    {
+        u32 img_addr_raw = this->now_setimg.setimg2.imgaddr;
+        this->texture_info[tile].img_addr = (void*)this->seg2k0(img_addr_raw);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        if (this->texture_info[tile].img_addr == nullptr) {
+            s_pc_emu64_zero_diag.setimg_seg2k0_null++;
+            pc_emu64_zero_operand_log("G_SETTILE_DOLPHIN", this->gfx_p, img_addr_raw, this->gfx.words.w0,
+                                      this->gfx.words.w1, this->DL_stack_level);
+        }
+#endif
+    }
     this->texture_info[tile].format = this->now_setimg.setimg2.fmt;
     this->texture_info[tile].size = this->now_setimg.setimg2.siz;
     this->texture_info[tile].width = EXPAND_WIDTH(this->now_setimg.setimg2.wd);
@@ -3920,6 +4032,13 @@ void emu64::dl_G_LOADTLUT() {
             tlut_addr = (void*)this->seg2k0(loadtlut_dol->tlut_addr);
 #if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
             if (loadtlut_dol->tlut_addr == 0) {
+                s_pc_emu64_zero_diag.tlut_addr0++;
+                pc_emu64_zero_operand_log("G_LOADTLUT_TYPE2", this->gfx_p, loadtlut_dol->tlut_addr,
+                                          this->gfx.words.w0, this->gfx.words.w1, this->DL_stack_level);
+            }
+#endif
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+            if (loadtlut_dol->tlut_addr == 0) {
                 tlut_addr = nullptr;
             }
 #endif
@@ -4006,6 +4125,13 @@ void emu64::dl_G_LOADTLUT() {
             void* tlut;
             uintptr_t addr = this->seg2k0(this->now_setimg.setimg2.imgaddr);
             u32 tlut_name = (settile_p->tmem / 16) & 0xF;
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+            if (this->now_setimg.setimg2.imgaddr == 0) {
+                s_pc_emu64_zero_diag.tlut_addr0++;
+                pc_emu64_zero_operand_log("G_LOADTLUT_TYPE1", this->gfx_p, this->now_setimg.setimg2.imgaddr,
+                                          this->gfx.words.w0, this->gfx.words.w1, this->DL_stack_level);
+            }
+#endif
 #if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
             pc_tlut_trace("type1-resolve", this->gfx_p, this->now_setimg.setimg2.imgaddr, (void*)addr, tlut_name,
                           count);
@@ -4420,6 +4546,14 @@ void emu64::dl_G_SETTIMG() {
 #endif
 
     this->now_setimg.setimg2 = *setimg2;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    if (setimg2->imgaddr == 0) {
+        s_pc_emu64_zero_diag.setimg_addr0++;
+        pc_emu64_zero_operand_log("G_SETTIMG", this->gfx_p, setimg2->imgaddr, this->gfx.words.w0,
+                                  this->gfx.words.w1, this->DL_stack_level);
+    }
+#endif
 }
 
 void emu64::dl_G_SETENVCOLOR() {
@@ -4612,11 +4746,24 @@ void emu64::dl_G_MTX() {
         EMU64_TIMED_SEGMENT_BEGIN();
 
         Gmtx* mtx_gfx = (Gmtx*)this->gfx_p;
+        u32 mtx_addr_raw = mtx_gfx->addr;
         Mtx_t* mtx =
-            (Mtx_t*)this->seg2k0(mtx_gfx->addr); /* Matrix is in N64 s16.16 format. (First 8 elements are s16 integer
-                                                    components, second 8 elements are s16 fractional components) */
+            (Mtx_t*)this->seg2k0(mtx_addr_raw); /* Matrix is in N64 s16.16 format. (First 8 elements are s16 integer
+                                                     components, second 8 elements are s16 fractional components) */
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        if (mtx_addr_raw == 0) {
+            s_pc_emu64_zero_diag.mtx_addr0++;
+            pc_emu64_zero_operand_log("G_MTX", this->gfx_p, mtx_addr_raw, this->gfx.words.w0, this->gfx.words.w1,
+                                      this->DL_stack_level);
+        }
+#endif
 #ifdef TARGET_PC
         if (mtx == NULL) {
+#if defined(PC_EXPERIMENTAL_64BIT)
+            s_pc_emu64_zero_diag.mtx_seg2k0_null++;
+            pc_emu64_zero_operand_log("G_MTX_NULL", this->gfx_p, mtx_addr_raw, this->gfx.words.w0,
+                                      this->gfx.words.w1, this->DL_stack_level);
+#endif
             EMU64_TIMED_SEGMENT_END(matrix_time);
             return;
         }
@@ -4758,9 +4905,22 @@ void emu64::dl_G_VTX() {
     }
 
     if (this->disable_polygons == false) {
-        Vtx* vtx_p = (Vtx*)this->seg2k0(this->gfx.dma.addr);
+        u32 vtx_addr_raw = this->gfx.dma.addr;
+        Vtx* vtx_p = (Vtx*)this->seg2k0(vtx_addr_raw);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        if (vtx_addr_raw == 0) {
+            s_pc_emu64_zero_diag.vtx_addr0++;
+            pc_emu64_zero_operand_log("G_VTX", this->gfx_p, vtx_addr_raw, this->gfx.words.w0, this->gfx.words.w1,
+                                      this->DL_stack_level);
+        }
+#endif
 #ifdef TARGET_PC
         if (vtx_p == NULL) {
+#if defined(PC_EXPERIMENTAL_64BIT)
+            s_pc_emu64_zero_diag.vtx_seg2k0_null++;
+            pc_emu64_zero_operand_log("G_VTX_NULL", this->gfx_p, vtx_addr_raw, this->gfx.words.w0,
+                                      this->gfx.words.w1, this->DL_stack_level);
+#endif
             EMU64_TIMED_SEGMENT_END(spvertex_time);
             return;
         }
@@ -5895,6 +6055,10 @@ u32 emu64::emu64_taskstart_r(Gfx* dl_p) {
     OSInitFastCast();
     this->end_dl = false;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_emu64_zero_diag_reset();
+#endif
+
 #ifdef TARGET_PC
     pc_crash_set_jmpbuf(&pc_dl_crash_jmpbuf);
     volatile int pc_dl_recovery_point = 0; /* 0=normal, 1=from crash */
@@ -6036,6 +6200,10 @@ u32 emu64::emu64_taskstart_r(Gfx* dl_p) {
             task_diag++;
         }
     }
+#endif
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_emu64_zero_diag_report(this->cmds_processed, this->triangles);
 #endif
 
     return this->err_count;

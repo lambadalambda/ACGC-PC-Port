@@ -123,6 +123,7 @@ extern u8 ef_koke_suiteki01_1_int_i4[];
 extern u8 ef_koke_suiteki01_2_int_i4[];
 extern u8 ef_koke_suiteki01_3_int_i4[];
 extern Gfx ef_koke_suiteki01_00_modelT[];
+extern void pc_patch_ef_koke_suiteki01_00_models(void);
 
 static void eMizutama_dw(eEC_Effect_c* effect, GAME* game) {
     static u8* mizutama_tex_tbl[] = {
@@ -130,6 +131,8 @@ static void eMizutama_dw(eEC_Effect_c* effect, GAME* game) {
     };
 
     s16 idx = CLAMP(effect->effect_specific[0] >> 1, 0, 3);
+
+    pc_patch_ef_koke_suiteki01_00_models();
 
     effect->scale.x = eEC_CLIP->calc_adjust_proc(effect->timer, 0, 40, 0.004f, 0.008f);
     effect->scale.y = effect->scale.z = effect->scale.x;

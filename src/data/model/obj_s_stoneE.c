@@ -20,3 +20,20 @@ Gfx obj_s_stoneE_gfx_model[] = {
     gsSPNTriangles_5b(8, 9, 12, 9, 10, 12, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_stoneE_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_stoneE_gfx_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_stoneE_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_stoneE_models(void) {
+}
+#endif
