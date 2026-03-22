@@ -27,8 +27,8 @@ check_absent() {
     fi
 }
 
-check_contains "src/static/jaudio_NES/internal/heapctrl.c" '#define JAUDIO_ARQ_PTR\(ptr\) PC_RUNTIME_U32_PTR\(ptr\)' 'heapctrl pointer helper'
-check_contains "src/static/jaudio_NES/internal/dvdthread.c" '#define JAUDIO_ARQ_PTR\(ptr\) PC_RUNTIME_U32_PTR\(ptr\)' 'dvdthread pointer helper'
+check_contains "src/static/jaudio_NES/internal/heapctrl.c" '#define JAUDIO_ARQ_PTR\(ptr\) pc_aram_host_addr_encode\(ptr\)' 'heapctrl pointer helper'
+check_contains "src/static/jaudio_NES/internal/dvdthread.c" '#define JAUDIO_ARQ_PTR\(ptr\) pc_aram_host_addr_encode\(ptr\)' 'dvdthread pointer helper'
 
 check_absent "src/static/jaudio_NES/internal/heapctrl.c" '\(u32\)&msgQueue' 'heapctrl message queue cast'
 check_absent "src/static/jaudio_NES/internal/heapctrl.c" '\(u32\)dmabuffer' 'heapctrl dma buffer cast'

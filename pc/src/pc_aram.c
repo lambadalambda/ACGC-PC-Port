@@ -83,6 +83,17 @@ static u32 pc_aram_ptr_seed(uintptr_t value) {
     x ^= (x >> 9);
     return (u32)x & PC_ARAM_PTR_KEY_MASK;
 }
+
+static int pc_aram_requires_tagged_host_ptrs(void) {
+    uintptr_t aram_base_bits;
+
+    if (aram_base == NULL) {
+        return 0;
+    }
+
+    aram_base_bits = (uintptr_t)aram_base;
+    return (aram_base_bits & ~(uintptr_t)0xFFFFFFFFu) != 0;
+}
 #endif
 
 u32 pc_aram_host_addr_encode(const void* ptr) {
@@ -93,7 +104,7 @@ u32 pc_aram_host_addr_encode(const void* ptr) {
         return 0;
     }
 
-    if ((value & ~(uintptr_t)0xFFFFFFFFu) == 0) {
+    if ((value & ~(uintptr_t)0xFFFFFFFFu) == 0 && !pc_aram_requires_tagged_host_ptrs()) {
         return (u32)value;
     }
 
@@ -174,7 +185,25 @@ void ARStartDMA(u32 type, u32 mram_addr, u32 aram_addr, u32 length) {
     const u32 orig_aram_addr = aram_addr;
 
     if (!aram_base) return;
+#if defined(PC_EXPERIMENTAL_64BIT)
+    if (mram_addr == 0) {
+        mram_ptr = NULL;
+    } else if ((mram_addr & ~PC_ARAM_PTR_KEY_MASK) == PC_ARAM_PTR_KEY_TAG) {
+        uintptr_t mapped_ptr;
+
+        if (!pc_aram_ptr_map_find(mram_addr, &mapped_ptr)) {
+            abort();
+        }
+        mram_ptr = (void*)mapped_ptr;
+    } else {
+        if (pc_aram_requires_tagged_host_ptrs()) {
+            abort();
+        }
+        mram_ptr = (void*)(uintptr_t)mram_addr;
+    }
+#else
     mram_ptr = pc_aram_host_addr_decode(mram_addr);
+#endif
 
     /* some legacy code passes (aram_base + offset) instead of just the offset */
     if (aram_addr >= PC_ARAM_SIZE) {
@@ -252,10 +281,20 @@ void ARQPostRequest(void* req, u32 owner, u32 type, u32 prio,
     }
 
     if ((length > PC_ARAM_SIZE) ||
+        (type == 0 && dest > PC_ARAM_SIZE - (length <= PC_ARAM_SIZE ? length : 0)) ||
         (type == 1 && source > PC_ARAM_SIZE - (length <= PC_ARAM_SIZE ? length : 0))) {
-        fprintf(stderr,
-                "[PC/ARAM][arq] suspicious req=%p owner=%08x type=%u prio=%u src=%08x dst=%08x len=%08x cb=%p\n",
-                req, owner, type, prio, source, dest, length, callback);
+        static u32 s_arq_suspicious_log_count = 0;
+
+        if (s_arq_suspicious_log_count < 24u) {
+            void* caller = __builtin_return_address(0);
+            void* src_ptr = pc_aram_host_addr_decode(source);
+            void* dst_ptr = pc_aram_host_addr_decode(dest);
+
+            fprintf(stderr,
+                    "[PC/ARAM][arq] suspicious req=%p owner=%08x type=%u prio=%u src=%08x(%p) dst=%08x(%p) len=%08x cb=%p caller=%p\n",
+                    req, owner, type, prio, source, src_ptr, dest, dst_ptr, length, callback, caller);
+            s_arq_suspicious_log_count++;
+        }
     }
 
     if (type == 0) {
