@@ -772,8 +772,100 @@ static cKF_Joint_R_c cKF_je_r_pga_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_pga_1 = { 26, 15, cKF_je_r_pga_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_pga_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_pga_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x180);
+    head_pga_model[7].words.w1 = pc_gbi_ptr_encode(&pga_1_v[40]);
+    head_pga_model[14].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    head_pga_model[18].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_pga_model[21].words.w1 = pc_gbi_ptr_encode(&pga_1_v[70]);
+    head_pga_model[30].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    head_pga_model[32].words.w1 = pc_gbi_ptr_encode(&pga_1_v[82]);
+    head_pga_model[46].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_pga_model[48].words.w1 = pc_gbi_ptr_encode(&pga_1_v[112]);
+    mouth_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x380);
+    mouth_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[0]);
+    mouth_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x340);
+    mouth_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[5]);
+    mouth_pga_model[14].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    mouth_pga_model[17].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_pga_model[19].words.w1 = pc_gbi_ptr_encode(&pga_1_v[20]);
+    mouth_pga_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    Rarm2_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[192]);
+    Rarm2_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    Rarm2_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm2_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[197]);
+    Rarm2_pga_model[17].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm1_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm1_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[220]);
+    Rarm1_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm1_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm1_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[228]);
+    Rarm1_pga_model[15].words.w1 = pc_gbi_ptr_encode(&pga_1_v[241]);
+    Larm2_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[119]);
+    Larm2_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Larm2_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Larm2_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[124]);
+    Larm2_pga_model[17].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Larm1_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[147]);
+    Larm1_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm1_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Larm1_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[155]);
+    Larm1_pga_model[15].words.w1 = pc_gbi_ptr_encode(&pga_1_v[168]);
+    chest_pga_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    chest_pga_model[7].words.w1 = pc_gbi_ptr_encode(&pga_1_v[265]);
+    tail1_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    tail1_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[408]);
+    tail1_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    tail1_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    tail1_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[413]);
+    Rfoot3_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rfoot3_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[344]);
+    Rfoot3_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Rfoot3_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Rfoot3_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[347]);
+    Rfoot2_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[365]);
+    Rfoot2_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rfoot2_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Rfoot2_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[369]);
+    Rfoot1_pga_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Rfoot1_pga_model[7].words.w1 = pc_gbi_ptr_encode(&pga_1_v[383]);
+    Lfoot3_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot3_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[297]);
+    Lfoot3_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Lfoot3_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Lfoot3_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[300]);
+    Lfoot2_pga_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_pga_model[3].words.w1 = pc_gbi_ptr_encode(&pga_1_v[318]);
+    Lfoot2_pga_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_pga_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Lfoot2_pga_model[11].words.w1 = pc_gbi_ptr_encode(&pga_1_v[322]);
+    Lfoot1_pga_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Lfoot1_pga_model[7].words.w1 = pc_gbi_ptr_encode(&pga_1_v[336]);
+    base_pga_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    base_pga_model[7].words.w1 = pc_gbi_ptr_encode(&pga_1_v[391]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_pga_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_pga_1_c(void) {
     pc_load_asset("assets/npc/mdl/pga_1_v.bin", pga_1_v, 0x1A20, 0x62EAE0, 0, 2);
+    pc_patch_pga_1_models();
 }
 #endif

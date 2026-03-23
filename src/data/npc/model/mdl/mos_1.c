@@ -560,8 +560,81 @@ static cKF_Joint_R_c cKF_je_r_mos_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_mos_1 = { 26, 9, cKF_je_r_mos_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_mos_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    head_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[34]);
+    head_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    head_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_mos_model[11].words.w1 = pc_gbi_ptr_encode(&mos_1_v[44]);
+    head_mos_model[15].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_mos_model[17].words.w1 = pc_gbi_ptr_encode(&mos_1_v[59]);
+    head_mos_model[21].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_mos_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    head_mos_model[27].words.w1 = pc_gbi_ptr_encode(&mos_1_v[79]);
+    head_mos_model[32].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    head_mos_model[36].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    head_mos_model[38].words.w1 = pc_gbi_ptr_encode(&mos_1_v[110]);
+    head_mos_model[42].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_mos_model[50].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_mos_model[52].words.w1 = pc_gbi_ptr_encode(&mos_1_v[135]);
+    mouth_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    mouth_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[0]);
+    mouth_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    mouth_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_mos_model[11].words.w1 = pc_gbi_ptr_encode(&mos_1_v[5]);
+    mouth_mos_model[16].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_mos_model[23].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_mos_model[25].words.w1 = pc_gbi_ptr_encode(&mos_1_v[28]);
+    hand_mos_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    hand_mos_model[7].words.w1 = pc_gbi_ptr_encode(&mos_1_v[182]);
+    hand_mos_model[16].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm2_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rarm2_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[207]);
+    Rarm2_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rarm2_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Rarm2_mos_model[11].words.w1 = pc_gbi_ptr_encode(&mos_1_v[212]);
+    Rarm1_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Rarm1_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[228]);
+    Rarm1_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rarm1_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Rarm1_mos_model[11].words.w1 = pc_gbi_ptr_encode(&mos_1_v[232]);
+    Larm2_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Larm2_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[146]);
+    Larm2_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Larm2_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Larm2_mos_model[11].words.w1 = pc_gbi_ptr_encode(&mos_1_v[151]);
+    Larm1_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Larm1_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[167]);
+    Larm1_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Larm1_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Larm1_mos_model[11].words.w1 = pc_gbi_ptr_encode(&mos_1_v[171]);
+    chest_mos_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_mos_model[3].words.w1 = pc_gbi_ptr_encode(&mos_1_v[243]);
+    chest_mos_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    chest_mos_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    chest_mos_model[12].words.w1 = pc_gbi_ptr_encode(&mos_1_v[252]);
+    chest_mos_model[17].words.w1 = pc_gbi_ptr_encode(&mos_1_v[274]);
+    chest_mos_model[20].words.w1 = pc_gbi_ptr_encode(&mos_1_v[280]);
+    base_mos_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    base_mos_model[8].words.w1 = pc_gbi_ptr_encode(&mos_1_v[298]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_mos_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_mos_1_c(void) {
     pc_load_asset("assets/npc/mdl/mos_1_v.bin", mos_1_v, 0x1420, 0x57ACE0, 0, 2);
+    pc_patch_mos_1_models();
 }
 #endif

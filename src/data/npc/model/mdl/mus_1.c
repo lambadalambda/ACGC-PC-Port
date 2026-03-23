@@ -665,8 +665,100 @@ static cKF_Joint_R_c cKF_je_r_mus_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_mus_1 = { 26, 14, cKF_je_r_mus_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_mus_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_mus_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_mus_model[7].words.w1 = pc_gbi_ptr_encode(&mus_1_v[8]);
+    head_mus_model[12].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    head_mus_model[14].words.w1 = pc_gbi_ptr_encode(&mus_1_v[27]);
+    head_mus_model[22].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_mus_model[24].words.w1 = pc_gbi_ptr_encode(&mus_1_v[47]);
+    head_mus_model[31].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_mus_model[33].words.w1 = pc_gbi_ptr_encode(&mus_1_v[66]);
+    head_mus_model[39].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    head_mus_model[41].words.w1 = pc_gbi_ptr_encode(&mus_1_v[80]);
+    head_mus_model[49].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_mus_model[51].words.w1 = pc_gbi_ptr_encode(&mus_1_v[106]);
+    head_mus_model[54].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    mouth_mus_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_mus_model[7].words.w1 = pc_gbi_ptr_encode(&mus_1_v[0]);
+    mouth_mus_model[9].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    Rarm2_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[154]);
+    Rarm2_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Rarm2_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[159]);
+    Rarm1_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Rarm1_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[175]);
+    Rarm1_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm1_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Rarm1_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[179]);
+    Larm2_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[118]);
+    Larm2_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Larm2_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[123]);
+    Larm1_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[139]);
+    Larm1_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Larm1_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[143]);
+    chest_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[190]);
+    chest_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    chest_mus_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    chest_mus_model[12].words.w1 = pc_gbi_ptr_encode(&mus_1_v[197]);
+    chest_mus_model[17].words.w1 = pc_gbi_ptr_encode(&mus_1_v[217]);
+    tail1_mus_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    tail1_mus_model[7].words.w1 = pc_gbi_ptr_encode(&mus_1_v[256]);
+    tail2_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail2_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[226]);
+    tail2_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    tail2_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    tail2_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[232]);
+    Rfoot2_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[318]);
+    Rfoot2_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Rfoot2_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[324]);
+    Rfoot1_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Rfoot1_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[342]);
+    Rfoot1_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot1_mus_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Rfoot1_mus_model[12].words.w1 = pc_gbi_ptr_encode(&mus_1_v[346]);
+    Rfoot1_mus_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Rfoot1_mus_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot2_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[266]);
+    Lfoot2_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_mus_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Lfoot2_mus_model[11].words.w1 = pc_gbi_ptr_encode(&mus_1_v[272]);
+    Lfoot1_mus_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Lfoot1_mus_model[3].words.w1 = pc_gbi_ptr_encode(&mus_1_v[290]);
+    Lfoot1_mus_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_mus_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot1_mus_model[12].words.w1 = pc_gbi_ptr_encode(&mus_1_v[294]);
+    Lfoot1_mus_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Lfoot1_mus_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_mus_model[3].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_mus_model[8].words.w1 = pc_gbi_ptr_encode(&mus_1_v[370]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_mus_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_mus_1_c(void) {
     pc_load_asset("assets/npc/mdl/mus_1_v.bin", mus_1_v, 0x1800, 0x586CE8, 0, 2);
+    pc_patch_mus_1_models();
 }
 #endif

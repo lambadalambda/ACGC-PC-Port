@@ -637,8 +637,82 @@ static cKF_Joint_R_c cKF_je_r_wip_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_wip_1 = { 26, 11, cKF_je_r_wip_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_wip_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_wip_model[3].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_wip_model[7].words.w1 = pc_gbi_ptr_encode(&wip_1_v[0]);
+    head_wip_model[13].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_wip_model[15].words.w1 = pc_gbi_ptr_encode(&wip_1_v[15]);
+    head_wip_model[24].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_wip_model[26].words.w1 = pc_gbi_ptr_encode(&wip_1_v[42]);
+    head_wip_model[30].words.w1 = SEGMENT_ADDR(0xB, 0x180);
+    head_wip_model[32].words.w1 = pc_gbi_ptr_encode(&wip_1_v[55]);
+    head_wip_model[40].words.w1 = pc_gbi_ptr_encode(&wip_1_v[86]);
+    head_wip_model[48].words.w1 = pc_gbi_ptr_encode(&wip_1_v[118]);
+    head_wip_model[51].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    head_wip_model[58].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    head_wip_model[60].words.w1 = pc_gbi_ptr_encode(&wip_1_v[148]);
+    Rarm2_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm2_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[202]);
+    Rarm2_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm2_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm2_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[206]);
+    Rarm1_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rarm1_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[222]);
+    Rarm1_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm1_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm1_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[225]);
+    Larm2_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm2_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[168]);
+    Larm2_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm2_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm2_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[172]);
+    Larm1_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Larm1_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[188]);
+    Larm1_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm1_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm1_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[191]);
+    chest_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[236]);
+    chest_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    chest_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    chest_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[244]);
+    chest_wip_model[17].words.w1 = pc_gbi_ptr_encode(&wip_1_v[268]);
+    chest_wip_model[23].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    chest_wip_model[26].words.w1 = pc_gbi_ptr_encode(&wip_1_v[283]);
+    Rfoot2_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[327]);
+    Rfoot2_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot2_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[331]);
+    Rfoot1_wip_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot1_wip_model[7].words.w1 = pc_gbi_ptr_encode(&wip_1_v[345]);
+    Lfoot2_wip_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_wip_model[3].words.w1 = pc_gbi_ptr_encode(&wip_1_v[302]);
+    Lfoot2_wip_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_wip_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot2_wip_model[11].words.w1 = pc_gbi_ptr_encode(&wip_1_v[306]);
+    Lfoot1_wip_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot1_wip_model[7].words.w1 = pc_gbi_ptr_encode(&wip_1_v[320]);
+    base_wip_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    base_wip_model[7].words.w1 = pc_gbi_ptr_encode(&wip_1_v[352]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_wip_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_wip_1_c(void) {
     pc_load_asset("assets/npc/mdl/wip_1_v.bin", wip_1_v, 0x1700, 0x65C020, 0, 2);
+    pc_patch_wip_1_models();
 }
 #endif

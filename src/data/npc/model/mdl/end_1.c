@@ -720,95 +720,82 @@ static void pc_patch_end_1_models(void) {
         return;
     }
 
-    head_end_model[3].words.w1 = SEGMENT_ADDR(ANIME_1_TXT_SEG, 0x0);
+    head_end_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
     head_end_model[7].words.w1 = pc_gbi_ptr_encode(&end_1_v[0]);
-    head_end_model[14].words.w1 = SEGMENT_ADDR(ANIME_2_TXT_SEG, 0x0);
-    head_end_model[19].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    head_end_model[14].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_end_model[19].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     head_end_model[21].words.w1 = pc_gbi_ptr_encode(&end_1_v[27]);
     head_end_model[27].words.w1 = pc_gbi_ptr_encode(&end_1_v[58]);
     head_end_model[32].words.w1 = pc_gbi_ptr_encode(&end_1_v[89]);
     head_end_model[38].words.w1 = pc_gbi_ptr_encode(&end_1_v[121]);
     head_end_model[45].words.w1 = pc_gbi_ptr_encode(&end_1_v[153]);
-
-    Rarm2_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x2C0);
+    Rarm2_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
     Rarm2_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[206]);
-    Rarm2_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x300);
-    Rarm2_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x40);
+    Rarm2_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    Rarm2_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x40);
     Rarm2_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[210]);
-
-    Rarm1_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x200);
+    Rarm1_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
     Rarm1_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[227]);
-    Rarm1_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x2C0);
-    Rarm1_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    Rarm1_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm1_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     Rarm1_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[230]);
-
-    Larm2_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x240);
+    Larm2_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x240);
     Larm2_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[171]);
-    Larm2_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x280);
-    Larm2_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x40);
+    Larm2_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Larm2_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x40);
     Larm2_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[175]);
-
-    Larm1_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x200);
+    Larm1_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
     Larm1_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[192]);
-    Larm1_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x240);
-    Larm1_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    Larm1_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm1_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     Larm1_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[195]);
-
-    chest_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x0);
+    chest_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
     chest_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[241]);
-    chest_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x200);
-    chest_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    chest_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    chest_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     chest_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[246]);
-
-    tail1_end_model[3].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    tail1_end_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     tail1_end_model[7].words.w1 = pc_gbi_ptr_encode(&end_1_v[267]);
-
-    Rfoot3_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x140);
+    Rfoot3_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
     Rfoot3_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[332]);
-    Rfoot3_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x180);
-    Rfoot3_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x40);
+    Rfoot3_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Rfoot3_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x40);
     Rfoot3_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[335]);
-
-    Rfoot2_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x100);
+    Rfoot2_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x100);
     Rfoot2_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[348]);
-    Rfoot2_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x140);
-    Rfoot2_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x40);
+    Rfoot2_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rfoot2_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x40);
     Rfoot2_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[352]);
-
-    Rfoot1_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x0);
+    Rfoot1_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
     Rfoot1_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[362]);
-    Rfoot1_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x100);
-    Rfoot1_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    Rfoot1_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot1_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     Rfoot1_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[367]);
-
-    Lfoot3_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x80);
+    Lfoot3_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
     Lfoot3_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[276]);
-    Lfoot3_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0xC0);
-    Lfoot3_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    Lfoot3_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Lfoot3_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     Lfoot3_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[282]);
-    Lfoot3_end_model[13].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x40);
-
-    Lfoot2_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x40);
+    Lfoot3_end_model[13].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    Lfoot2_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
     Lfoot2_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[296]);
-    Lfoot2_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x80);
-    Lfoot2_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    Lfoot2_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     Lfoot2_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[300]);
-
-    Lfoot1_end_model[0].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x0);
+    Lfoot1_end_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
     Lfoot1_end_model[3].words.w1 = pc_gbi_ptr_encode(&end_1_v[314]);
-    Lfoot1_end_model[4].words.w1 = SEGMENT_ADDR(ANIME_6_TXT_SEG, 0x40);
-    Lfoot1_end_model[8].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    Lfoot1_end_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_end_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     Lfoot1_end_model[11].words.w1 = pc_gbi_ptr_encode(&end_1_v[319]);
-
-    base_end_model[3].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x80);
+    base_end_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
     base_end_model[8].words.w1 = pc_gbi_ptr_encode(&end_1_v[390]);
-    base_end_model[10].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x140);
-    base_end_model[14].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x180);
-    base_end_model[18].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x400);
-    base_end_model[23].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x440);
+    base_end_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    base_end_model[14].words.w1 = SEGMENT_ADDR(0xB, 0x180);
+    base_end_model[18].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    base_end_model[23].words.w1 = SEGMENT_ADDR(0xB, 0x440);
     base_end_model[28].words.w1 = pc_gbi_ptr_encode(&end_1_v[418]);
-    base_end_model[30].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x480);
-    base_end_model[37].words.w1 = SEGMENT_ADDR(ANIME_4_TXT_SEG, 0x0);
+    base_end_model[30].words.w1 = SEGMENT_ADDR(0xB, 0x480);
+    base_end_model[37].words.w1 = SEGMENT_ADDR(0xB, 0x0);
     base_end_model[39].words.w1 = pc_gbi_ptr_encode(&end_1_v[439]);
 
     s_patched = TRUE;

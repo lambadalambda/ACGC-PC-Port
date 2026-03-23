@@ -595,8 +595,67 @@ static cKF_Joint_R_c cKF_je_r_hem_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_hem_1 = { 26, 7, cKF_je_r_hem_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_hem_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_hem_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    head_hem_model[3].words.w1 = pc_gbi_ptr_encode(&hem_1_v[26]);
+    head_hem_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    head_hem_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_hem_model[12].words.w1 = pc_gbi_ptr_encode(&hem_1_v[35]);
+    head_hem_model[17].words.w1 = pc_gbi_ptr_encode(&hem_1_v[58]);
+    head_hem_model[22].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    head_hem_model[30].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    head_hem_model[33].words.w1 = pc_gbi_ptr_encode(&hem_1_v[78]);
+    head_hem_model[39].words.w1 = SEGMENT_ADDR(0xB, 0x340);
+    head_hem_model[42].words.w1 = pc_gbi_ptr_encode(&hem_1_v[92]);
+    feel_hem_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    feel_hem_model[7].words.w1 = pc_gbi_ptr_encode(&hem_1_v[117]);
+    feel_hem_model[11].words.w1 = SEGMENT_ADDR(0xB, 0x580);
+    mouth_hem_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    mouth_hem_model[3].words.w1 = pc_gbi_ptr_encode(&hem_1_v[0]);
+    mouth_hem_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    mouth_hem_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    mouth_hem_model[11].words.w1 = pc_gbi_ptr_encode(&hem_1_v[5]);
+    Rarm2_hem_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Rarm2_hem_model[3].words.w1 = pc_gbi_ptr_encode(&hem_1_v[133]);
+    Rarm2_hem_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rarm2_hem_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Rarm2_hem_model[11].words.w1 = pc_gbi_ptr_encode(&hem_1_v[138]);
+    Rarm1_hem_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    Rarm1_hem_model[7].words.w1 = pc_gbi_ptr_encode(&hem_1_v[154]);
+    chest_hem_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_hem_model[3].words.w1 = pc_gbi_ptr_encode(&hem_1_v[163]);
+    chest_hem_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    chest_hem_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    chest_hem_model[12].words.w1 = pc_gbi_ptr_encode(&hem_1_v[172]);
+    chest_hem_model[17].words.w1 = pc_gbi_ptr_encode(&hem_1_v[194]);
+    chest_hem_model[20].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    base_hem_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    base_hem_model[7].words.w1 = pc_gbi_ptr_encode(&hem_1_v[209]);
+    base_hem_model[18].words.w1 = pc_gbi_ptr_encode(&hem_1_v[241]);
+    base_hem_model[24].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    base_hem_model[27].words.w1 = pc_gbi_ptr_encode(&hem_1_v[253]);
+    base_hem_model[38].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    base_hem_model[40].words.w1 = pc_gbi_ptr_encode(&hem_1_v[280]);
+    base_hem_model[51].words.w1 = pc_gbi_ptr_encode(&hem_1_v[312]);
+    base_hem_model[56].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_hem_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_hem_1_c(void) {
     pc_load_asset("assets/npc/mdl/hem_1_v.bin", hem_1_v, 0x14D0, 0x52B8C0, 0, 2);
+    pc_patch_hem_1_models();
 }
 #endif

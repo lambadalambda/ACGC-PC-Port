@@ -408,8 +408,60 @@ static cKF_Joint_R_c cKF_je_r_gst_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_gst_1 = { 26, 5, cKF_je_r_gst_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_gst_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_gst_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    head_gst_model[5].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_gst_model[8].words.w1 = pc_gbi_ptr_encode(&gst_1_v[0]);
+    head_gst_model[9].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    head_gst_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_gst_model[12].words.w1 = pc_gbi_ptr_encode(&gst_1_v[13]);
+    head_gst_model[17].words.w1 = pc_gbi_ptr_encode(&gst_1_v[32]);
+    head_gst_model[21].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_gst_model[23].words.w1 = pc_gbi_ptr_encode(&gst_1_v[47]);
+    head_gst_model[29].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_gst_model[31].words.w1 = pc_gbi_ptr_encode(&gst_1_v[60]);
+    head_gst_model[38].words.w1 = pc_gbi_ptr_encode(&gst_1_v[91]);
+    head_gst_model[45].words.w1 = pc_gbi_ptr_encode(&gst_1_v[123]);
+    head_gst_model[50].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_gst_model[52].words.w1 = pc_gbi_ptr_encode(&gst_1_v[144]);
+    head_gst_model[59].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_gst_model[61].words.w1 = pc_gbi_ptr_encode(&gst_1_v[163]);
+    feel_gst_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    feel_gst_model[7].words.w1 = pc_gbi_ptr_encode(&gst_1_v[178]);
+    chest_gst_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_gst_model[5].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    chest_gst_model[8].words.w1 = pc_gbi_ptr_encode(&gst_1_v[182]);
+    chest_gst_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    chest_gst_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    chest_gst_model[12].words.w1 = pc_gbi_ptr_encode(&gst_1_v[192]);
+    chest_gst_model[17].words.w1 = pc_gbi_ptr_encode(&gst_1_v[214]);
+    tail1_gst_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    tail1_gst_model[5].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    tail1_gst_model[8].words.w1 = pc_gbi_ptr_encode(&gst_1_v[220]);
+    tail1_gst_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    tail1_gst_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    tail1_gst_model[12].words.w1 = pc_gbi_ptr_encode(&gst_1_v[228]);
+    tail1_gst_model[17].words.w1 = pc_gbi_ptr_encode(&gst_1_v[248]);
+    base_gst_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    base_gst_model[7].words.w1 = pc_gbi_ptr_encode(&gst_1_v[255]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_gst_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_gst_1_c(void) {
     pc_load_asset("assets/npc/mdl/gst_1_v.bin", gst_1_v, 0x1110, 0x4FC948, 0, 2);
+    pc_patch_gst_1_models();
 }
 #endif

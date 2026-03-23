@@ -661,8 +661,97 @@ static cKF_Joint_R_c cKF_je_r_fox_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_fox_1 = { 26, 14, cKF_je_r_fox_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_fox_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_fox_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_fox_model[7].words.w1 = pc_gbi_ptr_encode(&fox_1_v[22]);
+    head_fox_model[18].words.w1 = pc_gbi_ptr_encode(&fox_1_v[54]);
+    head_fox_model[23].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_fox_model[27].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_fox_model[29].words.w1 = pc_gbi_ptr_encode(&fox_1_v[83]);
+    head_fox_model[32].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    mouth_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x340);
+    mouth_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[0]);
+    mouth_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    mouth_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[7]);
+    Rarm2_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[137]);
+    Rarm2_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    Rarm2_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[141]);
+    Rarm1_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Rarm1_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[157]);
+    Rarm1_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm1_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Rarm1_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[160]);
+    Larm2_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[103]);
+    Larm2_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    Larm2_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[107]);
+    Larm1_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[123]);
+    Larm1_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Larm1_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[126]);
+    chest_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[171]);
+    chest_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    chest_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    chest_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[182]);
+    chest_fox_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    chest_fox_model[17].words.w1 = pc_gbi_ptr_encode(&fox_1_v[195]);
+    chest_fox_model[21].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    chest_fox_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    chest_fox_model[27].words.w1 = pc_gbi_ptr_encode(&fox_1_v[215]);
+    tail1_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    tail1_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[264]);
+    tail1_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail1_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    tail1_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[267]);
+    tail2_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail2_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[227]);
+    tail2_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    tail2_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    tail2_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[231]);
+    tail2_fox_model[16].words.w1 = pc_gbi_ptr_encode(&fox_1_v[251]);
+    Rfoot2_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[303]);
+    Rfoot2_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    Rfoot2_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[307]);
+    Rfoot1_fox_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Rfoot1_fox_model[7].words.w1 = pc_gbi_ptr_encode(&fox_1_v[321]);
+    Lfoot2_fox_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_fox_model[3].words.w1 = pc_gbi_ptr_encode(&fox_1_v[278]);
+    Lfoot2_fox_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_fox_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    Lfoot2_fox_model[11].words.w1 = pc_gbi_ptr_encode(&fox_1_v[282]);
+    Lfoot1_fox_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Lfoot1_fox_model[7].words.w1 = pc_gbi_ptr_encode(&fox_1_v[296]);
+    base_fox_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    base_fox_model[7].words.w1 = pc_gbi_ptr_encode(&fox_1_v[328]);
+    base_fox_model[11].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    base_fox_model[18].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    base_fox_model[20].words.w1 = pc_gbi_ptr_encode(&fox_1_v[354]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_fox_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_fox_1_c(void) {
     pc_load_asset("assets/npc/mdl/fox_1_v.bin", fox_1_v, 0x1700, 0x465E28, 0, 2);
+    pc_patch_fox_1_models();
 }
 #endif

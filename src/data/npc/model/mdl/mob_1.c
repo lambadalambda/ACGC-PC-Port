@@ -545,8 +545,80 @@ static cKF_Joint_R_c cKF_je_r_mob_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_mob_1 = { 26, 9, cKF_je_r_mob_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_mob_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    head_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[32]);
+    head_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    head_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_mob_model[12].words.w1 = pc_gbi_ptr_encode(&mob_1_v[42]);
+    head_mob_model[16].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_mob_model[19].words.w1 = pc_gbi_ptr_encode(&mob_1_v[57]);
+    head_mob_model[23].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_mob_model[27].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    head_mob_model[29].words.w1 = pc_gbi_ptr_encode(&mob_1_v[77]);
+    head_mob_model[34].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    head_mob_model[38].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    head_mob_model[40].words.w1 = pc_gbi_ptr_encode(&mob_1_v[108]);
+    head_mob_model[44].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_mob_model[48].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    mouth_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    mouth_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[0]);
+    mouth_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    mouth_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_mob_model[11].words.w1 = pc_gbi_ptr_encode(&mob_1_v[5]);
+    mouth_mob_model[16].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_mob_model[21].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_mob_model[23].words.w1 = pc_gbi_ptr_encode(&mob_1_v[26]);
+    hand_mob_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    hand_mob_model[7].words.w1 = pc_gbi_ptr_encode(&mob_1_v[175]);
+    hand_mob_model[16].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm2_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rarm2_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[200]);
+    Rarm2_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rarm2_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Rarm2_mob_model[11].words.w1 = pc_gbi_ptr_encode(&mob_1_v[205]);
+    Rarm1_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Rarm1_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[221]);
+    Rarm1_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rarm1_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Rarm1_mob_model[11].words.w1 = pc_gbi_ptr_encode(&mob_1_v[225]);
+    Larm2_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Larm2_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[139]);
+    Larm2_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Larm2_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Larm2_mob_model[11].words.w1 = pc_gbi_ptr_encode(&mob_1_v[144]);
+    Larm1_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Larm1_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[160]);
+    Larm1_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Larm1_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Larm1_mob_model[11].words.w1 = pc_gbi_ptr_encode(&mob_1_v[164]);
+    chest_mob_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_mob_model[3].words.w1 = pc_gbi_ptr_encode(&mob_1_v[236]);
+    chest_mob_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    chest_mob_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    chest_mob_model[11].words.w1 = pc_gbi_ptr_encode(&mob_1_v[245]);
+    chest_mob_model[16].words.w1 = pc_gbi_ptr_encode(&mob_1_v[267]);
+    chest_mob_model[19].words.w1 = pc_gbi_ptr_encode(&mob_1_v[273]);
+    base_mob_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    base_mob_model[7].words.w1 = pc_gbi_ptr_encode(&mob_1_v[291]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_mob_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_mob_1_c(void) {
     pc_load_asset("assets/npc/mdl/mob_1_v.bin", mob_1_v, 0x13B0, 0x646D60, 0, 2);
+    pc_patch_mob_1_models();
 }
 #endif

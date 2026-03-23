@@ -560,8 +560,81 @@ static cKF_Joint_R_c cKF_je_r_mol_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_mol_1 = { 26, 9, cKF_je_r_mol_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_mol_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    head_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[34]);
+    head_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    head_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_mol_model[11].words.w1 = pc_gbi_ptr_encode(&mol_1_v[44]);
+    head_mol_model[15].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_mol_model[17].words.w1 = pc_gbi_ptr_encode(&mol_1_v[59]);
+    head_mol_model[21].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_mol_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    head_mol_model[27].words.w1 = pc_gbi_ptr_encode(&mol_1_v[79]);
+    head_mol_model[32].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    head_mol_model[36].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    head_mol_model[38].words.w1 = pc_gbi_ptr_encode(&mol_1_v[110]);
+    head_mol_model[42].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_mol_model[50].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_mol_model[52].words.w1 = pc_gbi_ptr_encode(&mol_1_v[135]);
+    mouth_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    mouth_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[0]);
+    mouth_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    mouth_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_mol_model[11].words.w1 = pc_gbi_ptr_encode(&mol_1_v[5]);
+    mouth_mol_model[16].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_mol_model[23].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_mol_model[25].words.w1 = pc_gbi_ptr_encode(&mol_1_v[28]);
+    hand_mol_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    hand_mol_model[7].words.w1 = pc_gbi_ptr_encode(&mol_1_v[182]);
+    hand_mol_model[16].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm2_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rarm2_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[207]);
+    Rarm2_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rarm2_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Rarm2_mol_model[11].words.w1 = pc_gbi_ptr_encode(&mol_1_v[212]);
+    Rarm1_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Rarm1_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[228]);
+    Rarm1_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rarm1_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Rarm1_mol_model[11].words.w1 = pc_gbi_ptr_encode(&mol_1_v[232]);
+    Larm2_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Larm2_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[146]);
+    Larm2_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Larm2_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Larm2_mol_model[11].words.w1 = pc_gbi_ptr_encode(&mol_1_v[151]);
+    Larm1_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Larm1_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[167]);
+    Larm1_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Larm1_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    Larm1_mol_model[11].words.w1 = pc_gbi_ptr_encode(&mol_1_v[171]);
+    chest_mol_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_mol_model[3].words.w1 = pc_gbi_ptr_encode(&mol_1_v[243]);
+    chest_mol_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    chest_mol_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    chest_mol_model[12].words.w1 = pc_gbi_ptr_encode(&mol_1_v[252]);
+    chest_mol_model[17].words.w1 = pc_gbi_ptr_encode(&mol_1_v[274]);
+    chest_mol_model[20].words.w1 = pc_gbi_ptr_encode(&mol_1_v[280]);
+    base_mol_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    base_mol_model[8].words.w1 = pc_gbi_ptr_encode(&mol_1_v[298]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_mol_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_mol_1_c(void) {
     pc_load_asset("assets/npc/mdl/mol_1_v.bin", mol_1_v, 0x1420, 0x57DDC0, 0, 2);
+    pc_patch_mol_1_models();
 }
 #endif

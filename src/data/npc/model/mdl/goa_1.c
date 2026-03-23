@@ -631,8 +631,95 @@ static cKF_Joint_R_c cKF_je_r_goa_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_goa_1 = { 26, 13, cKF_je_r_goa_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_goa_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_goa_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    head_goa_model[7].words.w1 = pc_gbi_ptr_encode(&goa_1_v[7]);
+    head_goa_model[17].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_goa_model[19].words.w1 = pc_gbi_ptr_encode(&goa_1_v[31]);
+    head_goa_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    head_goa_model[31].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_goa_model[33].words.w1 = pc_gbi_ptr_encode(&goa_1_v[56]);
+    head_goa_model[39].words.w1 = SEGMENT_ADDR(0xB, 0x340);
+    head_goa_model[45].words.w1 = pc_gbi_ptr_encode(&goa_1_v[82]);
+    head_goa_model[48].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    head_goa_model[55].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_goa_model[60].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    head_goa_model[62].words.w1 = pc_gbi_ptr_encode(&goa_1_v[113]);
+    mouth_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    mouth_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[0]);
+    mouth_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    mouth_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[4]);
+    Rarm2_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm2_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[162]);
+    Rarm2_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Rarm2_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[167]);
+    Rarm1_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Rarm1_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[183]);
+    Rarm1_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm1_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Rarm1_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[187]);
+    Larm2_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm2_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[126]);
+    Larm2_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Larm2_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[131]);
+    Larm1_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm1_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[147]);
+    Larm1_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Larm1_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[151]);
+    chest_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[198]);
+    chest_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    chest_goa_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    chest_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[205]);
+    chest_goa_model[16].words.w1 = pc_gbi_ptr_encode(&goa_1_v[225]);
+    tail1_goa_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    tail1_goa_model[7].words.w1 = pc_gbi_ptr_encode(&goa_1_v[235]);
+    Rfoot2_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[286]);
+    Rfoot2_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Rfoot2_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[291]);
+    Rfoot1_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Rfoot1_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[307]);
+    Rfoot1_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot1_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Rfoot1_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[313]);
+    Lfoot2_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[246]);
+    Lfoot2_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Lfoot2_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[251]);
+    Lfoot1_goa_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Lfoot1_goa_model[3].words.w1 = pc_gbi_ptr_encode(&goa_1_v[267]);
+    Lfoot1_goa_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_goa_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    Lfoot1_goa_model[11].words.w1 = pc_gbi_ptr_encode(&goa_1_v[273]);
+    base_goa_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    base_goa_model[7].words.w1 = pc_gbi_ptr_encode(&goa_1_v[326]);
+    base_goa_model[10].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_goa_model[17].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_goa_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_goa_1_c(void) {
     pc_load_asset("assets/npc/mdl/goa_1_v.bin", goa_1_v, 0x1640, 0x501570, 0, 2);
+    pc_patch_goa_1_models();
 }
 #endif

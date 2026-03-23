@@ -671,8 +671,95 @@ static cKF_Joint_R_c cKF_je_r_xsq_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_xsq_1 = { 26, 13, cKF_je_r_xsq_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_xsq_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_xsq_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_xsq_model[7].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[0]);
+    head_xsq_model[11].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    head_xsq_model[13].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[12]);
+    head_xsq_model[23].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_xsq_model[25].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[37]);
+    head_xsq_model[33].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_xsq_model[35].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[57]);
+    head_xsq_model[41].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    head_xsq_model[43].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[71]);
+    Rarm2_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[127]);
+    Rarm2_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm2_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[132]);
+    Rarm1_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Rarm1_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[148]);
+    Rarm1_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm1_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm1_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[152]);
+    Larm2_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[91]);
+    Larm2_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm2_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[96]);
+    Larm1_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[112]);
+    Larm1_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm1_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[116]);
+    chest_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[163]);
+    chest_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    chest_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    chest_xsq_model[12].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[170]);
+    chest_xsq_model[17].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[190]);
+    tail1_xsq_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x500);
+    tail1_xsq_model[7].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[242]);
+    tail2_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail2_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[199]);
+    tail2_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    tail2_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x500);
+    tail2_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[205]);
+    tail2_xsq_model[15].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[221]);
+    Rfoot2_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[305]);
+    Rfoot2_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot2_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[310]);
+    Rfoot1_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Rfoot1_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[327]);
+    Rfoot1_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot1_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rfoot1_xsq_model[12].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[331]);
+    Rfoot1_xsq_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot1_xsq_model[19].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Lfoot2_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[255]);
+    Lfoot2_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot2_xsq_model[11].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[260]);
+    Lfoot1_xsq_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Lfoot1_xsq_model[3].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[277]);
+    Lfoot1_xsq_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_xsq_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Lfoot1_xsq_model[12].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[283]);
+    Lfoot1_xsq_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot1_xsq_model[19].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    base_xsq_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    base_xsq_model[8].words.w1 = pc_gbi_ptr_encode(&xsq_1_v[353]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_xsq_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_xsq_1_c(void) {
     pc_load_asset("assets/npc/mdl/xsq_1_v.bin", xsq_1_v, 0x16F0, 0x54BFE0, 0, 2);
+    pc_patch_xsq_1_models();
 }
 #endif

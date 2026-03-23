@@ -854,8 +854,112 @@ static cKF_Joint_R_c cKF_je_r_tuk_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_tuk_1 = { 26, 15, cKF_je_r_tuk_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_tuk_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    head_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[11]);
+    head_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x380);
+    head_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[20]);
+    head_tuk_model[17].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    head_tuk_model[21].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[39]);
+    head_tuk_model[26].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_tuk_model[34].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    head_tuk_model[37].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[62]);
+    head_tuk_model[43].words.w1 = SEGMENT_ADDR(0xB, 0x180);
+    head_tuk_model[52].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_tuk_model[54].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[89]);
+    head_tuk_model[59].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[102]);
+    head_tuk_model[65].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    head_tuk_model[67].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[123]);
+    head_tuk_model[73].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_tuk_model[75].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[137]);
+    head_tuk_model[82].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    head_tuk_model[88].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_tuk_model[90].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[166]);
+    mouth_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x380);
+    mouth_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[0]);
+    mouth_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x340);
+    mouth_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[4]);
+    Rarm2_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[204]);
+    Rarm2_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    Rarm2_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm2_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[210]);
+    Rarm1_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm1_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[225]);
+    Rarm1_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm1_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm1_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[228]);
+    Larm2_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[171]);
+    Larm2_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Larm2_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Larm2_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[177]);
+    Larm1_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[192]);
+    Larm1_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm1_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Larm1_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[195]);
+    chest_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[237]);
+    chest_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    chest_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    chest_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[245]);
+    chest_tuk_model[17].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    chest_tuk_model[19].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[265]);
+    chest_tuk_model[26].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    chest_tuk_model[28].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[283]);
+    tail_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    tail_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[309]);
+    tail_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    tail_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x580);
+    tail_tuk_model[12].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[315]);
+    tail_tuk_model[22].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[335]);
+    Rfoot3_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rfoot3_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[406]);
+    Rfoot3_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Rfoot3_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    Rfoot3_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[410]);
+    Rfoot2_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[430]);
+    Rfoot2_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rfoot2_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    Rfoot2_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[434]);
+    Rfoot1_tuk_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    Rfoot1_tuk_model[7].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[448]);
+    Lfoot3_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot3_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[356]);
+    Lfoot3_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Lfoot3_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    Lfoot3_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[360]);
+    Lfoot2_tuk_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_tuk_model[3].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[380]);
+    Lfoot2_tuk_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_tuk_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    Lfoot2_tuk_model[11].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[384]);
+    Lfoot1_tuk_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    Lfoot1_tuk_model[7].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[398]);
+    base_tuk_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    base_tuk_model[7].words.w1 = pc_gbi_ptr_encode(&tuk_1_v[456]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_tuk_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_tuk_1_c(void) {
     pc_load_asset("assets/npc/mdl/tuk_1_v.bin", tuk_1_v, 0x1D50, 0x8DB550, 0, 2);
+    pc_patch_tuk_1_models();
 }
 #endif

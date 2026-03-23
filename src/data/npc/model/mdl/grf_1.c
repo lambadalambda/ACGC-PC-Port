@@ -758,8 +758,108 @@ static cKF_Joint_R_c cKF_je_r_grf_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_grf_1 = { 26, 14, cKF_je_r_grf_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grf_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    head_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[32]);
+    head_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x340);
+    head_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    head_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[38]);
+    head_grf_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_grf_model[18].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_grf_model[20].words.w1 = pc_gbi_ptr_encode(&grf_1_v[58]);
+    head_grf_model[23].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_grf_model[25].words.w1 = pc_gbi_ptr_encode(&grf_1_v[68]);
+    head_grf_model[32].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_grf_model[34].words.w1 = pc_gbi_ptr_encode(&grf_1_v[98]);
+    head_grf_model[40].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    head_grf_model[46].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    head_grf_model[48].words.w1 = pc_gbi_ptr_encode(&grf_1_v[124]);
+    head_grf_model[53].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    head_grf_model[58].words.w1 = SEGMENT_ADDR(0xB, 0x340);
+    head_grf_model[60].words.w1 = pc_gbi_ptr_encode(&grf_1_v[143]);
+    mouth_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x340);
+    mouth_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[0]);
+    mouth_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    mouth_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[7]);
+    mouth_grf_model[13].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    mouth_grf_model[18].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_grf_model[21].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    mouth_grf_model[23].words.w1 = pc_gbi_ptr_encode(&grf_1_v[25]);
+    Rarm2_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[198]);
+    Rarm2_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x440);
+    Rarm2_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[202]);
+    Rarm1_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Rarm1_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[218]);
+    Rarm1_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm1_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x440);
+    Rarm1_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[221]);
+    Larm2_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[164]);
+    Larm2_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x440);
+    Larm2_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[168]);
+    Larm1_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[184]);
+    Larm1_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x440);
+    Larm1_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[187]);
+    chest_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[232]);
+    chest_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    chest_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x480);
+    chest_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[242]);
+    chest_grf_model[16].words.w1 = pc_gbi_ptr_encode(&grf_1_v[264]);
+    chest_grf_model[22].words.w1 = SEGMENT_ADDR(0xB, 0x600);
+    chest_grf_model[24].words.w1 = pc_gbi_ptr_encode(&grf_1_v[285]);
+    chest_grf_model[31].words.w1 = SEGMENT_ADDR(0xB, 0x100);
+    chest_grf_model[33].words.w1 = pc_gbi_ptr_encode(&grf_1_v[305]);
+    tail1_grf_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    tail1_grf_model[7].words.w1 = pc_gbi_ptr_encode(&grf_1_v[328]);
+    tail2_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail2_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[317]);
+    tail2_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    tail2_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x640);
+    tail2_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[320]);
+    tail2_grf_model[13].words.w1 = SEGMENT_ADDR(0xB, 0x440);
+    Rfoot2_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[374]);
+    Rfoot2_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x680);
+    Rfoot2_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[378]);
+    Rfoot2_grf_model[16].words.w1 = pc_gbi_ptr_encode(&grf_1_v[396]);
+    Rfoot1_grf_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x680);
+    Rfoot1_grf_model[7].words.w1 = pc_gbi_ptr_encode(&grf_1_v[406]);
+    Lfoot2_grf_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_grf_model[3].words.w1 = pc_gbi_ptr_encode(&grf_1_v[334]);
+    Lfoot2_grf_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_grf_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x680);
+    Lfoot2_grf_model[11].words.w1 = pc_gbi_ptr_encode(&grf_1_v[338]);
+    Lfoot2_grf_model[16].words.w1 = pc_gbi_ptr_encode(&grf_1_v[356]);
+    Lfoot1_grf_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x680);
+    Lfoot1_grf_model[7].words.w1 = pc_gbi_ptr_encode(&grf_1_v[366]);
+    base_grf_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x680);
+    base_grf_model[7].words.w1 = pc_gbi_ptr_encode(&grf_1_v[414]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grf_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_grf_1_c(void) {
     pc_load_asset("assets/npc/mdl/grf_1_v.bin", grf_1_v, 0x1AE0, 0x4B33C0, 0, 2);
+    pc_patch_grf_1_models();
 }
 #endif

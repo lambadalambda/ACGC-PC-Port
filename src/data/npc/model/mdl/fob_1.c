@@ -729,8 +729,118 @@ static cKF_Joint_R_c cKF_je_r_fob_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_fob_1 = { 26, 14, cKF_je_r_fob_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_fob_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_fob_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_fob_model[7].words.w1 = pc_gbi_ptr_encode(&fob_1_v[22]);
+    head_fob_model[18].words.w1 = pc_gbi_ptr_encode(&fob_1_v[54]);
+    head_fob_model[23].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_fob_model[27].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_fob_model[29].words.w1 = pc_gbi_ptr_encode(&fob_1_v[83]);
+    head_fob_model[33].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    head_fob_model[36].words.w1 = SEGMENT_ADDR(0xB, 0x140);
+    head_fob_model[39].words.w1 = SEGMENT_ADDR(0xB, 0x1C0);
+    head_fob_model[46].words.w1 = SEGMENT_ADDR(0xB, 0x240);
+    head_fob_model[48].words.w1 = pc_gbi_ptr_encode(&fob_1_v[113]);
+    mouth_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x340);
+    mouth_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    mouth_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[0]);
+    mouth_fob_model[9].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    mouth_fob_model[11].words.w1 = SEGMENT_ADDR(0xD, 0x300);
+    mouth_fob_model[12].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    mouth_fob_model[14].words.w1 = pc_gbi_ptr_encode(&fob_1_v[7]);
+    Rarm2_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm2_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[166]);
+    Rarm2_fob_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x2C0);
+    Rarm2_fob_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm2_fob_model[12].words.w1 = pc_gbi_ptr_encode(&fob_1_v[170]);
+    Rarm1_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Rarm1_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm1_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[186]);
+    Rarm1_fob_model[9].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm1_fob_model[11].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Rarm1_fob_model[13].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm1_fob_model[14].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm1_fob_model[16].words.w1 = pc_gbi_ptr_encode(&fob_1_v[189]);
+    Larm2_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm2_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[132]);
+    Larm2_fob_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Larm2_fob_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm2_fob_model[12].words.w1 = pc_gbi_ptr_encode(&fob_1_v[136]);
+    Larm1_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Larm1_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[152]);
+    Larm1_fob_model[9].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    Larm1_fob_model[11].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm1_fob_model[12].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm1_fob_model[14].words.w1 = pc_gbi_ptr_encode(&fob_1_v[155]);
+    chest_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x700);
+    chest_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[200]);
+    chest_fob_model[9].words.w1 = SEGMENT_ADDR(0xB, 0x580);
+    chest_fob_model[11].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    chest_fob_model[12].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    chest_fob_model[14].words.w1 = pc_gbi_ptr_encode(&fob_1_v[211]);
+    chest_fob_model[18].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    chest_fob_model[20].words.w1 = pc_gbi_ptr_encode(&fob_1_v[224]);
+    chest_fob_model[24].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    chest_fob_model[28].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    chest_fob_model[30].words.w1 = pc_gbi_ptr_encode(&fob_1_v[244]);
+    chest_fob_model[34].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    tail1_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    tail1_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x700);
+    tail1_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[300]);
+    tail1_fob_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail1_fob_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x500);
+    tail1_fob_model[12].words.w1 = pc_gbi_ptr_encode(&fob_1_v[303]);
+    tail2_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    tail2_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x500);
+    tail2_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[263]);
+    tail2_fob_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    tail2_fob_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x500);
+    tail2_fob_model[12].words.w1 = pc_gbi_ptr_encode(&fob_1_v[267]);
+    tail2_fob_model[17].words.w1 = pc_gbi_ptr_encode(&fob_1_v[287]);
+    Rfoot2_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Rfoot2_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[339]);
+    Rfoot2_fob_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_fob_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot2_fob_model[12].words.w1 = pc_gbi_ptr_encode(&fob_1_v[343]);
+    Rfoot1_fob_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Rfoot1_fob_model[7].words.w1 = pc_gbi_ptr_encode(&fob_1_v[357]);
+    Lfoot2_fob_model[3].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_fob_model[4].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Lfoot2_fob_model[8].words.w1 = pc_gbi_ptr_encode(&fob_1_v[314]);
+    Lfoot2_fob_model[9].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_fob_model[10].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot2_fob_model[12].words.w1 = pc_gbi_ptr_encode(&fob_1_v[318]);
+    Lfoot1_fob_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    Lfoot1_fob_model[7].words.w1 = pc_gbi_ptr_encode(&fob_1_v[332]);
+    base_fob_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x580);
+    base_fob_model[7].words.w1 = pc_gbi_ptr_encode(&fob_1_v[364]);
+    base_fob_model[11].words.w1 = SEGMENT_ADDR(0xB, 0x700);
+    base_fob_model[18].words.w1 = SEGMENT_ADDR(0xB, 0x580);
+    base_fob_model[20].words.w1 = pc_gbi_ptr_encode(&fob_1_v[390]);
+    base_fob_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x700);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_fob_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_fob_1_c(void) {
     pc_load_asset("assets/npc/mdl/fob_1_v.bin", fob_1_v, 0x1A30, 0x562C60, 0, 2);
+    pc_patch_fob_1_models();
 }
 #endif

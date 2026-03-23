@@ -664,8 +664,83 @@ static cKF_Joint_R_c cKF_je_r_cbr_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_cbr_1 = { 26, 12, cKF_je_r_cbr_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_cbr_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_cbr_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_cbr_model[7].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[0]);
+    head_cbr_model[10].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_cbr_model[20].words.w1 = SEGMENT_ADDR(0xB, 0x40);
+    head_cbr_model[22].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[30]);
+    head_cbr_model[24].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_cbr_model[27].words.w1 = SEGMENT_ADDR(0xB, 0xC0);
+    head_cbr_model[29].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[40]);
+    head_cbr_model[41].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[72]);
+    head_cbr_model[44].words.w1 = SEGMENT_ADDR(0xB, 0x2C0);
+    head_cbr_model[48].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_cbr_model[50].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[92]);
+    Rarm2_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm2_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[112]);
+    Rarm2_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_cbr_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm2_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[116]);
+    Rarm1_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Rarm1_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[132]);
+    Rarm1_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm1_cbr_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm1_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[136]);
+    Larm2_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm2_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[200]);
+    Larm2_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_cbr_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Larm2_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[204]);
+    Larm1_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm1_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[220]);
+    Larm1_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_cbr_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Larm1_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[226]);
+    chest_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[148]);
+    chest_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    chest_cbr_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    chest_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[157]);
+    chest_cbr_model[17].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[179]);
+    tail1_cbr_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    tail1_cbr_model[8].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[306]);
+    Rfoot2_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[272]);
+    Rfoot2_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_cbr_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rfoot2_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[277]);
+    Rfoot1_cbr_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rfoot1_cbr_model[8].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[296]);
+    Lfoot2_cbr_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_cbr_model[3].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[238]);
+    Lfoot2_cbr_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_cbr_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Lfoot2_cbr_model[12].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[243]);
+    Lfoot1_cbr_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Lfoot1_cbr_model[8].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[262]);
+    base_cbr_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x3C0);
+    base_cbr_model[8].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[312]);
+    base_cbr_model[16].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_cbr_model[19].words.w1 = pc_gbi_ptr_encode(&cbr_1_v[328]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_cbr_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_cbr_1_c(void) {
     pc_load_asset("assets/npc/mdl/cbr_1_v.bin", cbr_1_v, 0x15A0, 0x48F580, 0, 2);
+    pc_patch_cbr_1_models();
 }
 #endif

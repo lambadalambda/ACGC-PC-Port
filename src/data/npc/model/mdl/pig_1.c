@@ -562,8 +562,86 @@ static cKF_Joint_R_c cKF_je_r_pig_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_pig_1 = { 26, 12, cKF_je_r_pig_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_pig_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_pig_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_pig_model[7].words.w1 = pc_gbi_ptr_encode(&pig_1_v[0]);
+    head_pig_model[16].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_pig_model[18].words.w1 = pc_gbi_ptr_encode(&pig_1_v[23]);
+    head_pig_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x200);
+    head_pig_model[31].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_pig_model[33].words.w1 = pc_gbi_ptr_encode(&pig_1_v[53]);
+    Rarm2_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm2_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[103]);
+    Rarm2_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x280);
+    Rarm2_pig_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm2_pig_model[11].words.w1 = pc_gbi_ptr_encode(&pig_1_v[108]);
+    Rarm1_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Rarm1_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[124]);
+    Rarm1_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm1_pig_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rarm1_pig_model[11].words.w1 = pc_gbi_ptr_encode(&pig_1_v[128]);
+    Larm2_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm2_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[67]);
+    Larm2_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Larm2_pig_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm2_pig_model[11].words.w1 = pc_gbi_ptr_encode(&pig_1_v[72]);
+    Larm1_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm1_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[88]);
+    Larm1_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm1_pig_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Larm1_pig_model[11].words.w1 = pc_gbi_ptr_encode(&pig_1_v[92]);
+    chest_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[139]);
+    chest_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    chest_pig_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    chest_pig_model[12].words.w1 = pc_gbi_ptr_encode(&pig_1_v[146]);
+    chest_pig_model[17].words.w1 = pc_gbi_ptr_encode(&pig_1_v[166]);
+    tail1_pig_model[3].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    tail1_pig_model[7].words.w1 = pc_gbi_ptr_encode(&pig_1_v[177]);
+    Rfoot2_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[257]);
+    Rfoot2_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_pig_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot2_pig_model[11].words.w1 = pc_gbi_ptr_encode(&pig_1_v[262]);
+    Rfoot1_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Rfoot1_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[279]);
+    Rfoot1_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot1_pig_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Rfoot1_pig_model[12].words.w1 = pc_gbi_ptr_encode(&pig_1_v[283]);
+    Rfoot1_pig_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Rfoot1_pig_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot2_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[208]);
+    Lfoot2_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_pig_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot2_pig_model[11].words.w1 = pc_gbi_ptr_encode(&pig_1_v[213]);
+    Lfoot1_pig_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Lfoot1_pig_model[3].words.w1 = pc_gbi_ptr_encode(&pig_1_v[230]);
+    Lfoot1_pig_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_pig_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot1_pig_model[12].words.w1 = pc_gbi_ptr_encode(&pig_1_v[235]);
+    Lfoot1_pig_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x280);
+    Lfoot1_pig_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_pig_model[3].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_pig_model[8].words.w1 = pc_gbi_ptr_encode(&pig_1_v[305]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_pig_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_pig_1_c(void) {
     pc_load_asset("assets/npc/mdl/pig_1_v.bin", pig_1_v, 0x13F0, 0x619C80, 0, 2);
+    pc_patch_pig_1_models();
 }
 #endif

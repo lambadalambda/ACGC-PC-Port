@@ -570,8 +570,88 @@ static cKF_Joint_R_c cKF_je_r_kal_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_kal_1 = { 26, 11, cKF_je_r_kal_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_kal_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_kal_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_kal_model[7].words.w1 = pc_gbi_ptr_encode(&kal_1_v[0]);
+    head_kal_model[16].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_kal_model[18].words.w1 = pc_gbi_ptr_encode(&kal_1_v[25]);
+    head_kal_model[23].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_kal_model[27].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_kal_model[29].words.w1 = pc_gbi_ptr_encode(&kal_1_v[47]);
+    head_kal_model[37].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    head_kal_model[39].words.w1 = pc_gbi_ptr_encode(&kal_1_v[68]);
+    head_kal_model[45].words.w1 = pc_gbi_ptr_encode(&kal_1_v[100]);
+    head_kal_model[51].words.w1 = pc_gbi_ptr_encode(&kal_1_v[132]);
+    Rarm2_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm2_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[177]);
+    Rarm2_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm2_kal_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Rarm2_kal_model[11].words.w1 = pc_gbi_ptr_encode(&kal_1_v[182]);
+    Rarm1_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rarm1_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[198]);
+    Rarm1_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm1_kal_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Rarm1_kal_model[11].words.w1 = pc_gbi_ptr_encode(&kal_1_v[202]);
+    Larm2_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm2_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[141]);
+    Larm2_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm2_kal_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Larm2_kal_model[11].words.w1 = pc_gbi_ptr_encode(&kal_1_v[146]);
+    Larm1_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Larm1_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[162]);
+    Larm1_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm1_kal_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Larm1_kal_model[11].words.w1 = pc_gbi_ptr_encode(&kal_1_v[166]);
+    chest_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[213]);
+    chest_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    chest_kal_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    chest_kal_model[12].words.w1 = pc_gbi_ptr_encode(&kal_1_v[220]);
+    chest_kal_model[17].words.w1 = pc_gbi_ptr_encode(&kal_1_v[240]);
+    Rfoot2_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[299]);
+    Rfoot2_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_kal_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Rfoot2_kal_model[11].words.w1 = pc_gbi_ptr_encode(&kal_1_v[304]);
+    Rfoot1_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Rfoot1_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[321]);
+    Rfoot1_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot1_kal_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Rfoot1_kal_model[12].words.w1 = pc_gbi_ptr_encode(&kal_1_v[325]);
+    Rfoot1_kal_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Rfoot1_kal_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot2_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[249]);
+    Lfoot2_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_kal_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Lfoot2_kal_model[11].words.w1 = pc_gbi_ptr_encode(&kal_1_v[254]);
+    Lfoot1_kal_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Lfoot1_kal_model[3].words.w1 = pc_gbi_ptr_encode(&kal_1_v[271]);
+    Lfoot1_kal_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_kal_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot1_kal_model[12].words.w1 = pc_gbi_ptr_encode(&kal_1_v[277]);
+    Lfoot1_kal_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x400);
+    Lfoot1_kal_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_kal_model[3].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_kal_model[8].words.w1 = pc_gbi_ptr_encode(&kal_1_v[347]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_kal_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_kal_1_c(void) {
     pc_load_asset("assets/npc/mdl/kal_1_v.bin", kal_1_v, 0x1690, 0x566100, 0, 2);
+    pc_patch_kal_1_models();
 }
 #endif

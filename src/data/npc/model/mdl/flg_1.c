@@ -526,8 +526,84 @@ static cKF_Joint_R_c cKF_je_r_flg_1_tbl[] = {
 extern cKF_Skeleton_R_c cKF_bs_r_flg_1 = { 26, 11, cKF_je_r_flg_1_tbl };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_flg_1_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    head_flg_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    head_flg_model[7].words.w1 = pc_gbi_ptr_encode(&flg_1_v[0]);
+    head_flg_model[13].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    head_flg_model[15].words.w1 = pc_gbi_ptr_encode(&flg_1_v[18]);
+    head_flg_model[21].words.w1 = SEGMENT_ADDR(0xB, 0x0);
+    head_flg_model[25].words.w1 = SEGMENT_ADDR(0xB, 0x80);
+    head_flg_model[27].words.w1 = pc_gbi_ptr_encode(&flg_1_v[40]);
+    Rarm2_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm2_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[108]);
+    Rarm2_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x240);
+    Rarm2_flg_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm2_flg_model[11].words.w1 = pc_gbi_ptr_encode(&flg_1_v[113]);
+    Rarm1_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Rarm1_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[129]);
+    Rarm1_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x200);
+    Rarm1_flg_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Rarm1_flg_model[11].words.w1 = pc_gbi_ptr_encode(&flg_1_v[133]);
+    Larm2_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm2_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[72]);
+    Larm2_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x1C0);
+    Larm2_flg_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Larm2_flg_model[11].words.w1 = pc_gbi_ptr_encode(&flg_1_v[77]);
+    Larm1_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    Larm1_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[93]);
+    Larm1_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x180);
+    Larm1_flg_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x300);
+    Larm1_flg_model[11].words.w1 = pc_gbi_ptr_encode(&flg_1_v[97]);
+    chest_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    chest_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[144]);
+    chest_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x140);
+    chest_flg_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    chest_flg_model[12].words.w1 = pc_gbi_ptr_encode(&flg_1_v[151]);
+    chest_flg_model[17].words.w1 = pc_gbi_ptr_encode(&flg_1_v[171]);
+    Rfoot2_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot2_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[230]);
+    Rfoot2_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x100);
+    Rfoot2_flg_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Rfoot2_flg_model[11].words.w1 = pc_gbi_ptr_encode(&flg_1_v[235]);
+    Rfoot1_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Rfoot1_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[252]);
+    Rfoot1_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0xC0);
+    Rfoot1_flg_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Rfoot1_flg_model[12].words.w1 = pc_gbi_ptr_encode(&flg_1_v[256]);
+    Rfoot1_flg_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Rfoot1_flg_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot2_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot2_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[180]);
+    Lfoot2_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x80);
+    Lfoot2_flg_model[8].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Lfoot2_flg_model[11].words.w1 = pc_gbi_ptr_encode(&flg_1_v[185]);
+    Lfoot1_flg_model[0].words.w1 = SEGMENT_ADDR(0xD, 0x0);
+    Lfoot1_flg_model[3].words.w1 = pc_gbi_ptr_encode(&flg_1_v[202]);
+    Lfoot1_flg_model[4].words.w1 = SEGMENT_ADDR(0xD, 0x40);
+    Lfoot1_flg_model[8].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    Lfoot1_flg_model[12].words.w1 = pc_gbi_ptr_encode(&flg_1_v[208]);
+    Lfoot1_flg_model[15].words.w1 = SEGMENT_ADDR(0xB, 0x380);
+    Lfoot1_flg_model[19].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_flg_model[3].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    base_flg_model[8].words.w1 = pc_gbi_ptr_encode(&flg_1_v[278]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_flg_1_models(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_npc_model_mdl_flg_1_c(void) {
     pc_load_asset("assets/npc/mdl/flg_1_v.bin", flg_1_v, 0x1240, 0x4E7BC0, 0, 2);
+    pc_patch_flg_1_models();
 }
 #endif

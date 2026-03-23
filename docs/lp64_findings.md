@@ -90,6 +90,30 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
     - `bash pc/tests/check_ride_off_demo_station_master_reacquire_contract.sh`
   - follow-up: rerun long LP64 train-arrival repro and confirm no new `[PC][emu64][zero]` hits for `mnk_1`, `rcn_1`, `cat_1`, or `ef_gimonhu01_00_modelT`, and verify porter/tom nook body meshes render in-scene.
 
+## 2026-03-23 - mechanical NPC model LP64 pointer sweep
+
+- Symptom/signature:
+  - porter/tom nook visibility fixes showed the same root pointer pattern in NPC model files and indicated more `mdl/*.c` assets could fail as soon as those species load.
+  - before sweep, only a small subset of NPC model files had guarded LP64 patch helpers.
+- Root cause:
+  - each NPC model file embeds static display-list `w1` pointer words; under LP64 static-pointer mode those words remain zero unless each file has a runtime patch helper and callsite.
+  - coverage was partial (`6/72` files), so most species were still latent zero-pointer risks.
+- Fix approach and touched files:
+  - mechanically added guarded helpers and loader callsites across the remaining NPC model set in `src/data/npc/model/mdl/*.c`.
+  - generated helper bodies with `pc/tools/gen_gfx_w1_fixups.py --apply-helper` for all `72` NPC model files.
+  - strengthened `pc/tests/check_train_npc_model_ptr_patch_contract.sh` to iterate every NPC model file and assert both:
+    - helper block matches generator output (`--check-helper`)
+    - loader invokes `pc_patch_<stem>_models()`
+- Verification and follow-up:
+  - `bash pc/tests/check_train_npc_model_ptr_patch_contract.sh` passes after the sweep.
+  - post-train contracts continue to pass:
+    - `bash pc/tests/check_post_train_scene_ptr_patch_contract.sh`
+    - `bash pc/tests/check_intro_demo_station_master_reacquire_contract.sh`
+    - `bash pc/tests/check_ride_off_demo_station_master_reacquire_contract.sh`
+  - LP64 build succeeds (`cmake --build /tmp/acgc-p2-config-64 -j4`).
+  - long delayed-autopress LP64 run still reaches post-train progression (`0 -> 3 -> 4 -> 18 -> 9 -> 12 -> 10 -> 14 -> 9`) with no NPC model zero-pointer hits (`npc_model_zero_symbols=0` against all `mdl/*.c` stems).
+  - remaining zero-pointer symbols are now concentrated outside NPC species models (for example `rom_myhome1_wall_model` / `rom_myhome1_floor_model`), matching current "black interior" follow-up.
+
 ## 2026-03-22 - gSetImage pointer-word encoding
 
 - Symptom/signature: `gSetImage` packed image pointers with `_g->words.w1 = (unsigned int)(i);`, which can truncate host pointers on LP64 and feed bad `G_SET*IMG` addresses into emu64/RDP paths.
