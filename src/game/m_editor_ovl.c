@@ -16,6 +16,11 @@
 #include "m_rcp.h"
 #include "m_lib.h"
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_kai_sousa_display_lists(void);
+extern void pc_patch_lat_sp_display_lists(void);
+#endif
+
 static u8 mED_ornament_table[] = {
     // clang-format off
     0x21, 0x3f, 0x03, 0x04, 0x05, 0x06, 0x07, 0x41,
@@ -2398,6 +2403,11 @@ static void mED_set_dl(Submenu* submenu, mSM_MenuInfo_c* menu_info, GAME* game) 
     mED_Ovl_c* editor_ovl = submenu->overlay->editor_ovl;
     GRAPH* graph = game->graph;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_kai_sousa_display_lists();
+    pc_patch_lat_sp_display_lists();
+#endif
+
     mED_KeyDraw(editor_ovl, graph, menu_info->position[0], menu_info->position[1]);
     mED_InkPotDraw(submenu, editor_ovl, graph, menu_info->position[0], menu_info->position[1]);
     mED_StringsDraw(submenu, editor_ovl, game, menu_info->position[0], menu_info->position[1]);
@@ -2408,6 +2418,10 @@ extern Gfx lat_end_cordT_model[];
 static void mED_endCode_draw(Submenu* submenu, GAME* game, f32 x, f32 y) {
     GRAPH* graph = game->graph;
     Gfx* gfx;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_lat_sp_display_lists();
+#endif
 
     Matrix_scale(16.0f, 16.0f, 1.0f, MTX_LOAD);
     Matrix_translate(x, y, 140.0f, MTX_MULT);

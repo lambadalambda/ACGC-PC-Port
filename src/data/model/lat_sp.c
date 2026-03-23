@@ -91,3 +91,25 @@ Gfx lat_end_cordT_model[] = {
     gsSP2Triangles(0, 1, 2, 0, 1, 3, 2, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_lat_sp_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    lat_sousa_spT_model[1].words.w1 = pc_gbi_ptr_encode(lat_sousa_mode);
+    lat_sousa_spT_model[5].words.w1 = pc_gbi_ptr_encode(lat_sousa_sp_tex);
+    lat_sousa_spT_model[12].words.w1 = pc_gbi_ptr_encode(lat_sp_v);
+    lat_end_cordT_model[1].words.w1 = pc_gbi_ptr_encode(lat_sousa_mode);
+    lat_end_cordT_model[7].words.w1 = pc_gbi_ptr_encode(lat_tegami_end_tex);
+    lat_end_cordT_model[14].words.w1 = pc_gbi_ptr_encode(lat_end_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_lat_sp_display_lists(void) {
+}
+#endif

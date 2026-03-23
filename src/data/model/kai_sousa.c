@@ -687,9 +687,81 @@ Gfx kai_sousa_spaceT_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_kai_sousa_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    kai_sousa_lwaku_model[1].words.w1 = pc_gbi_ptr_encode(kai_sousa_lwaku_tex_rgb_i4);
+    kai_sousa_lwaku_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_v);
+    kai_sousa_kirikae_model[2].words.w1 = pc_gbi_ptr_encode(kai_sousa_kirikae_tex);
+    kai_sousa_kirikae_model[4].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[4]);
+    kai_sousa_henkan_model[2].words.w1 = pc_gbi_ptr_encode(kai_sousa_lwaku_tex);
+    kai_sousa_henkan_model[4].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[8]);
+    kai_sousa_letter_model[1].words.w1 = pc_gbi_ptr_encode(kai_sousa_letters_tex);
+    kai_sousa_letter_model[3].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[12]);
+    kai_sousa_sign_model[1].words.w1 = pc_gbi_ptr_encode(kai_sousa_punct_tex);
+    kai_sousa_sign_model[3].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[16]);
+    kai_sousa_mark_model[1].words.w1 = pc_gbi_ptr_encode(kai_sousa_icons_tex);
+    kai_sousa_mark_model[3].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[20]);
+    kai_sousa_yajirushi_model[2].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[24]);
+    kai_sousa_lmoji_model[2].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_lmoji_model[4].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[31]);
+    kai_sousa_lbuttonT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_lbuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[35]);
+    kai_sousa_rbuttonT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_rbuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[39]);
+    kai_sousa_controllerT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_lcontroller_d_tex);
+    kai_sousa_controllerT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[43]);
+    kai_sousa_controllerT_model[7].words.w1 = pc_gbi_ptr_encode(kai_sousa_lcontroller_c_tex);
+    kai_sousa_controllerT_model[10].words.w1 = pc_gbi_ptr_encode(kai_sousa_lcontroller_b_tex);
+    kai_sousa_controllerT_model[13].words.w1 = pc_gbi_ptr_encode(kai_sousa_lcontroller_a_tex);
+    kai_sousa_shitaT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_shita_tex);
+    kai_sousa_shitaT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[59]);
+    kai_sousa_controller2T_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_rcontroller_tex);
+    kai_sousa_controller2T_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[63]);
+    kai_sousa_mojibanT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_mojiban2_tex);
+    kai_sousa_mojibanT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[67]);
+    kai_sousa_mojibanT_model[8].words.w1 = pc_gbi_ptr_encode(kai_sousa_mojiban_tex);
+    kai_sousa_controllpadT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_controllpadT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[83]);
+    kai_sousa_ybuttonT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_ybuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[87]);
+    kai_sousa_xbuttonT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_xbuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[91]);
+    kai_sousa_3DT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_3D_tex);
+    kai_sousa_3DT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[95]);
+    kai_sousa_3DstT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_3DstT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[99]);
+    kai_sousa_bbuttonT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_bbuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[103]);
+    kai_sousa_abuttonT_model[3].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    kai_sousa_abuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[107]);
+    kai_sousa_startbuttonT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_button3_tex);
+    kai_sousa_startbuttonT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[111]);
+    kai_sousa_endT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_ok_tex);
+    kai_sousa_endT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[115]);
+    kai_sousa_cancelT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_backspace_tex);
+    kai_sousa_cancelT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[119]);
+    kai_sousa_cursorT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_cursor_tex);
+    kai_sousa_cursorT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[123]);
+    kai_sousa_spaceT_model[3].words.w1 = pc_gbi_ptr_encode(kai_sousa_space_tex);
+    kai_sousa_spaceT_model[5].words.w1 = pc_gbi_ptr_encode(&kai_sousa_v[127]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_kai_sousa_display_lists(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_kai_sousa_c(void) {
     pc_load_asset("assets/kai_sousa/kai_sousa_button3_tex.bin", kai_sousa_button3_tex, 0x100, 0x6F1100, 0, 0);
+    pc_patch_kai_sousa_display_lists();
 }
 #endif
