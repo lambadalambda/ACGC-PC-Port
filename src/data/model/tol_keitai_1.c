@@ -94,6 +94,33 @@ Gfx main2_keitai1_model[] = {
     gsSPEndDisplayList(),
 };
 
+#ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_tol_keitai_1_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    main1_keitai1_model[3].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_pal);
+    main1_keitai1_model[4].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_shitaura1_tex_txt);
+    main1_keitai1_model[8].words.w1 = pc_gbi_ptr_encode(&tol_keitai_1_v[15]);
+    main1_keitai1_model[13].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_shitaomote1_tex_txt);
+
+    main2_keitai1_model[3].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_pal);
+    main2_keitai1_model[4].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_ueura1_tex_txt);
+    main2_keitai1_model[8].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_v);
+    main2_keitai1_model[13].words.w1 = pc_gbi_ptr_encode(tol_keitai_1_ueomote1_tex_txt);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_tol_keitai_1_model(void) {
+}
+#endif
+#endif
+
 cKF_Joint_R_c cKF_je_r_tol_keitai_1_tbl[] = { { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, { 0, 0, 0 } },
                                               { main1_keitai1_model, 1, cKF_JOINT_FLAG_DISP_OPA, { 0, 0, 0 } },
                                               { main2_keitai1_model, 0, cKF_JOINT_FLAG_DISP_OPA, { 800, 0, 0 } } };

@@ -9,6 +9,9 @@
 extern cKF_Animation_R_c cKF_ba_r_tol_keitai_1_keitai_on1;
 extern cKF_Animation_R_c cKF_ba_r_tol_keitai_1_keitai_off1;
 extern cKF_Skeleton_R_c cKF_bs_r_tol_keitai_1;
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_tol_keitai_1_model(void);
+#endif
 
 KEITAI_ACTION_ANIM aTKT_anm_dt[6] = {
     { &cKF_ba_r_tol_keitai_1_keitai_on1, 1.0f, 1.0f },   { &cKF_ba_r_tol_keitai_1_keitai_on1, 1.0f, 68.0f },
@@ -144,6 +147,10 @@ static void aTKT_actor_draw(ACTOR* actor, GAME* game) {
     mtx = GRAPH_ALLOC_TYPE(graph, Mtx, keyf->skeleton->num_shown_joints);
 
     if (mtx != NULL) {
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        pc_patch_tol_keitai_1_model();
+#endif
+
         if (keitai->tools_class.init_matrix == TRUE) {
             Matrix_put(&keitai->tools_class.matrix_work);
             Matrix_Position_Zero(&actor->world.position);
