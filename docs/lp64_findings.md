@@ -250,3 +250,24 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - full contract sweep (`pc/tests/check_*contract.sh`) passes.
   - both LP64 builds succeed.
   - repro log `/tmp/acgc_lp64_post_reaction_fix_240s.log` shows no `\[PC\]\[emu64\]\[zero\]` events.
+
+## 2026-03-23 - ASan crash at name-entry caused by unterminated display list
+
+- Symptom/signature:
+  - ASan build crashed near name-entry transition with:
+    - `AddressSanitizer: global-buffer-overflow` in `emu64_taskstart_r` (`emu64.c:6093`)
+    - read immediately past global `ledit_common_mode` in `src/data/model/rst_win.c`
+- Root cause:
+  - `ledit_common_mode` lacked `gsSPEndDisplayList()`, so the display-list interpreter ran past list bounds into adjacent global/redzone memory.
+  - same path also still exposed unresolved LP64 pointers for `main1_keitai1_model` / `main2_keitai1_model` in the keitai model path.
+- Fix approach and touched files:
+  - terminated `ledit_common_mode` with `gsSPEndDisplayList()` in `src/data/model/rst_win.c`.
+  - added LP64 patch helper for keitai model display lists in `src/data/model/tol_keitai_1.c`.
+  - invoked keitai helper from draw path in `src/actor/tool/ac_t_keitai.c`.
+  - added contracts:
+    - `pc/tests/check_ledit_common_mode_termination_contract.sh`
+    - `pc/tests/check_keitai_model_ptr_patch_contract.sh`
+- Verification and follow-up:
+  - full contract sweep (`pc/tests/check_*contract.sh`) passes.
+  - both LP64 builds succeed.
+  - long ASan repro `/tmp/acgc_lp64_asan_post_name_crash_fix_320s.log` reaches timeout with no ASan abort and no `\[PC\]\[emu64\]\[zero\]` hits.
