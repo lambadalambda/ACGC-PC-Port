@@ -123,6 +123,8 @@ extern cKF_Skeleton_R_c cKF_bs_r_obj_clock_tailor;
 
 extern cKF_Skeleton_R_c cKF_bs_r_obj_museum5_hasu;
 
+extern cKF_Skeleton_R_c cKF_bs_r_tol_keitai_1;
+
 extern cKF_Animation_R_c cKF_ba_r_obj_s_shop1;
 extern cKF_Animation_R_c cKF_ba_r_obj_w_shop1;
 extern cKF_Animation_R_c cKF_ba_r_obj_s_shop2;
@@ -198,6 +200,16 @@ extern cKF_Animation_R_c cKF_ba_r_obj_clock_museum1;
 extern cKF_Animation_R_c cKF_ba_r_obj_clock_tailor;
 extern cKF_Animation_R_c cKF_ba_r_obj_museum5_hasu;
 
+extern cKF_Animation_R_c cKF_ba_r_tol_keitai_1_keitai_on1;
+extern cKF_Animation_R_c cKF_ba_r_tol_keitai_1_keitai_off1;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_tol_keitai_1_model(void);
+extern void pc_patch_obj_train1_1_model_display_lists(void);
+extern void pc_patch_obj_train1_3_model_display_lists(void);
+extern void pc_patch_obj_romtrain_door_display_lists(void);
+#endif
+
 static const MVModelEntry s_model_table[] = {
     { "Shop 1 (Summer)",        &cKF_bs_r_obj_s_shop1,   &cKF_ba_r_obj_s_shop1,   aSTR_PAL_SHOP1, 0 },
     { "Shop 1 (Winter)",        &cKF_bs_r_obj_w_shop1,   &cKF_ba_r_obj_w_shop1,   aSTR_PAL_SHOP1, 1 },
@@ -259,6 +271,8 @@ static const MVModelEntry s_model_table[] = {
     { "Train Engine",           &cKF_bs_r_obj_train1_1,  &cKF_ba_r_obj_train1_1,  aSTR_PAL_TRAIN1_A1, 0 },
     { "Train Car",              &cKF_bs_r_obj_train1_3,  &cKF_ba_r_obj_train1_3_close, aSTR_PAL_TRAIN1_A2, 0 },
     { "Train Door",             &cKF_bs_r_obj_romtrain_door, &cKF_ba_r_obj_romtrain_door, aSTR_PAL_TRAIN1_A1, 0 },
+    { "Keitai (On)",            &cKF_bs_r_tol_keitai_1,  &cKF_ba_r_tol_keitai_1_keitai_on1, -1, 0 },
+    { "Keitai (Off)",           &cKF_bs_r_tol_keitai_1,  &cKF_ba_r_tol_keitai_1_keitai_off1, -1, 0 },
 
     { "Boat",                   &cKF_bs_r_obj_e_boat,    &cKF_ba_r_obj_e_boat,    aSTR_PAL_BOAT, 0 },
     { "Countdown 01",           &cKF_bs_r_obj_e_count01, &cKF_ba_r_obj_e_count01, aSTR_PAL_COUNT, 0 },
@@ -400,6 +414,7 @@ static void mv_handle_input(GAME_MODEL_VIEWER* mv) {
 static void mv_draw(GAME_MODEL_VIEWER* mv) {
     GAME* game = (GAME*)mv;
     GRAPH* g = game->graph;
+    const MVModelEntry* entry = &s_model_table[mv->current_model];
     f32 ex, ey, ez;
 
     if (mv->initialized_model != mv->current_model) {
@@ -464,13 +479,28 @@ static void mv_draw(GAME_MODEL_VIEWER* mv) {
         CLOSE_DISP(g);
     }
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    if (entry->skeleton == &cKF_bs_r_obj_train1_1) {
+        /* Train model display lists also carry static pointer words; patch
+         * them before drawing when exercising train assets in model viewer. */
+        pc_patch_obj_train1_1_model_display_lists();
+    } else if (entry->skeleton == &cKF_bs_r_obj_train1_3) {
+        pc_patch_obj_train1_3_model_display_lists();
+    } else if (entry->skeleton == &cKF_bs_r_obj_romtrain_door) {
+        pc_patch_obj_romtrain_door_display_lists();
+    } else if (entry->skeleton == &cKF_bs_r_tol_keitai_1) {
+        /* Keitai tool display lists carry static pointer words that need LP64
+         * runtime rehydration before model-viewer rendering. */
+        pc_patch_tol_keitai_1_model();
+    }
+#endif
+
     _texture_z_light_fog_prim(g);
 
     /* Set palette segments and pre-load TLUT. Some models rely on the actor
      * to pre-load rather than embedding it in their DLs. */
     OPEN_DISP(g);
     {
-        const MVModelEntry* entry = &s_model_table[mv->current_model];
         u16* pal;
         if (entry->pal_idx >= 0) {
             pal = entry->is_winter ? structure_pal_adrs_winter[entry->pal_idx]

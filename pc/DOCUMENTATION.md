@@ -113,7 +113,7 @@ User provides disc image (.ciso/.iso/.gcm)
 |------|-------|---------|
 | `pc/src/pc_settings.c` | 156 | Runtime `settings.ini` parser/writer (resolution up to 4K, fullscreen, vsync, MSAA) |
 | `pc/src/pc_texture_pack.c` | 1,239 | Dolphin-compatible HD texture pack loader (XXHash64 matching, DDS, preloading) |
-| `pc/src/pc_model_viewer.c` | 568 | Debug model viewer: 75 building/structure models, orbit camera |
+| `pc/src/pc_model_viewer.c` | 568 | Debug model viewer: structures/train/keitai model smoke target with orbit camera |
 
 #### Support
 
@@ -441,6 +441,7 @@ cmake --build /tmp/acgc-p2-config-64 -j2
 sh pc/tests/smoke_lp64_selftest.sh
 sh pc/tests/smoke_lp64_title_boot.sh
 sh pc/tests/smoke_lp64_asan_title_boot.sh
+bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64-asan/bin --timeout 10
 ```
 
 ### Cross-Compilation

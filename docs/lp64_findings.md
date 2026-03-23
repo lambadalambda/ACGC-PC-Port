@@ -271,3 +271,18 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - full contract sweep (`pc/tests/check_*contract.sh`) passes.
   - both LP64 builds succeed.
   - long ASan repro `/tmp/acgc_lp64_asan_post_name_crash_fix_320s.log` reaches timeout with no ASan abort and no `\[PC\]\[emu64\]\[zero\]` hits.
+
+## 2026-03-23 - added fast model-viewer smoke loop for LP64 iteration speed
+
+- Symptom/signature:
+  - intro-driven LP64 repros are slow (multi-minute) when triaging rendering/pointer regressions.
+- Root cause:
+  - no short-cycle harness existed to validate high-risk train/name-entry model assets without replaying full intro flow.
+- Fix approach and touched files:
+  - extended model viewer coverage to include keitai tool model entries and LP64 patch hooks for train/keitai display lists in `pc/src/pc_model_viewer.c`.
+  - added fast smoke script `pc/tests/smoke_model_viewer_targets.sh` (targeted `--model-viewer` runs, ASan/zero-pointer log checks).
+  - documented usage in `README.md` and `pc/DOCUMENTATION.md`.
+- Verification and follow-up:
+  - `bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64-asan/bin --timeout 10` passes.
+  - `bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64/bin --timeout 8` passes.
+  - this loop covers model/pointer regressions for train and keitai quickly; scene-scripted behavior/effect timing still requires runtime intro/path repros.
