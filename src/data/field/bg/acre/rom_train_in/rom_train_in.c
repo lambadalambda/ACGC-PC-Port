@@ -672,6 +672,56 @@ extern Gfx rom_train_in_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_rom_train_in_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    rom_train_in_modelT[4].words.w1 = pc_gbi_ptr_encode(rom_train_glass_tex);
+    rom_train_in_modelT[7].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[479]);
+    rom_train_in_modelT[15].words.w1 = pc_gbi_ptr_encode(rom_train_light_tex);
+    rom_train_in_modelT[17].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[511]);
+
+    rom_train_in_model[3].words.w1 = pc_gbi_ptr_encode(rom_train_1_pal);
+    rom_train_in_model[4].words.w1 = pc_gbi_ptr_encode(rom_train_seat1_tex);
+    rom_train_in_model[7].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[213]);
+    rom_train_in_model[15].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[245]);
+    rom_train_in_model[23].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[277]);
+    rom_train_in_model[31].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[308]);
+    rom_train_in_model[35].words.w1 = pc_gbi_ptr_encode(rom_train_3_pal);
+    rom_train_in_model[36].words.w1 = pc_gbi_ptr_encode(rom_train_net_tex);
+    rom_train_in_model[38].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[319]);
+    rom_train_in_model[44].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[351]);
+    rom_train_in_model[50].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[383]);
+    rom_train_in_model[56].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[415]);
+    rom_train_in_model[62].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[447]);
+    rom_train_in_model[68].words.w1 = pc_gbi_ptr_encode(rom_train_1_pal);
+    rom_train_in_model[69].words.w1 = pc_gbi_ptr_encode(rom_train_seat2_tex);
+    rom_train_in_model[71].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[0]);
+    rom_train_in_model[78].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[31]);
+    rom_train_in_model[84].words.w1 = pc_gbi_ptr_encode(rom_train_2_pal);
+    rom_train_in_model[85].words.w1 = pc_gbi_ptr_encode(rom_train_wall1_tex);
+    rom_train_in_model[87].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[57]);
+    rom_train_in_model[94].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[89]);
+    rom_train_in_model[100].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[120]);
+    rom_train_in_model[105].words.w1 = pc_gbi_ptr_encode(rom_train_roof_tex);
+    rom_train_in_model[107].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[137]);
+    rom_train_in_model[113].words.w1 = pc_gbi_ptr_encode(rom_train_wall2_tex);
+    rom_train_in_model[115].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[152]);
+    rom_train_in_model[123].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[184]);
+    rom_train_in_model[127].words.w1 = pc_gbi_ptr_encode(rom_train_floor_tex);
+    rom_train_in_model[129].words.w1 = pc_gbi_ptr_encode(&rom_train_in_v[194]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_rom_train_in_display_lists(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_rom_train_in_rom_train_in_c(void) {
@@ -688,5 +738,6 @@ void _pc_load_src_data_field_bg_acre_rom_train_in_rom_train_in_c(void) {
     pc_load_asset("assets/field/bg/rom_train_glass_tex.bin", rom_train_glass_tex, 0x80, 0xD9A3E0, 0, 0);
     pc_load_asset("assets/field/bg/rom_train_light_tex.bin", rom_train_light_tex, 0x200, 0xD9A460, 0, 0);
     pc_load_asset("assets/field/bg/rom_train_in_v.bin", rom_train_in_v, 0x20F0, 0xD9A660, 0, 2);
+    pc_patch_rom_train_in_display_lists();
 }
 #endif

@@ -34,56 +34,93 @@ static int pc_pad_parse_env_int(const char* name, int default_value) {
     }
 }
 
-static int pc_pad_autopress_a_apply(u16* buttons) {
-    static int configured = 0;
-    static int enabled = 0;
-    static int start_frame = 120;
-    static int every_frames = 20;
-    static int hold_frames = 2;
-    static int frame_counter = 0;
+typedef struct {
+    const char* name;
+    const char* env_enable;
+    const char* env_start;
+    const char* env_every;
+    const char* env_hold;
+    u16 button_mask;
+    int configured;
+    int enabled;
+    int start_frame;
+    int every_frames;
+    int hold_frames;
+    int frame_counter;
+} PCPadAutopressButton;
 
+static int pc_pad_autopress_button_apply(PCPadAutopressButton* cfg, u16* buttons) {
     int pressed = 0;
 
-    if (!configured) {
-        const char* env = getenv("PC_AUTOPRESS_A");
-        enabled = (env != NULL && env[0] != '\0' && env[0] != '0') ? 1 : 0;
-        start_frame = pc_pad_parse_env_int("PC_AUTOPRESS_A_START", 120);
-        every_frames = pc_pad_parse_env_int("PC_AUTOPRESS_A_EVERY", 20);
-        hold_frames = pc_pad_parse_env_int("PC_AUTOPRESS_A_HOLD", 2);
+    if (!cfg->configured) {
+        const char* env = getenv(cfg->env_enable);
 
-        if (start_frame < 0) {
-            start_frame = 0;
-        }
-        if (every_frames < 1) {
-            every_frames = 1;
-        }
-        if (hold_frames < 1) {
-            hold_frames = 1;
-        }
-        if (hold_frames > every_frames) {
-            hold_frames = every_frames;
-        }
+        cfg->enabled = (env != NULL && env[0] != '\0' && env[0] != '0') ? 1 : 0;
+        cfg->start_frame = pc_pad_parse_env_int(cfg->env_start, 120);
+        cfg->every_frames = pc_pad_parse_env_int(cfg->env_every, 20);
+        cfg->hold_frames = pc_pad_parse_env_int(cfg->env_hold, 2);
 
-        if (enabled && (pc_pad_log_enabled() || g_pc_verbose)) {
-            printf("[PC][pad] auto A enabled: start=%d every=%d hold=%d\n", start_frame, every_frames, hold_frames);
+        if (cfg->start_frame < 0) {
+            cfg->start_frame = 0;
+        }
+        if (cfg->every_frames < 1) {
+            cfg->every_frames = 1;
+        }
+        if (cfg->hold_frames < 1) {
+            cfg->hold_frames = 1;
+        }
+        if (cfg->hold_frames > cfg->every_frames) {
+            cfg->hold_frames = cfg->every_frames;
         }
 
-        configured = 1;
+        if (cfg->enabled && (pc_pad_log_enabled() || g_pc_verbose)) {
+            printf("[PC][pad] auto %s enabled: start=%d every=%d hold=%d\n", cfg->name, cfg->start_frame,
+                   cfg->every_frames, cfg->hold_frames);
+        }
+
+        cfg->configured = 1;
     }
 
-    if (enabled) {
-        int frame = frame_counter;
-        if (frame >= start_frame) {
-            int phase = (frame - start_frame) % every_frames;
-            if (phase < hold_frames) {
-                *buttons |= PAD_BUTTON_A;
+    if (cfg->enabled) {
+        int frame = cfg->frame_counter;
+        if (frame >= cfg->start_frame) {
+            int phase = (frame - cfg->start_frame) % cfg->every_frames;
+            if (phase < cfg->hold_frames) {
+                *buttons |= cfg->button_mask;
                 pressed = 1;
             }
         }
     }
 
-    frame_counter++;
+    cfg->frame_counter++;
     return pressed;
+}
+
+static int pc_pad_autopress_apply(u16* buttons) {
+    static PCPadAutopressButton s_buttons[] = {
+        { "A", "PC_AUTOPRESS_A", "PC_AUTOPRESS_A_START", "PC_AUTOPRESS_A_EVERY", "PC_AUTOPRESS_A_HOLD",
+          PAD_BUTTON_A, 0, 0, 120, 20, 2, 0 },
+        { "START", "PC_AUTOPRESS_START", "PC_AUTOPRESS_START_START", "PC_AUTOPRESS_START_EVERY",
+          "PC_AUTOPRESS_START_HOLD", PAD_BUTTON_START, 0, 0, 120, 20, 2, 0 },
+        { "DPAD_RIGHT", "PC_AUTOPRESS_DPAD_RIGHT", "PC_AUTOPRESS_DPAD_RIGHT_START", "PC_AUTOPRESS_DPAD_RIGHT_EVERY",
+          "PC_AUTOPRESS_DPAD_RIGHT_HOLD", PAD_BUTTON_RIGHT, 0, 0, 120, 20, 2, 0 },
+        { "DPAD_DOWN", "PC_AUTOPRESS_DPAD_DOWN", "PC_AUTOPRESS_DPAD_DOWN_START", "PC_AUTOPRESS_DPAD_DOWN_EVERY",
+          "PC_AUTOPRESS_DPAD_DOWN_HOLD", PAD_BUTTON_DOWN, 0, 0, 120, 20, 2, 0 },
+    };
+
+    int any_pressed = 0;
+    size_t i;
+    size_t count = sizeof(s_buttons) / sizeof(s_buttons[0]);
+
+    /* Keep this list data-driven so we can script intro-menu navigation
+     * without adding one-off code paths for each new button sequence. */
+    for (i = 0; i < count; i++) {
+        if (pc_pad_autopress_button_apply(&s_buttons[i], buttons)) {
+            any_pressed = 1;
+        }
+    }
+
+    return any_pressed;
 }
 
 static int pc_pad_log_enabled(void) {
@@ -262,8 +299,8 @@ u32 PADRead(PADStatus* status) {
         if (rt > TRIGGER_THRESHOLD) buttons |= PAD_TRIGGER_R;
     }
 
-    if (pc_pad_autopress_a_apply(&buttons)) {
-        log_source = "autopress-a";
+    if (pc_pad_autopress_apply(&buttons)) {
+        log_source = "autopress";
     }
 
     status[0].triggerLeft = lt;

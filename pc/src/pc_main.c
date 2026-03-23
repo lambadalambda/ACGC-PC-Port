@@ -23,6 +23,7 @@ int           g_pc_time_override = -1; /* -1=system clock, 0-23=override hour */
 int           g_pc_window_w = PC_SCREEN_WIDTH;
 int           g_pc_window_h = PC_SCREEN_HEIGHT;
 int           g_pc_widescreen_stretch = 0;
+int           g_pc_boot_player_select = 0;
 
 /* exe image range — used by seg2k0 to distinguish pointers from segment addresses */
 uintptr_t pc_image_base = 0;
@@ -387,6 +388,7 @@ int main(int argc, char* argv[]) {
             printf("  --verbose, -v       Enable diagnostic output\n");
             printf("  --no-framelimit     Disable frame limiter\n");
             printf("  --model-viewer [N]  Launch model viewer (optional start index)\n");
+            printf("  --boot-player-select  Start directly at player select\n");
             printf("  --time HOUR         Override in-game hour (0-23)\n");
             printf("  --selftest          Run startup self-test and exit\n");
             printf("  --help, -h          Show this help message\n");
@@ -401,6 +403,8 @@ int main(int argc, char* argv[]) {
                 g_pc_model_viewer_start = atoi(argv[i + 1]);
                 i++;
             }
+        } else if (strcmp(argv[i], "--boot-player-select") == 0) {
+            g_pc_boot_player_select = 1;
         } else if (strcmp(argv[i], "--time") == 0 && i + 1 < argc) {
             g_pc_time_override = atoi(argv[i + 1]);
             if (g_pc_time_override < 0 || g_pc_time_override > 23) g_pc_time_override = -1;

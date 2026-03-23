@@ -1013,15 +1013,6 @@ void Sou_TrgEndCheck() {
                 printf("[TRG_P5] slot %d id=0x%04X port5 OFF (frame %u) -> FREE\n",
                     i, sou_trg_se[i].id, sou_trg_se[i].frames);
             }
-            /* Force-free stuck slots where sequencer never started the note */
-            if (sou_trg_se[i].frames > 30 && !sou_trg_se[i]._1D && !p5) {
-                printf("[TRG_P5] slot %d id=0x%04X STUCK (port5 never set, %u frames) -> FORCE FREE\n",
-                    i, sou_trg_se[i].id, sou_trg_se[i].frames);
-                sou_trg_se[i].id = 0;
-                sou_trg_se[i].frames = 0;
-                sou_trg_se[i]._1D = 0;
-                continue;
-            }
 #endif
             if (!p5 && sou_trg_se[i]._1D) {
                 sou_trg_se[i].id = 0;
@@ -2915,7 +2906,11 @@ void Na_VoiceSe(u8 a, u8 b, u8 c, s16 voice, u8 scale, u8 f) {
                         } break;
                         default: {
                             sou_nobasu_count = 0;
-                            sou_now_boin = SHIIN2BOIN[a];
+                            if (a < ARRAY_COUNT(SHIIN2BOIN)) {
+                                sou_now_boin = SHIIN2BOIN[a];
+                            } else {
+                                sou_now_boin = 0;
+                            }
                         } break;
                     }
                 }
@@ -3407,9 +3402,7 @@ extern void Na_SysLevStart(u8 id) {
         }
     }
     for (j = 0; j < ARRAY_COUNT(sou_sys_lev); j++) {
-        //! BUG: `i` will be ARRAY_COUNT(sou_sys_lev) if we get to this point,
-        // and we will be incrementing out of bounds
-        sou_sys_lev[i]._1++;
+        sou_sys_lev[j]._1++;
     }
 
 offset_jmp:

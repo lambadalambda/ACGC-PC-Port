@@ -195,6 +195,11 @@ extern Gfx rom_train_out_bgcloud_modelT[];
 extern Gfx rom_train_out_bgtree_modelT[];
 extern Gfx rom_train_out_shineglass_modelT[];
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_rom_train_in_display_lists(void);
+extern void pc_patch_rom_train_out_display_lists(void);
+#endif
+
 static int aTrainWindow_GetTreePalletIdx() {
     static u8 till_data[15][2] = {
         { 0x02, 0x03 }, { 0x02, 0x11 }, { 0x02, 0x18 }, { 0x04, 0x03 }, { 0x04, 0x08 },
@@ -221,6 +226,11 @@ static int aTrainWindow_GetTreePalletIdx() {
 
 static void Train_Window_Actor_ct(ACTOR* actor, GAME* game) {
     TRAIN_WINDOW_ACTOR* window = (TRAIN_WINDOW_ACTOR*)actor;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_rom_train_in_display_lists();
+    pc_patch_rom_train_out_display_lists();
+#endif
 
     switch (Save_Get(scene_no)) {
         case SCENE_START_DEMO:

@@ -303,6 +303,7 @@ static void aNPC_check_manpu_demoCode(ACTOR* actorx) {
     NPC_ACTOR* nactorx = (NPC_ACTOR*)actorx;
     int order = mDemo_Get_OrderValue(mDemo_ORDER_NPC0, 0);
     int last_order = nactorx->talk_info.demo_code;
+    int eff_count = (int)ARRAY_COUNT(eff_idx);
     s16* eff_idx_p;
     s16* eff_idx2_p;
 
@@ -327,14 +328,17 @@ static void aNPC_check_manpu_demoCode(ACTOR* actorx) {
             seqNo = aNPC_ANIM_SITDOWN_WAIT_D1;
         } else if (order == aNPC_MANPU_CODE_RESET_KEKE) {
             seqNo = aNPC_ANIM_WAIT_E1;
-        } else {
+        } else if (order >= 0 && order < eff_count) {
             seqNo = eff_idx_p[order];
             talk = FALSE;
+        } else {
+            seqNo = aNPC_ANIM_TALK1;
         }
 
         aNPC_Animation_init(actorx, seqNo, talk);
-        nactorx->talk_info.demo_code = order;
-    } else if (last_order != aNPC_MANPU_CODE_NONE && nactorx->draw.animation_id == eff_idx_p[last_order] &&
+        nactorx->talk_info.demo_code = (order >= 0 && order < eff_count) ? order : aNPC_MANPU_CODE_NONE;
+    } else if (last_order > aNPC_MANPU_CODE_NONE && last_order < eff_count &&
+               nactorx->draw.animation_id == eff_idx_p[last_order] &&
                nactorx->draw.main_animation_state == cKF_STATE_STOPPED) {
         aNPC_Animation_init(actorx, eff_idx2_p[last_order], FALSE);
     }

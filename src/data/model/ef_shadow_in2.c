@@ -53,7 +53,7 @@ void pc_patch_ef_shadow_in_modelT(void) {
     }
 
     ef_shadow_in_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_shadow_in_0);
-    ef_shadow_in_modelT[13].words.w1 = pc_gbi_ptr_encode(ef_shadow_in_v);
+    ef_shadow_in_modelT[14].words.w1 = pc_gbi_ptr_encode(ef_shadow_in_v);
 
     s_patched = TRUE;
 }

@@ -356,6 +356,10 @@ extern void graph_proc(void* arg) {
 #ifdef TARGET_PC
     if (g_pc_model_viewer) {
         dlftbl = &game_dlftbls[10]; /* model viewer */
+    } else if (g_pc_boot_player_select) {
+        /* Fast debug path that bypasses first/title scenes but keeps normal
+         * player-select -> start-data-init -> select -> play sequencing. */
+        dlftbl = &game_dlftbls[6];
     }
 #endif
     graph_ct(&graph_class);

@@ -796,6 +796,23 @@ extern s32 CreateAudioTask(Acmd* cmds, s16* pSamples, u32 nSamples, s32 param_4)
                 port_cmds++;
             }
 
+#ifdef TARGET_PC
+            extern int g_pc_verbose;
+
+            if (g_pc_verbose != 0) {
+                static u32 s_portq_diag_counter = 0;
+
+                /* Emit low-rate queue diagnostics to see whether the consumer is
+                 * draining or staying saturated during train-scene stalls. */
+                if ((AG.thread_cmd_proc_mq_p->validCount > 0 && (s_portq_diag_counter++ % 30u) == 0u) ||
+                    (AG.thread_cmd_proc_mq_p->validCount == 0 && (s_portq_diag_counter++ % 120u) == 0u)) {
+                    OSReport("[AUDIO][portq] processed=%d valid=%d r=%u w=%u fin=%u\n", port_cmds,
+                             AG.thread_cmd_proc_mq_p->validCount, AG.thread_cmd_read_pos, AG.thread_cmd_write_pos,
+                             AG.thread_cmd_queue_finished);
+                }
+            }
+#endif
+
             if (port_cmds == 0 && AG.thread_cmd_queue_finished) {
                 Nap_SendStart();
             }

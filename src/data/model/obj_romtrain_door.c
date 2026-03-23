@@ -82,6 +82,32 @@ Gfx obj_romtrain_door_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_romtrain_door_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_romtrain_base_model[3].words.w1 = pc_gbi_ptr_encode(obj_romtrain_door_pal);
+    obj_romtrain_base_model[4].words.w1 = pc_gbi_ptr_encode(obj_romtrain_door_tex_txt);
+    obj_romtrain_base_model[8].words.w1 = pc_gbi_ptr_encode(&obj_romtrain_door_v[12]);
+
+    obj_romtrain_glass_model[5].words.w1 = pc_gbi_ptr_encode(obj_romtrain_glass_tex_txt);
+    obj_romtrain_glass_model[8].words.w1 = pc_gbi_ptr_encode(&obj_romtrain_door_v[8]);
+
+    obj_romtrain_door_model[3].words.w1 = pc_gbi_ptr_encode(obj_romtrain_door_pal);
+    obj_romtrain_door_model[4].words.w1 = pc_gbi_ptr_encode(obj_romtrain_door_tex_txt);
+    obj_romtrain_door_model[8].words.w1 = pc_gbi_ptr_encode(obj_romtrain_door_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_romtrain_door_display_lists(void) {
+}
+#endif
+
 cKF_Joint_R_c cKF_je_r_obj_romtrain_door_tbl[] = {
     { NULL, 1, cKF_JOINT_FLAG_DISP_OPA, { 2000, 0, 51036 } },
     { obj_romtrain_base_model, 1, cKF_JOINT_FLAG_DISP_OPA, { 0, 0, 0 } },

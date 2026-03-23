@@ -111,6 +111,7 @@ extern uintptr_t pc_image_end;
 /* --- Model viewer --- */
 extern int g_pc_model_viewer;
 extern int g_pc_model_viewer_start;
+extern int g_pc_boot_player_select;
 
 /* --- Per-frame diagnostics --- */
 extern int pc_emu64_frame_cmds;

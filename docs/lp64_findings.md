@@ -286,3 +286,21 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64-asan/bin --timeout 10` passes.
   - `bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64/bin --timeout 8` passes.
   - this loop covers model/pointer regressions for train and keitai quickly; scene-scripted behavior/effect timing still requires runtime intro/path repros.
+
+## 2026-03-23 - added `--boot-player-select` for faster train-flow debugging
+
+- Symptom/signature:
+  - even with autopress and watchdog tooling, intro/title path setup can add significant wall-clock delay before train/name-entry regressions become observable.
+- Root cause:
+  - there was no CLI fast path to skip first/title scenes while still keeping normal in-game scene transitions (`player_select -> select -> play`) for scripted train-flow checks.
+- Fix approach and touched files:
+  - added CLI flag parsing and help text for `--boot-player-select` in `pc/src/pc_main.c`.
+  - added global flag declaration in `pc/include/pc_platform.h`.
+  - routed `graph_proc` initial game selection to `game_dlftbls[6]` (`player_select`) when enabled in `src/graph.c`.
+  - documented the flag in `README.md` and `pc/DOCUMENTATION.md`.
+  - added contract `pc/tests/check_boot_player_select_contract.sh`.
+- Verification and follow-up:
+  - `sh pc/tests/check_boot_player_select_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - `/tmp/acgc-p2-config-64/bin/AnimalCrossing --help` shows the new flag.
+  - next step: wire a dedicated smoke script preset around `--boot-player-select` to benchmark train/name-entry time-to-signal against existing watchdog runs.

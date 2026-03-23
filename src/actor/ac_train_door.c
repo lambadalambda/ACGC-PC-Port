@@ -26,8 +26,16 @@ ACTOR_PROFILE TrainDoor_Profile = {
 extern cKF_Skeleton_R_c cKF_bs_r_obj_romtrain_door;
 extern cKF_Animation_R_c cKF_ba_r_obj_romtrain_door;
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_obj_romtrain_door_display_lists(void);
+#endif
+
 static void aTRD_actor_ct(ACTOR* actor, GAME* game) {
     TRAINDOOR_ACTOR* traindoor = (TRAINDOOR_ACTOR*)actor;
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_obj_romtrain_door_display_lists();
+#endif
 
     cKF_SkeletonInfo_R_ct(&traindoor->common_actor_class.anime.keyframe, &cKF_bs_r_obj_romtrain_door, NULL,
                           traindoor->work, traindoor->target);

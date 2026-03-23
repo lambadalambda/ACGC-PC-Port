@@ -19,6 +19,10 @@ check_contains "$WATCHDOG" 'start-gate-timeout' 'watchdog supports fallback moni
 check_contains "$WATCHDOG" 'queue-streak-seconds' 'watchdog supports sustained queue streak detection'
 check_contains "$WATCHDOG" 'queue-rw-stuck-seconds' 'watchdog supports queue rw-stall detection'
 check_contains "$WATCHDOG" 'entropy-max-unique' 'watchdog supports low-entropy loop detection'
+check_contains "$WATCHDOG" 'no-progress-timeout' 'watchdog supports no-progress hang gating'
+check_contains "$WATCHDOG" 'scene4-stall-seconds' 'watchdog supports prolonged scene-4 stall gating'
+check_contains "$WATCHDOG" 'NEOS_FRAME_RE' 'watchdog tracks neos frame progress markers'
+check_contains "$WATCHDOG" 'SCENE_MODE_RE' 'watchdog tracks scene transition progress markers'
 check_contains "$WATCHDOG" 'select\.select' 'watchdog uses polling rather than blocking readline loop'
 
 printf '%s\n' 'check_train_hang_watchdog_contract: OK'

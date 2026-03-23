@@ -38,17 +38,26 @@ QUEUE_SAMPLE_RE = re.compile(
     r"SendStart::Mesg Full Queue rs=(?P<rs>-?\d+) rt=(?P<rt>-?\d+) "
     r"valid=(?P<valid>\d+) r=(?P<read>\d+) w=(?P<write>\d+)"
 )
+NEOS_FRAME_RE = re.compile(r"\[NEOS_OUT\]\s+frame=(?P<frame>\d+)")
+SCENE_MODE_RE = re.compile(r"\[SCENE_MODE\]\s+(?P<from>-?\d+)\s*->\s*(?P<to>-?\d+)")
 
 
 @dataclass
 class WatchdogState:
     start_time: float
     last_line_ts: float
+    last_progress_ts: float
 
     seen_scene_gate: bool = False
     monitor_armed: bool = False
     arm_reason: str = ""
     monitor_start_ts: float = 0.0
+
+    # Progress markers let us avoid false positives when queues look stressed
+    # but frame/scene logs are still advancing.
+    last_neos_frame: int | None = None
+    current_scene_mode: int | None = None
+    scene_mode_since_ts: float | None = None
 
     # Queue-full tracking uses time windows, not absolute counts.
     queue_full_total: int = 0
@@ -108,8 +117,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-output-timeout",
         type=float,
-        default=30.0,
+        default=0.0,
         help="Terminate if no log line is seen for this long (0 disables)",
+    )
+    parser.add_argument(
+        "--no-progress-timeout",
+        type=float,
+        default=45.0,
+        help="Require no observed progress for this long before queue-pressure hang triggers fire (0 disables)",
+    )
+    parser.add_argument(
+        "--scene4-stall-seconds",
+        type=float,
+        default=180.0,
+        help="Treat prolonged scene-mode 4 residency as potential stall context for hang triggers (0 disables)",
     )
     parser.add_argument(
         "--monitor-max-seconds",
@@ -234,6 +255,7 @@ def arm_monitor(state: WatchdogState, now: float, reason: str) -> None:
     state.monitor_armed = True
     state.monitor_start_ts = now
     state.arm_reason = reason
+    state.last_progress_ts = now
 
     state.queue_full_total = 0
     state.queue_full_times.clear()
@@ -252,6 +274,20 @@ def arm_monitor(state: WatchdogState, now: float, reason: str) -> None:
 def ingest_line(state: WatchdogState, args: argparse.Namespace, line: str, now: float) -> None:
     state.last_line_ts = now
     state.tail_lines.append(line.rstrip("\n"))
+
+    scene_mode_match = SCENE_MODE_RE.search(line)
+    if scene_mode_match:
+        state.current_scene_mode = int(scene_mode_match.group("to"))
+        state.scene_mode_since_ts = now
+        # Scene transition is a strong progression marker.
+        state.last_progress_ts = now
+
+    neos_frame_match = NEOS_FRAME_RE.search(line)
+    if neos_frame_match:
+        neos_frame = int(neos_frame_match.group("frame"))
+        if state.last_neos_frame is None or neos_frame > state.last_neos_frame:
+            state.last_progress_ts = now
+        state.last_neos_frame = neos_frame
 
     if SCENE_GATE_TOKEN in line:
         state.seen_scene_gate = True
@@ -301,13 +337,18 @@ def format_metrics(
     queue_rate: float,
     queue_streak_age: float,
     rw_stuck_age: float,
+    no_progress_age: float,
+    scene4_age: float,
     entropy_unique: int,
     entropy_lines: int,
 ) -> str:
     monitor_age = now - state.monitor_start_ts if state.monitor_armed else 0.0
     valid = state.last_queue_valid if state.last_queue_valid is not None else -1
+    scene_mode = state.current_scene_mode if state.current_scene_mode is not None else -1
+    neos_frame = state.last_neos_frame if state.last_neos_frame is not None else -1
     return (
         f"arm={state.arm_reason} monitor={monitor_age:.1f}s "
+        f"scene={scene_mode} scene4_age={scene4_age:.1f}s neos_frame={neos_frame} no_progress={no_progress_age:.1f}s "
         f"q_total={state.queue_full_total} q_recent={queue_recent_count}/{args.queue_window_seconds:.1f}s "
         f"q_rate={queue_rate:.2f}/s q_streak={queue_streak_age:.1f}s/{state.queue_streak_count} "
         f"q_valid={valid} q_rw_stuck={rw_stuck_age:.1f}s "
@@ -338,6 +379,11 @@ def evaluate_stop(state: WatchdogState, args: argparse.Namespace, now: float) ->
 
     if monitor_age < args.warmup_seconds:
         return None, ""
+
+    no_progress_age = now - state.last_progress_ts
+    scene4_age = 0.0
+    if state.current_scene_mode == 4 and state.scene_mode_since_ts is not None:
+        scene4_age = now - state.scene_mode_since_ts
 
     prune_times(state.queue_full_times, now, args.queue_window_seconds)
     prune_templates(state.templates, now, args.entropy_window_seconds)
@@ -376,21 +422,31 @@ def evaluate_stop(state: WatchdogState, args: argparse.Namespace, now: float) ->
         queue_rate,
         queue_streak_age,
         rw_stuck_age,
+        no_progress_age,
+        scene4_age,
         entropy_unique,
         entropy_lines,
     )
+
+    # Guard rail: avoid queue-pressure false positives while the game is still
+    # clearly progressing, unless scene 4 has been resident abnormally long.
+    no_progress_context = args.no_progress_timeout > 0 and no_progress_age >= args.no_progress_timeout
+    scene4_stall_context = args.scene4_stall_seconds > 0 and scene4_age >= args.scene4_stall_seconds
+    hang_context = no_progress_context or scene4_stall_context
 
     # Legacy absolute threshold is optional and disabled by default.
     if args.queue_full_threshold > 0 and state.queue_full_total >= args.queue_full_threshold:
         return "hang", f"legacy queue-full threshold reached ({metrics})"
 
-    if rw_stuck_age >= args.queue_rw_stuck_seconds and queue_recent_count >= args.queue_rate_min_events:
+    if hang_context and rw_stuck_age >= args.queue_rw_stuck_seconds and queue_recent_count >= args.queue_rate_min_events:
         return "hang", f"saturated queue read/write stalled ({metrics})"
 
-    if queue_streak_age >= args.queue_streak_seconds and state.queue_streak_count >= args.queue_streak_min_events:
+    if hang_context and queue_streak_age >= args.queue_streak_seconds and state.queue_streak_count >= args.queue_streak_min_events:
         return "hang", f"sustained queue-full streak ({metrics})"
 
     if (
+        hang_context
+        and
         queue_rate >= args.queue_rate_threshold
         and queue_recent_count >= args.queue_rate_min_events
         and entropy_low
@@ -434,7 +490,7 @@ def main() -> int:
     )
 
     start_time = time.monotonic()
-    state = WatchdogState(start_time=start_time, last_line_ts=start_time)
+    state = WatchdogState(start_time=start_time, last_line_ts=start_time, last_progress_ts=start_time)
     state.tail_lines = deque(maxlen=max(1, args.tail_lines))
 
     stop_kind: str | None = None

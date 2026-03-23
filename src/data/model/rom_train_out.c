@@ -158,9 +158,48 @@ Gfx rom_train_out_bgsky_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_rom_train_out_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    rom_train_out_bgcloud_modelT[4].words.w1 = pc_gbi_ptr_encode(rom_train_bgcloud_tex_rgb_i4);
+    rom_train_out_bgcloud_modelT[6].words.w1 = anime_2_txt;
+    rom_train_out_bgcloud_modelT[8].words.w1 = pc_gbi_ptr_encode(&rom_train_out_v[16]);
+
+    rom_train_out_bgtree_modelT[3].words.w1 = anime_3_txt;
+    rom_train_out_bgtree_modelT[5].words.w1 = pc_gbi_ptr_encode(rom_train_bgtree_tex);
+    rom_train_out_bgtree_modelT[7].words.w1 = anime_1_txt;
+    rom_train_out_bgtree_modelT[8].words.w1 = pc_gbi_ptr_encode(&rom_train_out_v[24]);
+
+    rom_train_out_shineglass_modelT[2].words.w1 = pc_gbi_ptr_encode(rom_train_shine_tex_rgb_i4);
+    rom_train_out_shineglass_modelT[4].words.w1 = pc_gbi_ptr_encode(rom_train_glass_tex_rgb_i4);
+    rom_train_out_shineglass_modelT[6].words.w1 = anime_5_txt;
+    rom_train_out_shineglass_modelT[7].words.w1 = pc_gbi_ptr_encode(&rom_train_out_v[32]);
+
+    rom_train_out_tunnel_model[4].words.w1 = pc_gbi_ptr_encode(rom_train_3_pal);
+    rom_train_out_tunnel_model[5].words.w1 = pc_gbi_ptr_encode(rom_train_tunnel_tex);
+    rom_train_out_tunnel_model[7].words.w1 = anime_4_txt;
+    rom_train_out_tunnel_model[9].words.w1 = pc_gbi_ptr_encode(&rom_train_out_v[8]);
+
+    rom_train_out_bgsky_model[3].words.w1 = pc_gbi_ptr_encode(rom_train_4_pal);
+    rom_train_out_bgsky_model[4].words.w1 = pc_gbi_ptr_encode(rom_train_bgsky_tex);
+    rom_train_out_bgsky_model[7].words.w1 = pc_gbi_ptr_encode(rom_train_out_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_rom_train_out_display_lists(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_rom_train_out_c(void) {
     pc_load_asset("assets/rom_train_out/rom_train_3_pal.bin", rom_train_3_pal, 0x20, 0x8D9A40, 0, 1);
+    pc_patch_rom_train_out_display_lists();
 }
 #endif

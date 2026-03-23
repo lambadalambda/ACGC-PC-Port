@@ -1307,6 +1307,14 @@ static u8* __Load_Bank(s32 table_type, s32 id, s32* did_alloc) {
                 break;
         }
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        if (ram_addr != NULL && ((uintptr_t)ram_addr & ~(uintptr_t)UINT32_MAX) == 0) {
+            OSReport("[AUDIO][load][lp64] low alloc ptr table=%d id=%d link=%d cache=%d size=0x%08x ram=%p\n", table_type,
+                     id, link_id, cache_type, size, ram_addr);
+            OSPanic(__FILE__, __LINE__, "LP64 truncated audio load allocation pointer");
+        }
+#endif
+
         *did_alloc = TRUE;
 
         if (medium == MEDIUM_RAM_UNLOADED) {
@@ -1722,6 +1730,14 @@ static s32 Nas_StartDma(OSIoMesg* ioMsg, s32 priority, s32 direction, u32 device
     if ((size & 0x1F) != 0) {
         size = ALIGN_NEXT(size, 32);
     }
+
+#if defined(PC_EXPERIMENTAL_64BIT)
+    if (dram_addr != NULL && ((uintptr_t)dram_addr & ~(uintptr_t)UINT32_MAX) == 0) {
+        OSReport("[AUDIO][dma][lp64] truncated dram ptr type=%s medium=%d dev=0x%08x dram=%p size=0x%08x\n", dma_type,
+                 medium, device_addr, dram_addr, size);
+        OSPanic(__FILE__, __LINE__, "LP64 truncated audio DMA destination pointer");
+    }
+#endif
 
     /* device_addr is an ARAM offset (relative to audiorom start).
      * GetNeosRomTop() gives the base ARAM address for audiorom data. */
