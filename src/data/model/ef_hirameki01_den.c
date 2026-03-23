@@ -63,3 +63,25 @@ Gfx ef_hirameki01_hikari_modelT[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 1, 3, 2, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_hirameki01_modelT(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_hirameki01_den_modelT[3].words.w1 = pc_gbi_ptr_encode(ef_hirameki01_0);
+    ef_hirameki01_den_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_hirameki01_den_v);
+    ef_hirameki01_hikari_modelT[4].words.w1 = pc_gbi_ptr_encode(ef_hirameki01_1);
+    ef_hirameki01_hikari_modelT[7].words.w1 = pc_gbi_ptr_encode(ef_hirameki01_hikari_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_hirameki01_modelT(void) {
+}
+#endif
+#endif

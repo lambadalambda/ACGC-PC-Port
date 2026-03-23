@@ -42,6 +42,9 @@ extern Gfx ef_warau01_00_modelT[];
 extern Gfx ef_warau01_01_modelT[];
 extern Gfx ef_warau01_02_modelT[];
 extern Gfx ef_warau01_03_modelT[];
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_warau01_modelT(void);
+#endif
 
 static Gfx* eWU_DispTable[12] = {
     // clang-format off
@@ -74,6 +77,9 @@ static void eWU_dw(eEC_Effect_c* effect, GAME* game) {
         eEC_CLIP->auto_matrix_xlu_offset_proc(game, pos, scale, ofs);
         gDPSetPrimColor(NEXT_POLY_XLU_DISP, 0, 128, 255, 255, 255, 255);
         gDPSetEnvColor(NEXT_POLY_XLU_DISP, 0, 0, 255, 255);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+        pc_patch_ef_warau01_modelT();
+#endif
         gSPDisplayList(NEXT_POLY_XLU_DISP, eWU_DispTable[counter]);
 
         CLOSE_DISP(game->graph);

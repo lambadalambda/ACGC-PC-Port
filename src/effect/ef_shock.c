@@ -3,6 +3,9 @@
 #include "m_common_data.h"
 
 extern Gfx ef_shock01_00_modelT[];
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_shock01_modelT(void);
+#endif
 
 static void eSK_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1);
 static void eSK_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
@@ -108,6 +111,9 @@ static void eSK_dw(eEC_Effect_c* effect, GAME* game) {
 
     gDPSetPrimColor(NEXT_POLY_XLU_DISP, 0, 128, eSK_prim_table[idx].r, eSK_prim_table[idx].g, eSK_prim_table[idx].b,
                     eSK_prim_table[idx].a);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_ef_shock01_modelT();
+#endif
     gSPDisplayList(NEXT_POLY_XLU_DISP, ef_shock01_00_modelT);
 
     CLOSE_DISP(game->graph);

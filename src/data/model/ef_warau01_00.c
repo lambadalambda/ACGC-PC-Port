@@ -108,3 +108,29 @@ Gfx ef_warau01_03_modelT[] = {
     gsSPNTriangles_5b(4, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_warau01_modelT(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_warau01_00_modelT[5].words.w1 = pc_gbi_ptr_encode(ef_warau01us);
+    ef_warau01_00_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_warau01_00_v);
+    ef_warau01_01_modelT[5].words.w1 = pc_gbi_ptr_encode(ef_warau01us);
+    ef_warau01_01_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_warau01_01_v);
+    ef_warau01_02_modelT[5].words.w1 = pc_gbi_ptr_encode(ef_warau01us);
+    ef_warau01_02_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_warau01_02_v);
+    ef_warau01_03_modelT[5].words.w1 = pc_gbi_ptr_encode(ef_warau01us);
+    ef_warau01_03_modelT[8].words.w1 = pc_gbi_ptr_encode(ef_warau01_03_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_warau01_modelT(void) {
+}
+#endif
+#endif

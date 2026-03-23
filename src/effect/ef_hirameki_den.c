@@ -3,6 +3,9 @@
 #include "m_common_data.h"
 
 extern Gfx ef_hirameki01_den_modelT[];
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_hirameki01_modelT(void);
+#endif
 
 static void eHiramekiD_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1);
 static void eHiramekiD_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
@@ -85,6 +88,9 @@ static void eHiramekiD_dw(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->auto_matrix_xlu_offset_proc(game, position, scale, offset);
     gDPSetPrimColor(NEXT_POLY_XLU_DISP, 0, 255, prim_r, prim_g, prim_b, prim_a);
     gDPSetEnvColor(NEXT_POLY_XLU_DISP, env_r, env_g, 0, 255);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_ef_hirameki01_modelT();
+#endif
     gSPDisplayList(NEXT_POLY_XLU_DISP, ef_hirameki01_den_modelT);
 
     CLOSE_DISP(game->graph);
