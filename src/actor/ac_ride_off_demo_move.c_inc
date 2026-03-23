@@ -43,15 +43,59 @@ static void aROD_ride_train(ACTOR* actor, GAME* game) {
 
 static void aROD_ride_off_player(ACTOR* actor, GAME* game) {
     RIDE_OFF_DEMO_ACTOR* ride_off = (RIDE_OFF_DEMO_ACTOR*)actor;
+    GAME_PLAY* play = (GAME_PLAY*)game;
     ACTOR* station_master = ride_off->station_master_actor;
+    ACTOR* talk_actor;
+    int station_master_talking = FALSE;
+
+    station_master = Actor_info_fgName_search(&play->actor_info, SP_NPC_STATION_MASTER, ACTOR_PART_NPC);
+
+    /* Reacquire Porter by fgName each frame so demo speak checks survive actor replacement timing. */
+    if (station_master != NULL) {
+        ride_off->station_master_actor = station_master;
+    } else {
+        station_master = ride_off->station_master_actor;
+    }
+
+    if (station_master != NULL &&
+        (mDemo_Check(mDemo_TYPE_SPEAK, station_master) == TRUE || mDemo_Check(mDemo_TYPE_TALK, station_master) == TRUE)) {
+        station_master_talking = TRUE;
+    } else {
+        talk_actor = mDemo_Get_talk_actor();
+
+        if (talk_actor != NULL && talk_actor->npc_id == SP_NPC_STATION_MASTER &&
+            (mDemo_Check(mDemo_TYPE_SPEAK, talk_actor) == TRUE || mDemo_Check(mDemo_TYPE_TALK, talk_actor) == TRUE)) {
+            ride_off->station_master_actor = talk_actor;
+            station_master_talking = TRUE;
+        }
+    }
 
     if (ride_off->_188 == 0) {
-        if (mDemo_Check(mDemo_TYPE_SPEAK, station_master) == 1) {
+        if (station_master_talking == TRUE) {
             ride_off->_188 = 1;
         }
-    } else if (!mDemo_Check(mDemo_TYPE_SPEAK, station_master)) {
+    } else if (station_master_talking == FALSE) {
         aROD_setupAction(actor, game, 4);
     }
+
+#if defined(TARGET_PC)
+    {
+        static int s_debug_tick = 0;
+
+        if ((s_debug_tick++ % 60) == 0) {
+            ACTOR* talk_actor = mDemo_Get_talk_actor();
+
+            OSReport(
+                "[PC][rideoff] act=%d _188=%d porter=%p pid=%d pnam=%04x pspd=%.3f talk=%d demo=%d talk_actor=%p tid=%d tnam=%04x\n",
+                ride_off->current_action, ride_off->_188, (void*)station_master,
+                station_master != NULL ? station_master->id : -1,
+                station_master != NULL ? (unsigned int)station_master->npc_id : 0,
+                station_master != NULL ? station_master->speed : -1.0f, station_master_talking,
+                mDemo_CheckDemoType(), (void*)talk_actor, talk_actor != NULL ? talk_actor->id : -1,
+                talk_actor != NULL ? (unsigned int)talk_actor->npc_id : 0);
+        }
+    }
+#endif
 }
 
 static void aROD_walk_one_unit(ACTOR* actor, GAME* game) {
@@ -65,6 +109,25 @@ static void aROD_walk_one_unit(ACTOR* actor, GAME* game) {
                 mPlib_request_main_wait_type3(game);
                 Camera2_request_main_normal(play, 0, 9);
                 Actor_delete(actor);
+#if defined(TARGET_PC)
+                {
+                    OSReport("[PC][rideoff] walk_one_unit complete: porter=%p speed=%.3f\n",
+                             (void*)ride_off->station_master_actor, ride_off->station_master_actor->speed);
+                }
+#endif
+#if defined(TARGET_PC)
+            } else {
+                static int s_wait_debug_tick = 0;
+
+                if ((s_wait_debug_tick++ % 60) == 0) {
+                    ACTOR* porter = ride_off->station_master_actor;
+
+                    OSReport("[PC][rideoff] waiting porter speed: porter=%p id=%d npc=%04x speed=%.3f\n", (void*)porter,
+                             porter != NULL ? porter->id : -1,
+                             porter != NULL ? (unsigned int)porter->npc_id : 0,
+                             porter != NULL ? porter->speed : -1.0f);
+                }
+#endif
             }
         } else {
             mPlib_Set_goal_player_demo_walk(aROD_OFF_UT_X_POS, aROD_OFF_UT_Z_POS, 2.5f);

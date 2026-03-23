@@ -51,3 +51,25 @@ Gfx obj_s_cedar5_trunkT_gfx_model[] = {
     gsSPNTriangles_5b(4, 0, 2, 5, 2, 6, 2, 3, 6, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_s_cedar5_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_s_cedar5_leafT_mat_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_cedar_leaf_tex);
+    obj_s_cedar5_leafT_gfx_model[0].words.w1 = pc_gbi_ptr_encode(obj_s_cedar5_v);
+    obj_s_cedar5_leafT_gfx_model[5].words.w1 = pc_gbi_ptr_encode(&obj_s_cedar5_v[32]);
+    obj_s_cedar5_leafT_gfx_model[10].words.w1 = pc_gbi_ptr_encode(&obj_s_cedar5_v[62]);
+    obj_s_cedar5_trunkT_mat_model[1].words.w1 = pc_gbi_ptr_encode(obj_s_cedar_trunk_tex);
+    obj_s_cedar5_trunkT_gfx_model[0].words.w1 = pc_gbi_ptr_encode(&obj_s_cedar5_v[68]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_s_cedar5_models(void) {
+}
+#endif

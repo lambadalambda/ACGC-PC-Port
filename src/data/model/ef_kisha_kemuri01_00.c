@@ -44,3 +44,22 @@ Gfx ef_kisha_kemuri01_modelT[] = {
     gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_kisha_kemuri01_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_kisha_kemuri01_modelT[4].words.w1 = pc_gbi_ptr_encode(ef_kisha_kemuri01_0);
+    ef_kisha_kemuri01_modelT[6].words.w1 = pc_gbi_ptr_encode(ef_kisha_kemuri01_1);
+    ef_kisha_kemuri01_modelT[9].words.w1 = pc_gbi_ptr_encode(ef_kisha_kemuri01_00_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_kisha_kemuri01_models(void) {
+}
+#endif

@@ -6,6 +6,8 @@
 #include "libultra/libultra.h"
 #include "m_rcp.h"
 
+extern void pc_patch_ef_wipe2_models(void);
+
 void fbdemo_triforce_startup(fbdemo_triforce* this) {
   this->finished = 0;
 
@@ -88,6 +90,7 @@ void fbdemo_triforce_draw(fbdemo_triforce* this, Gfx** gfxP) {
       gSPDisplayList(gfx++, ef_wipe1_modelT);
       break;
     case 1:
+      pc_patch_ef_wipe2_models();
       gSPDisplayList(gfx++, ef_wipe2_modelT);
       break;
     case 2:

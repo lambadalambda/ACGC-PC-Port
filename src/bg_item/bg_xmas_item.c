@@ -237,6 +237,8 @@ extern void pc_patch_obj_s_melody_models(void);
 extern void pc_patch_obj_melody_shadow_models(void);
 extern void pc_patch_obj_tree5_shadow_models(void);
 extern void pc_patch_obj_f_tree5_models(void);
+extern void pc_patch_obj_s_cedar5_models(void);
+extern void pc_patch_obj_cedar3_models(void);
 
 static void bIT_patch_lp64_bg_item_models(void) {
     static int s_patched = FALSE;
@@ -260,6 +262,8 @@ static void bIT_patch_lp64_bg_item_models(void) {
     pc_patch_obj_melody_shadow_models();
     pc_patch_obj_tree5_shadow_models();
     pc_patch_obj_f_tree5_models();
+    pc_patch_obj_s_cedar5_models();
+    pc_patch_obj_cedar3_models();
 
     s_patched = TRUE;
 }

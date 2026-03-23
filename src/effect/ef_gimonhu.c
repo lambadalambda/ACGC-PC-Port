@@ -53,6 +53,7 @@ f32 eGM_scale_data[][2] = {
 };
 
 extern Gfx ef_gimonhu01_00_modelT[];
+extern void pc_patch_ef_gimonhu01_models(void);
 
 // clang-format on
 static void eGM_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1) {
@@ -93,6 +94,7 @@ static void eGM_dw(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->auto_matrix_xlu_offset_proc(game, &effect->position, &effect->scale, &effect->offset);
     gSPMatrix(NEXT_POLY_XLU_DISP, _Matrix_to_Mtx_new(game->graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gDPSetPrimColor(NEXT_POLY_XLU_DISP, 0, 128, 255, 255, 255, (u8)v);
+    pc_patch_ef_gimonhu01_models();
     gSPDisplayList(NEXT_POLY_XLU_DISP, ef_gimonhu01_00_modelT);
     CLOSE_DISP(game->graph);
 }

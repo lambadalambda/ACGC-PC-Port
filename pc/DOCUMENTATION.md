@@ -330,13 +330,14 @@ The supported build remains 32-bit. For 64-bit portability work only, CMake also
 ```bash
 # 1. Place disc image in pc/build32/bin/rom/
 # 2. Build (from MSYS2 MINGW32 shell):
-./build_pc.sh
+make
 
 # 3. Run:
 pc/build32/bin/AnimalCrossing.exe --verbose
 ```
 
-`build_pc.sh` handles CMake configuration and build in one step.
+The root `Makefile` handles CMake configuration and build in one step.
+`build_pc.sh` remains available as a legacy helper.
 
 For guarded 64-bit bringup work, the smallest useful checks are:
 

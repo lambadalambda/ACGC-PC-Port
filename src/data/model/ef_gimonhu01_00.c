@@ -34,3 +34,21 @@ Gfx ef_gimonhu01_00_modelT[] = {
     gsSPNTrianglesInit_5b(2, 0, 1, 2, 0, 3, 1, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_gimonhu01_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_gimonhu01_00_modelT[4].words.w1 = pc_gbi_ptr_encode(ef_gimonhu01_0);
+    ef_gimonhu01_00_modelT[7].words.w1 = pc_gbi_ptr_encode(ef_gimonhu01_00_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_gimonhu01_models(void) {
+}
+#endif

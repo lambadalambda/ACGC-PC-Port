@@ -14,6 +14,7 @@
 #include "m_melody.h"
 #include "ac_ball.h"
 #include "m_actor_shadow.h"
+#include "m_malloc.h"
 #ifdef TARGET_PC
 #include "pc_bswap.h"
 #endif

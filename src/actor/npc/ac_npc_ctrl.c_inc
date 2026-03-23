@@ -10,6 +10,14 @@ static int aNPC_actor_birth_check(ACTOR* actorx, GAME* game) {
     for (n = list->num_actors; n != 0; n--) {
         if (actor_p != actorx && actor_p->npc_id == npc_name &&
             (actor_p->mv_proc != NULL || actor_p->dw_proc != NULL)) {
+#if defined(TARGET_PC)
+            if (npc_name == SP_NPC_STATION_MASTER) {
+                OSReport(
+                    "[PC][porter][birth] reject duplicate: new=%p newid=%d newnpc=%04x old=%p oldid=%d oldnpc=%04x\n",
+                    (void*)actorx, actorx->id, (unsigned int)actorx->npc_id, (void*)actor_p, actor_p->id,
+                    (unsigned int)actor_p->npc_id);
+            }
+#endif
             Actor_delete(actorx);
             actorx->sv_proc = NULL;
             actorx->dt_proc = NULL;
@@ -27,6 +35,12 @@ static int aNPC_actor_birth_check(ACTOR* actorx, GAME* game) {
 
         for (i = 0; i < mNpc_EVENT_NPC_NUM; i++) {
             if (event_npc->in_use == TRUE && event_npc->npc_id == npc_name) {
+#if defined(TARGET_PC)
+                if (npc_name == SP_NPC_STATION_MASTER) {
+                    OSReport("[PC][porter][birth] reject event_npc[%d]: in_use=%d npc=%04x\n", i, event_npc->in_use,
+                             (unsigned int)event_npc->npc_id);
+                }
+#endif
                 Actor_delete(actorx);
                 actorx->sv_proc = NULL;
                 actorx->dt_proc = NULL;
@@ -280,11 +294,24 @@ static int aNPC_setupActor_sub(GAME_PLAY* play, s8 idx, mActor_name_t name, s16 
     int ret = FALSE;
 
     if (aNPC_setupNpc_check(idx, name) == TRUE) {
-        if (Actor_info_make_actor(&play->actor_info, (GAME*)play, profile, pos->x, pos->y, pos->z, 0, 0, 0,
-                                  play->block_table.block_x, play->block_table.block_z, mvlist_no, name, arg, idx,
-                                  -1) != NULL) {
+        ACTOR* made_actor = Actor_info_make_actor(&play->actor_info, (GAME*)play, profile, pos->x, pos->y, pos->z, 0, 0,
+                                                  0, play->block_table.block_x, play->block_table.block_z, mvlist_no,
+                                                  name, arg, idx, -1);
+
+#if defined(TARGET_PC)
+        if (name == SP_NPC_STATION_MASTER) {
+            OSReport("[PC][porter] setupActor_sub: check=1 profile=%d idx=%d mv=%d arg=%d pos=(%.1f,%.1f,%.1f) made=%p\n",
+                     profile, idx, mvlist_no, arg, pos->x, pos->y, pos->z, (void*)made_actor);
+        }
+#endif
+
+        if (made_actor != NULL) {
             ret = TRUE;
         }
+#if defined(TARGET_PC)
+    } else if (name == SP_NPC_STATION_MASTER) {
+        OSReport("[PC][porter] setupActor_sub: dma/setup check failed idx=%d mv=%d arg=%d\n", idx, mvlist_no, arg);
+#endif
     }
 
     return ret;
@@ -516,6 +543,13 @@ static int aNPC_setupActor_proc(GAME_PLAY* play, mActor_name_t name, s8 idx, int
         pos.y = mCoBG_GetBgY_OnlyCenter_FromWpos(pos, 0.0f);
     }
 
+#if defined(TARGET_PC)
+    if (name == SP_NPC_STATION_MASTER) {
+        OSReport("[PC][porter] setupActor_proc: profile=%d idx=%d mv=%d arg=%d bx=%d bz=%d ux=%d uz=%d\n", profile,
+                 idx, mvlist_no, arg, bx, bz, ux, uz);
+    }
+#endif
+
     /* Keep setupActor return semantics explicit; relying on fallthrough from
      * the last call is undefined behavior and can desync intro NPC flow. */
     return aNPC_setupActor_sub(play, idx, name, profile, &pos, mvlist_no, arg);
@@ -644,10 +678,17 @@ static void aNPC_free_overlay_area_proc(ACTOR_DLFTBL* dlftbl) {
 static ACTOR* aNPC_get_actor_area_proc(size_t size, const char* actor_name, int line) {
     NPC_ACTOR** actor = CLIP(npc_clip)->keep_actors;
     int* used = CLIP(npc_clip)->keep_actor_used;
+    NPC_ACTOR** actor_head = CLIP(npc_clip)->keep_actors;
+    int* used_head = CLIP(npc_clip)->keep_actor_used;
     int i;
 
     if (size > 0x9D0) {
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+        /* LP64 NPC classes can exceed the fixed keep-actor slab entry size; spill oversized actors to heap. */
+        return (ACTOR*)zelda_malloc(size);
+#else
         return NULL;
+#endif
     }
 
     for (i = 0; i < 9; i++) {
@@ -659,6 +700,22 @@ static ACTOR* aNPC_get_actor_area_proc(size_t size, const char* actor_name, int 
         actor++;
         used++;
     }
+
+#if defined(TARGET_PC)
+    {
+        static int s_pool_fail_tick = 0;
+
+        if ((s_pool_fail_tick++ % 30) == 0) {
+            OSReport(
+                "[PC][npc_pool] get_actor_area NULL size=%u line=%d actor_name=%s used=%d%d%d%d%d%d%d%d%d slots=%p,%p,%p,%p,%p,%p,%p,%p,%p\n",
+                (unsigned int)size, line, actor_name != NULL ? actor_name : "(null)", used_head[0], used_head[1],
+                used_head[2], used_head[3], used_head[4], used_head[5], used_head[6], used_head[7], used_head[8],
+                (void*)actor_head[0], (void*)actor_head[1], (void*)actor_head[2], (void*)actor_head[3],
+                (void*)actor_head[4], (void*)actor_head[5], (void*)actor_head[6], (void*)actor_head[7],
+                (void*)actor_head[8]);
+        }
+    }
+#endif
 
     return NULL;
 }
@@ -674,12 +731,17 @@ static void aNPC_free_actor_area_proc(ACTOR* actorx) {
     for (i = 0; i < 9; i++) {
         if (*actor == nactorx) {
             *used = FALSE;
-            break;
+            return;
         }
 
         actor++;
         used++;
     }
+
+#if defined(TARGET_PC) && UINTPTR_MAX > 0xFFFFFFFFu
+    /* Oversized LP64 NPC instances are heap-backed; free them when they are not one of the keep-actor slots. */
+    zelda_free(actorx);
+#endif
 }
 #else
 static void aNPC_free_actor_area_proc(ACTOR* actorx) {
@@ -821,10 +883,18 @@ static void aNPC_actor_ct_c(ACTOR* actorx, GAME* game) {
         CLIP(npc_clip)->get_overlay_area_proc = &aNPC_get_overlay_area_proc;
         CLIP(npc_clip)->free_overlay_area_proc = &aNPC_free_overlay_area_proc;
         CLIP(npc_clip)->get_actor_area_proc = &aNPC_get_actor_area_proc;
+#if defined(TARGET_PC)
+        OSReport("[PC][npc_clip] init path=aNPC get_actor_area_proc=%p\n",
+                 (void*)(uintptr_t)CLIP(npc_clip)->get_actor_area_proc);
+#endif
 #else
         CLIP(npc_clip)->get_overlay_area_proc = (aNPC_GET_OVERLAY_AREA_PROC)&Actor_get_overlay_area;
         CLIP(npc_clip)->free_overlay_area_proc = &Actor_free_overlay_area;
         CLIP(npc_clip)->get_actor_area_proc = (aNPC_GET_ACTOR_AREA_PROC)&zelda_malloc;
+#if defined(TARGET_PC)
+        OSReport("[PC][npc_clip] init path=aNPC_NPC2 get_actor_area_proc=%p\n",
+                 (void*)(uintptr_t)CLIP(npc_clip)->get_actor_area_proc);
+#endif
 #endif
         CLIP(npc_clip)->free_actor_area_proc = &aNPC_free_actor_area_proc;
         CLIP(npc_clip)->dma_draw_data_proc = &aNPC_dma_draw_data_proc;
@@ -861,6 +931,16 @@ static void aNPC_actor_ct_c(ACTOR* actorx, GAME* game) {
         }
 #endif
     }
+#if defined(TARGET_PC)
+    else {
+        static int s_clip_seen_tick = 0;
+
+        if ((s_clip_seen_tick++ % 600) == 0) {
+            OSReport("[PC][npc_clip] reuse get_actor_area_proc=%p\n",
+                     (void*)(uintptr_t)CLIP(npc_clip)->get_actor_area_proc);
+        }
+    }
+#endif
 
     if (play->block_table.block_z == mISL_BLOCK_Z) {
         int bx;

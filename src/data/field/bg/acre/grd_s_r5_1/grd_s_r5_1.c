@@ -272,9 +272,48 @@ extern Gfx grd_s_r5_1_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_grd_s_r5_1_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_r5_1_modelT[5].words.w1 = pc_gbi_ptr_encode(water_1_tex_dummy);
+    grd_s_r5_1_modelT[7].words.w1 = pc_gbi_ptr_encode(water_2_tex_dummy);
+    grd_s_r5_1_modelT[9].words.w1 = (unsigned int)(uintptr_t)(0x08000000);
+    grd_s_r5_1_modelT[11].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[190]);
+    grd_s_r5_1_model[3].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_r5_1_model[4].words.w1 = pc_gbi_ptr_encode(bush_a_tex_dummy);
+    grd_s_r5_1_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[177]);
+    grd_s_r5_1_model[12].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_r5_1_model[13].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_r5_1_model[15].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[0]);
+    grd_s_r5_1_model[23].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[32]);
+    grd_s_r5_1_model[29].words.w1 = pc_gbi_ptr_encode(cliff_pal_dummy);
+    grd_s_r5_1_model[30].words.w1 = pc_gbi_ptr_encode(river_tex_dummy);
+    grd_s_r5_1_model[32].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[59]);
+    grd_s_r5_1_model[40].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[91]);
+    grd_s_r5_1_model[46].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_r5_1_model[47].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_r5_1_model[49].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[118]);
+    grd_s_r5_1_model[55].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[146]);
+    grd_s_r5_1_model[59].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_r5_1_model[60].words.w1 = pc_gbi_ptr_encode(bush_b_tex_dummy);
+    grd_s_r5_1_model[62].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_1_v[164]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_grd_s_r5_1_model(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_r5_1_grd_s_r5_1_c(void) {
     pc_load_asset("assets/field/bg/grd_s_r5_1_v.bin", grd_s_r5_1_v, 0xD40, 0xA3A778, 0, 2);
+    pc_patch_grd_s_r5_1_model();
 }
 #endif

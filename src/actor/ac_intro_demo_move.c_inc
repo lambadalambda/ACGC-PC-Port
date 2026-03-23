@@ -43,19 +43,60 @@ static void aID_ride_train(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play) {
 }
 
 static void aID_ride_off_player(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play) {
-    ACTOR* station_master = intro_demo->station_master_actor_p;
+    ACTOR* station_master = Actor_info_fgName_search(&play->actor_info, SP_NPC_STATION_MASTER, ACTOR_PART_NPC);
+    ACTOR* talk_actor;
+    int station_master_talking = FALSE;
+
+    /* Reacquire Porter by fgName each frame so speak checks survive delayed actor spawn/replacement timing on PC. */
+    if (station_master != NULL) {
+        intro_demo->station_master_actor_p = station_master;
+    } else {
+        station_master = intro_demo->station_master_actor_p;
+    }
+
+    if (station_master != NULL &&
+        (mDemo_Check(mDemo_TYPE_SPEAK, station_master) == TRUE || mDemo_Check(mDemo_TYPE_TALK, station_master) == TRUE)) {
+        station_master_talking = TRUE;
+    } else {
+        talk_actor = mDemo_Get_talk_actor();
+
+        if (talk_actor != NULL && talk_actor->npc_id == SP_NPC_STATION_MASTER &&
+            (mDemo_Check(mDemo_TYPE_SPEAK, talk_actor) == TRUE || mDemo_Check(mDemo_TYPE_TALK, talk_actor) == TRUE)) {
+            intro_demo->station_master_actor_p = talk_actor;
+            station_master_talking = TRUE;
+        }
+    }
 
     if (intro_demo->_1A0 == 0) {
         /* Wait for the station master to speak to the player */
-        if (mDemo_Check(mDemo_TYPE_SPEAK, station_master) == TRUE) {
+        if (station_master_talking == TRUE) {
             intro_demo->_1A0 = 1;
         }
     } else {
         /* Wait for the station master to be done speaking to the player */
-        if (mDemo_Check(mDemo_TYPE_SPEAK, station_master) == FALSE) {
+        if (station_master_talking == FALSE) {
             aID_setupAction(intro_demo, play, aID_ACT_WALK_ONE_UNIT);
         }
     }
+
+#if defined(TARGET_PC)
+    {
+        static int s_intro_debug_tick = 0;
+
+        if ((s_intro_debug_tick++ % 60) == 0) {
+            ACTOR* active_talk_actor = mDemo_Get_talk_actor();
+
+            OSReport(
+                "[PC][intro] act=%d _1A0=%d porter=%p pid=%d pnam=%04x pspd=%.3f talk=%d demo=%d talk_actor=%p tid=%d tnam=%04x\n",
+                intro_demo->action, intro_demo->_1A0, (void*)station_master,
+                station_master != NULL ? station_master->id : -1,
+                station_master != NULL ? (unsigned int)station_master->npc_id : 0,
+                station_master != NULL ? station_master->speed : -1.0f, station_master_talking,
+                mDemo_CheckDemoType(), (void*)active_talk_actor, active_talk_actor != NULL ? active_talk_actor->id : -1,
+                active_talk_actor != NULL ? (unsigned int)active_talk_actor->npc_id : 0);
+        }
+    }
+#endif
 }
 
 static void aID_walk_one_unit(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play) {
@@ -65,9 +106,22 @@ static void aID_walk_one_unit(INTRO_DEMO_ACTOR* intro_demo, GAME_PLAY* play) {
         if (player->actor_class.world.position.z >= aID_OFF_UT_Z_POS) {
             /* Reached target position */
             aID_setupAction(intro_demo, play, aID_ACT_GO_OUT_OF_STATION);
+#if defined(TARGET_PC)
+            OSReport("[PC][intro] walk_one_unit complete: player_z=%.3f\n", player->actor_class.world.position.z);
+#endif
         } else {
             /* Walk to A-3 @ 5Z, 7.5X */
             mPlib_Set_goal_player_demo_walk(aID_OFF_UT_X_POS, aID_OFF_UT_Z_POS, 2.5f);
+#if defined(TARGET_PC)
+            {
+                static int s_intro_walk_tick = 0;
+
+                if ((s_intro_walk_tick++ % 60) == 0) {
+                    OSReport("[PC][intro] walk_one_unit: player_z=%.3f goal_z=%.3f\n", player->actor_class.world.position.z,
+                             aID_OFF_UT_Z_POS);
+                }
+            }
+#endif
         }
     }
 }

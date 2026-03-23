@@ -19,6 +19,13 @@ static u32 __GXOverflowCount;
 static int IsWGPipeRedirected;
 #endif
 
+/* CP/PI register addresses are 32-bit ABI fields. Keep pointer narrowing
+ * explicit and checked at this boundary for LP64 bringup builds. */
+static inline u32 gx_fifo_reg_addr(const void* ptr)
+{
+    return PC_RUNTIME_U32_PTR(ptr) & 0x3FFFFFFF;
+}
+
 void *__GXCurrentBP;
 
 static void __GXFifoReadEnable(void);
@@ -186,9 +193,9 @@ void GXSetCPUFifo(GXFifoObj *fifo)
     {
         u32 reg = 0;
 
-        __piReg[3] = (u32)realFifo->base & 0x3FFFFFFF;
-        __piReg[4] = (u32)realFifo->top & 0x3FFFFFFF;
-        SET_REG_FIELD(673, reg, 21, 5, ((u32)realFifo->wrPtr & 0x3FFFFFFF) >> 5);
+        __piReg[3] = gx_fifo_reg_addr(realFifo->base);
+        __piReg[4] = gx_fifo_reg_addr(realFifo->top);
+        SET_REG_FIELD(673, reg, 21, 5, gx_fifo_reg_addr(realFifo->wrPtr) >> 5);
         SET_REG_FIELD(674, reg, 1, 26, 0);
         __piReg[5] = reg;
         CPGPLinked = GX_TRUE;
@@ -207,9 +214,9 @@ void GXSetCPUFifo(GXFifoObj *fifo)
         }
         __GXWriteFifoIntEnable(0, 0);
         reg = 0;
-        __piReg[3] = (u32)realFifo->base & 0x3FFFFFFF;
-        __piReg[4] = (u32)realFifo->top & 0x3FFFFFFF;
-        SET_REG_FIELD(708, reg, 21, 5, ((u32)realFifo->wrPtr & 0x3FFFFFFF) >> 5);
+        __piReg[3] = gx_fifo_reg_addr(realFifo->base);
+        __piReg[4] = gx_fifo_reg_addr(realFifo->top);
+        SET_REG_FIELD(708, reg, 21, 5, gx_fifo_reg_addr(realFifo->wrPtr) >> 5);
         SET_REG_FIELD(709, reg, 1, 26, 0);
         __piReg[5] = reg;
     }
@@ -229,18 +236,18 @@ void GXSetGPFifo(GXFifoObj *fifo)
     __GXWriteFifoIntEnable(0, 0);
     GPFifo = realFifo;
 
-    __cpReg[16] = (u32)realFifo->base & 0xFFFF;
-    __cpReg[18] = (u32)realFifo->top & 0xFFFF;
+    __cpReg[16] = PC_RUNTIME_U32_PTR(realFifo->base) & 0xFFFF;
+    __cpReg[18] = PC_RUNTIME_U32_PTR(realFifo->top) & 0xFFFF;
     __cpReg[24] = realFifo->count & 0xFFFF;
-    __cpReg[26] = (u32)realFifo->wrPtr & 0xFFFF;
-    __cpReg[28] = (u32)realFifo->rdPtr & 0xFFFF;
+    __cpReg[26] = PC_RUNTIME_U32_PTR(realFifo->wrPtr) & 0xFFFF;
+    __cpReg[28] = PC_RUNTIME_U32_PTR(realFifo->rdPtr) & 0xFFFF;
     __cpReg[20] = (u32)realFifo->hiWatermark & 0xFFFF;
     __cpReg[22] = (u32)realFifo->loWatermark & 0xFFFF;
-    __cpReg[17] = ((u32)realFifo->base & 0x3FFFFFFF) >> 16;
-    __cpReg[19] = ((u32)realFifo->top & 0x3FFFFFFF) >> 16;
+    __cpReg[17] = gx_fifo_reg_addr(realFifo->base) >> 16;
+    __cpReg[19] = gx_fifo_reg_addr(realFifo->top) >> 16;
     __cpReg[25] = realFifo->count >> 16;
-    __cpReg[27] = ((u32)realFifo->wrPtr & 0x3FFFFFFF) >> 16;
-    __cpReg[29] = ((u32)realFifo->rdPtr & 0x3FFFFFFF) >> 16;
+    __cpReg[27] = gx_fifo_reg_addr(realFifo->wrPtr) >> 16;
+    __cpReg[29] = gx_fifo_reg_addr(realFifo->rdPtr) >> 16;
     __cpReg[21] = (u32)realFifo->hiWatermark >> 16;
     __cpReg[23] = (u32)realFifo->loWatermark >> 16;
 
@@ -411,8 +418,8 @@ void GXEnableBreakPt(void *break_pt)
 
     __GXFifoReadDisable();
     // ASSERTMSGLINE(0x44A, (u8 *)break_pt >= GPFifo->base && (u8 *)break_pt <= GPFifo->top, "GXEnableBreakPt: Break point value not in fifo range");
-    __cpReg[30] = (u32)break_pt;
-    __cpReg[31] = ((u32)break_pt >> 16) & 0x3FFF;
+    __cpReg[30] = PC_RUNTIME_U32_PTR(break_pt);
+    __cpReg[31] = (PC_RUNTIME_U32_PTR(break_pt) >> 16) & 0x3FFF;
     gx->cpEnable = (gx->cpEnable & 0xFFFFFFFD) | 2;
     gx->cpEnable = (gx->cpEnable & 0xFFFFFFDF) | 0x20;
     __cpReg[1] = gx->cpEnable;
@@ -586,7 +593,7 @@ volatile void *GXRedirectWriteGatherPipe(void *ptr)
     CPUFifo->wrPtr = OSPhysicalToCached(__piReg[5] & 0xFBFFFFFF);
     __piReg[3] = 0;
     __piReg[4] = 0x04000000;
-    SET_REG_FIELD(1500, reg, 21, 5, ((u32)ptr & 0x3FFFFFFF) >> 5);
+    SET_REG_FIELD(1500, reg, 21, 5, gx_fifo_reg_addr(ptr) >> 5);
     /*if (((u32)ptr >> 5) & 0x1E00000)
         OSPanic(__FILE__, 0x5FB, "GX Internal: Register field out of range");
     //SET_REG_FIELD(0x5C8, reg, 25, 5, ((u32)ptr & 0x3FFFFFFF) >> 5);*/
@@ -624,9 +631,9 @@ void GXRestoreWriteGatherPipe(void)
     while (PPCMfwpar() & 1) {
     }
     PPCMtwpar((u32)OSUncachedToPhysical((void *)GXFIFO_ADDR));
-    __piReg[3] = (u32)CPUFifo->base & 0x3FFFFFFF;
-    __piReg[4] = (u32)CPUFifo->top & 0x3FFFFFFF;
-    SET_REG_FIELD(1551, reg, 21, 5, ((u32)CPUFifo->wrPtr & 0x3FFFFFFF) >> 5);
+    __piReg[3] = gx_fifo_reg_addr(CPUFifo->base);
+    __piReg[4] = gx_fifo_reg_addr(CPUFifo->top);
+    SET_REG_FIELD(1551, reg, 21, 5, gx_fifo_reg_addr(CPUFifo->wrPtr) >> 5);
     /*if ((((u32)CPUFifo->wrPtr & 0x3FFFFFFF) >> 5) & 0x7E00000)
         OSPanic(__FILE__, 0x5FB, "GX Internal: Register field out of range");
     reg = (reg & ~0x3FFFFE0) | (((u32)CPUFifo->wrPtr & 0x3FFFFFFF) & ~0x1F);*/

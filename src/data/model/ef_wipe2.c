@@ -48,3 +48,24 @@ Gfx ef_wipe2_modelT[] = {
     gsSPNTriangles_5b(0, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_ef_wipe2_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    ef_wipe2_modelT[5].words.w1 = pc_gbi_ptr_encode(ef_wape_tex);
+    ef_wipe2_modelT[7].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    ef_wipe2_modelT[9].words.w1 = pc_gbi_ptr_encode(ef_wipe2_v);
+    ef_wipe2_modelT[18].words.w1 = pc_gbi_ptr_encode(&ef_wipe2_v[32]);
+    ef_wipe2_modelT[27].words.w1 = pc_gbi_ptr_encode(&ef_wipe2_v[64]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_ef_wipe2_models(void) {
+}
+#endif

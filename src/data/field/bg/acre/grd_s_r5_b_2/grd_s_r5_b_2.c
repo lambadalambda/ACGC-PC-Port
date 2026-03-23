@@ -314,8 +314,51 @@ extern Gfx grd_s_r5_b_2_model[] = {
 };
 
 #ifdef TARGET_PC
+#if defined(PC_EXPERIMENTAL_64BIT)
+static void pc_patch_grd_s_r5_b_2_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_r5_b_2_modelT[5].words.w1 = pc_gbi_ptr_encode(water_1_tex_dummy);
+    grd_s_r5_b_2_modelT[7].words.w1 = pc_gbi_ptr_encode(water_2_tex_dummy);
+    grd_s_r5_b_2_modelT[9].words.w1 = (unsigned int)(uintptr_t)(0x08000000);
+    grd_s_r5_b_2_modelT[11].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[242]);
+    grd_s_r5_b_2_model[3].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_r5_b_2_model[4].words.w1 = pc_gbi_ptr_encode(bush_a_tex_dummy);
+    grd_s_r5_b_2_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[187]);
+    grd_s_r5_b_2_model[12].words.w1 = pc_gbi_ptr_encode(bridge_2_pal_dummy);
+    grd_s_r5_b_2_model[13].words.w1 = pc_gbi_ptr_encode(bridge_2_tex_dummy);
+    grd_s_r5_b_2_model[15].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[204]);
+    grd_s_r5_b_2_model[22].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[234]);
+    grd_s_r5_b_2_model[26].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_r5_b_2_model[27].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_r5_b_2_model[29].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[0]);
+    grd_s_r5_b_2_model[36].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[32]);
+    grd_s_r5_b_2_model[41].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_r5_b_2_model[43].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[59]);
+    grd_s_r5_b_2_model[49].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[90]);
+    grd_s_r5_b_2_model[55].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[121]);
+    grd_s_r5_b_2_model[57].words.w1 = pc_gbi_ptr_encode(cliff_pal_dummy);
+    grd_s_r5_b_2_model[58].words.w1 = pc_gbi_ptr_encode(river_tex_dummy);
+    grd_s_r5_b_2_model[60].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[125]);
+    grd_s_r5_b_2_model[69].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[157]);
+    grd_s_r5_b_2_model[73].words.w1 = pc_gbi_ptr_encode(bush_pal_dummy);
+    grd_s_r5_b_2_model[74].words.w1 = pc_gbi_ptr_encode(bush_b_tex_dummy);
+    grd_s_r5_b_2_model[76].words.w1 = pc_gbi_ptr_encode(&grd_s_r5_b_2_v[170]);
+
+    s_patched = TRUE;
+}
+#else
+static void pc_patch_grd_s_r5_b_2_model(void) {
+}
+#endif
+
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_r5_b_2_grd_s_r5_b_2_c(void) {
     pc_load_asset("assets/field/bg/grd_s_r5_b_2_v.bin", grd_s_r5_b_2_v, 0xFF0, 0xA3EBE8, 0, 2);
+    pc_patch_grd_s_r5_b_2_model();
 }
 #endif

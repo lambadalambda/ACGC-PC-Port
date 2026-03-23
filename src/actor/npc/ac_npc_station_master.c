@@ -10,6 +10,7 @@
 #include "m_train_control.h"
 #include "ac_intro_demo.h"
 #include "ac_ride_off_demo.h"
+#include "dolphin/os.h"
 
 enum {
     aSTM_THINK_GET_OFF_WAIT,
@@ -80,7 +81,14 @@ static void aSTM_actor_ct(ACTOR* actorx, GAME* game) {
     };
     // clang-format on
 
-    if (NPC_CLIP->birth_check_proc(actorx, game) == TRUE) {
+    int birth_ok = NPC_CLIP->birth_check_proc(actorx, game);
+
+#if defined(TARGET_PC)
+    OSReport("[PC][porter] actor_ct: actor=%p id=%d npc=%04x birth_ok=%d\n", (void*)actorx, actorx->id,
+             (unsigned int)actorx->npc_id, birth_ok);
+#endif
+
+    if (birth_ok == TRUE) {
         NPC_STATION_MASTER_ACTOR* actor = (NPC_STATION_MASTER_ACTOR*)actorx;
 
         actor->npc_class.schedule.schedule_proc = aSTM_schedule_proc;

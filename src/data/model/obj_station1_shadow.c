@@ -153,24 +153,19 @@ void pc_patch_station_shadow_models(void) {
     }
 
     obj_station1_shadow_hiT_model[3].words.w1 = pc_gbi_ptr_encode(obj_station1_shadow_tex);
-    obj_station1_shadow_hiT_model[5].words.w1 = pc_gbi_ptr_encode(obj_station1_shadow_v);
-
+    obj_station1_shadow_hiT_model[5].words.w1 = SEGMENT_ADDR(0x8, 0x0);
     obj_station1_shadow_lowT_model[3].words.w1 = pc_gbi_ptr_encode(obj_station1_shadow_tex);
-    obj_station1_shadow_lowT_model[6].words.w1 = pc_gbi_ptr_encode(&obj_station1_shadow_v[19]);
-
+    obj_station1_shadow_lowT_model[6].words.w1 = SEGMENT_ADDR(0x8, 0x130);
     obj_station2_shadow_low_model[3].words.w1 = pc_gbi_ptr_encode(obj_station2_shadow_tex_txt);
-    obj_station2_shadow_low_model[5].words.w1 = pc_gbi_ptr_encode(&obj_station2_shadow_v[44]);
-
+    obj_station2_shadow_low_model[6].words.w1 = SEGMENT_ADDR(0x8, 0x2C0);
     obj_station2_shadow_hi_model[3].words.w1 = pc_gbi_ptr_encode(obj_station2_shadow_tex_txt);
-    obj_station2_shadow_hi_model[5].words.w1 = pc_gbi_ptr_encode(obj_station2_shadow_v);
-    obj_station2_shadow_hi_model[11].words.w1 = pc_gbi_ptr_encode(&obj_station2_shadow_v[32]);
-
+    obj_station2_shadow_hi_model[5].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    obj_station2_shadow_hi_model[11].words.w1 = SEGMENT_ADDR(0x8, 0x200);
     obj_station3_shadow_low_model[3].words.w1 = pc_gbi_ptr_encode(obj_station3_shadow_tex_txt);
-    obj_station3_shadow_low_model[5].words.w1 = pc_gbi_ptr_encode(&obj_station3_shadow_v[44]);
-
+    obj_station3_shadow_low_model[6].words.w1 = SEGMENT_ADDR(0x8, 0x2C0);
     obj_station3_shadow_hi_model[3].words.w1 = pc_gbi_ptr_encode(obj_station3_shadow_tex_txt);
-    obj_station3_shadow_hi_model[5].words.w1 = pc_gbi_ptr_encode(obj_station3_shadow_v);
-    obj_station3_shadow_hi_model[11].words.w1 = pc_gbi_ptr_encode(&obj_station3_shadow_v[32]);
+    obj_station3_shadow_hi_model[5].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    obj_station3_shadow_hi_model[10].words.w1 = SEGMENT_ADDR(0x8, 0x200);
 
     s_patched = TRUE;
 }

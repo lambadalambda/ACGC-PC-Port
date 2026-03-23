@@ -31,6 +31,10 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2
 
 2. Build (from **MSYS2 MINGW32** shell):
    ```bash
+   make
+   ```
+   Legacy helper (still supported):
+   ```bash
    ./build_pc.sh
    ```
 

@@ -2,6 +2,94 @@
 
 This file tracks LP64 (64-bit host pointer-width) investigations and fixes so portability learnings do not get lost across sessions.
 
+## 2026-03-23 - intro demo porter speak gate robustness
+
+- Symptom/signature:
+  - after train arrival/outside-station progression, intro flow could remain in the porter-speak gate instead of reliably advancing to the next walk segment.
+  - user-facing symptom: porter interaction did not consistently trigger at the expected handoff point.
+- Root cause (current best hypothesis):
+  - `aID_ride_off_player` relied on a single cached station-master actor pointer captured during init, then matched speaks using strict pointer equality via `mDemo_Check`.
+  - if actor timing caused delayed spawn or pointer replacement, the gate could miss the active porter speak and stall waiting.
+- Fix approach and touched files:
+  - hardened intro speak gate in `src/actor/ac_intro_demo_move.c_inc` by:
+    - reacquiring `SP_NPC_STATION_MASTER` from actor lists each frame
+    - reconciling against `mDemo_Get_talk_actor()` when pointer equality alone is not sufficient
+    - accepting both `mDemo_TYPE_SPEAK` and `mDemo_TYPE_TALK` in the gate state check
+    - using the reconciled `station_master_talking` state for both talk-start and talk-end transitions
+  - applied the same hardening to the alternate ride-off demo gate in `src/actor/ac_ride_off_demo_move.c_inc` after user reported no behavioral change from intro-only edits
+  - added contract coverage in `pc/tests/check_intro_demo_station_master_reacquire_contract.sh`
+  - added companion contract `pc/tests/check_ride_off_demo_station_master_reacquire_contract.sh`
+- Verification and follow-up:
+  - red step: confirmed fallback path was absent before change (`mDemo_Get_talk_actor` missing in intro demo gate).
+  - full contract suite passes after the change (`pc/tests/check_*contract.sh`, with existing unrelated warnings from `check_static_ptr_contract.c`).
+  - LP64 + LP64 ASAN builds both succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - LP64 selftest/title smokes and ASAN title smoke continue to pass.
+  - follow-up: validate on manual/user run that porter talk now triggers reliably at the station handoff.
+
+## 2026-03-23 - post-train zero-operand pointer patch expansion (acre/model batch)
+
+- Symptom/signature:
+  - long delayed-autopress LP64 runs consistently reached post-train transition (`[SCENE_MODE] 18 -> 9`) and then emitted large `[PC][emu64][zero]` bursts from additional static display-list symbols.
+  - initial run after the first post-train batch still logged `140` zero hits.
+- Root cause:
+  - same LP64 static-pointer mechanism as prior fixes (`PC_STATIC_U32_PTR=0`) in additional acre/model display lists that were not yet covered by runtime fixup helpers.
+- Fix approach and touched files:
+  - regenerated/finalized station helper contract alignment:
+    - `pc/tests/check_station_model_ptr_patch_contract.sh`
+    - `src/data/model/obj_s_station1.c` (moved patch helper block to end of file so all model symbols are declared before use)
+  - added/auto-generated new acre helpers and loader invocations for:
+    - `src/data/field/bg/acre/grd_s_r5_1/grd_s_r5_1.c`
+    - `src/data/field/bg/acre/grd_s_f_mh_2/grd_s_f_mh_2.c`
+    - `src/data/field/bg/acre/grd_s_t_sh_2/grd_s_t_sh_2.c`
+    - `src/data/field/bg/acre/grd_s_t_st1_3/grd_s_t_st1_3.c`
+    - `src/data/field/bg/acre/grd_s_r4_b_2/grd_s_r4_b_2.c`
+    - `src/data/field/bg/acre/grd_s_t_r1_5/grd_s_t_r1_5.c`
+    - `src/data/field/bg/acre/grd_s_r7_b_2/grd_s_r7_b_2.c`
+    - `src/data/field/bg/acre/grd_s_t_3/grd_s_t_3.c`
+    - `src/data/field/bg/acre/grd_s_c1_1/grd_s_c1_1.c`
+    - `src/data/field/bg/acre/grd_s_t_po_3/grd_s_t_po_3.c`
+    - `src/data/field/bg/acre/grd_s_t_sh_3/grd_s_t_sh_3.c`
+  - added cedar shadow patch helper + call fan-out:
+    - `src/data/model/obj_cedar3.c`
+    - `src/bg_item/bg_item.c`
+    - `src/bg_item/bg_cherry_item.c`
+    - `src/bg_item/bg_winter_item.c`
+    - `src/bg_item/bg_xmas_item.c`
+  - helper bodies were generated with `pc/tools/gen_gfx_w1_fixups.py --apply-helper` for the acre files above.
+- Verification and follow-up:
+  - full `pc/tests/check_*contract.sh` sweep passes after changes (same pre-existing warnings from `check_static_ptr_contract.c`).
+  - LP64 + LP64 ASAN builds both succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - delayed-autopress long-run logs:
+    - `/tmp/acgc_lp64_release_post_train_fix_420s.log`: 140 zero hits
+    - `/tmp/acgc_lp64_release_post_train_fix2_420s.log`: 89 zero hits
+    - `/tmp/acgc_lp64_release_post_train_fix3_420s.log`: 20 zero hits
+    - `/tmp/acgc_lp64_release_post_train_fix4_420s.log`: 63 zero hits (different remaining acre set seen in this run)
+  - all long runs still progress through `0 -> 3 -> 4 -> 18 -> 9` before timeout.
+  - remaining open symbols from latest run are now concentrated in `grd_s_r1_b_3_model*`, `grd_s_c4_3_model*`, and `grd_s_c5_2_model*`; these are the next patch-helper targets.
+
+## 2026-03-23 - porter and tom nook body-model LP64 display-list fixups
+
+- Symptom/signature:
+  - after station-master spawn/progression fixes, post-train scene logic advanced and dialogue/shadows appeared, but porter/tom nook body meshes were still invisible.
+  - emu64 zero-pointer diagnostics pointed at NPC model symbols (`*_mnk_model`, `*_rcn_model`, and `*_cat_model`) and effect symbol `ef_gimonhu01_00_modelT`.
+- Root cause:
+  - these model/effect display lists still depended on static `w1` pointer words, which are zero under LP64 static-pointer mode unless rehydrated at runtime.
+- Fix approach and touched files:
+  - generated guarded one-time LP64 pointer patch helpers with `pc/tools/gen_gfx_w1_fixups.py --apply-helper` for:
+    - `src/data/npc/model/mdl/mnk_1.c` (`pc_patch_mnk_1_models`)
+    - `src/data/npc/model/mdl/rcn_1.c` (`pc_patch_rcn_1_models`)
+    - `src/data/npc/model/mdl/cat_1.c` (`pc_patch_cat_1_models`)
+    - `src/data/model/ef_gimonhu01_00.c` (`pc_patch_ef_gimonhu01_models`)
+  - invoked NPC helper calls from each model asset loader (`_pc_load_src_data_npc_model_mdl_*`).
+  - invoked `pc_patch_ef_gimonhu01_models()` in `src/effect/ef_gimonhu.c` before `gSPDisplayList`.
+  - extended coverage contract `pc/tests/check_post_train_scene_ptr_patch_contract.sh` with checks for new helpers/call sites.
+- Verification and follow-up:
+  - `bash pc/tests/check_post_train_scene_ptr_patch_contract.sh` passes.
+  - station-master gate contracts continue to pass:
+    - `bash pc/tests/check_intro_demo_station_master_reacquire_contract.sh`
+    - `bash pc/tests/check_ride_off_demo_station_master_reacquire_contract.sh`
+  - follow-up: rerun long LP64 train-arrival repro and confirm no new `[PC][emu64][zero]` hits for `mnk_1`, `rcn_1`, `cat_1`, or `ef_gimonhu01_00_modelT`, and verify porter/tom nook body meshes render in-scene.
+
 ## 2026-03-22 - gSetImage pointer-word encoding
 
 - Symptom/signature: `gSetImage` packed image pointers with `_g->words.w1 = (unsigned int)(i);`, which can truncate host pointers on LP64 and feed bad `G_SET*IMG` addresses into emu64/RDP paths.
@@ -419,3 +507,20 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `sh pc/tests/check_runtime_ptr_diagnostics_contract.sh` passes.
   - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
   - LP64 selftest/title/asan-title smokes continue to pass.
+
+## 2026-03-23 - GX FIFO register pointer writes now use checked LP64 narrowing
+
+- Symptom/signature:
+  - `src/static/dolphin/gx/GXFifo.c` still wrote FIFO/breakpoint/write-gather pointers into CP/PI registers via raw `(u32)` casts.
+  - these are ABI-boundary writes and would silently truncate host pointers on LP64 before register masking.
+- Root cause:
+  - legacy GX register paths predated `PC_RUNTIME_U32_PTR` adoption and retained unchecked pointer narrowing.
+- Fix approach and touched files:
+  - added helper `gx_fifo_reg_addr()` in `src/static/dolphin/gx/GXFifo.c` to route register-address narrowing through `PC_RUNTIME_U32_PTR` and apply `0x3FFFFFFF` masking in one place.
+  - replaced raw pointer casts in `GXSetCPUFifo`, `GXSetGPFifo`, `GXEnableBreakPt`, `GXRedirectWriteGatherPipe`, and `GXRestoreWriteGatherPipe` with checked narrowing/helper calls.
+  - added contract `pc/tests/check_gx_fifo_runtime_ptr_contract.sh` to enforce the new source contract and reject legacy casts.
+- Verification and follow-up:
+  - `sh pc/tests/check_gx_fifo_runtime_ptr_contract.sh` passes.
+  - full contract sweep (`for t in pc/tests/check_*contract.sh; do sh "$t"; done`) passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - LP64 selftest/title/asan-title smokes pass after the change.

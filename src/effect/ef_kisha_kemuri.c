@@ -3,6 +3,7 @@
 #include "m_common_data.h"
 
 extern Gfx ef_kisha_kemuri01_modelT[];
+extern void pc_patch_ef_kisha_kemuri01_models(void);
 
 static void eKishaK_init(xyz_t pos, int prio, s16 angle, GAME* game, u16 item_name, s16 arg0, s16 arg1);
 static void eKishaK_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
@@ -68,6 +69,7 @@ static void eKishaK_dw(eEC_Effect_c* effect, GAME* game) {
     eEC_CLIP->auto_matrix_xlu_proc(game, &effect->position, scale);
 
     gDPSetPrimColor(NEXT_POLY_XLU_DISP, 0, 128, 30, 30, 30, alpha);
+    pc_patch_ef_kisha_kemuri01_models();
     gSPDisplayList(NEXT_POLY_XLU_DISP, ef_kisha_kemuri01_modelT);
 
     CLOSE_DISP(game->graph);

@@ -4,6 +4,7 @@
 #include "m_common_data.h"
 #include "m_demo.h"
 #include "m_player_lib.h"
+#include "dolphin/os.h"
 
 static void aROD_actor_ct(ACTOR* actor, GAME* game);
 static void aROD_actor_dt(ACTOR* actor, GAME* game);

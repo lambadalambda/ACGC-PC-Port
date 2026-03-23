@@ -7,6 +7,8 @@
 #include "m_bgm.h"
 #include "m_event.h"
 #include "_mem.h"
+#include "libultra/libultra.h"
+#include "dolphin/os.h"
 
 /* Z-X */
 static f32 direct_vector[mDemo_DIRECT_NUM][2] = { { -1.0f, 0.0f },      { -F_SQRT2, F_SQRT2 }, { 0.0f, 1.0f },
@@ -419,9 +421,27 @@ static int set_talk_default() {
 static int wait_talk_start() {
     PLAYER_ACTOR* player = GET_PLAYER_ACTOR_NOW();
 
+#if defined(TARGET_PC)
+    if (demo->current.actor != NULL && demo->current.actor->npc_id == SP_NPC_STATION_MASTER) {
+        static int s_porter_talk_start_tick = 0;
+
+        if ((s_porter_talk_start_tick++ % 60) == 0) {
+            OSReport(
+                "[PC][demo][porter] wait_talk_start: type=%d state=%d player_main=%d actor=%p actor_id=%d actor_npc=%04x\n",
+                demo->current.type, demo->state, mPlib_get_player_actor_main_index(gamePT),
+                (void*)demo->current.actor, demo->current.actor->id, (unsigned int)demo->current.actor->npc_id);
+        }
+    }
+#endif
+
     if (demo->data.talk.change_player) {
         if (mPlib_get_player_actor_main_index(gamePT) != 65 &&
             mPlib_request_main_talk_type1(gamePT, demo->current.actor, demo->data.talk.turn, FALSE) == FALSE) {
+#if defined(TARGET_PC)
+            if (demo->current.actor != NULL && demo->current.actor->npc_id == SP_NPC_STATION_MASTER) {
+                OSReport("[PC][demo][porter] wait_talk_start blocked: request_main_talk_type1 rejected\n");
+            }
+#endif
             return FALSE;
         }
     } else {
@@ -976,6 +996,16 @@ extern int mDemo_Request(int type, ACTOR* actor, mDemo_REQUEST_PROC req_proc) {
     f32 weight = 1.0f;
     int request_num = demo->request_num;
 
+#if defined(TARGET_PC)
+    {
+        if (actor != NULL && actor->npc_id == SP_NPC_STATION_MASTER &&
+            (type == mDemo_TYPE_SPEAK || type == mDemo_TYPE_TALK)) {
+            OSReport("[PC][demo][porter] request: type=%d actor=%p actor_id=%d npc=%04x prio=%d req_num=%d\n", type,
+                     (void*)actor, actor->id, (unsigned int)actor->npc_id, demo->priority_type, request_num);
+        }
+    }
+#endif
+
     if (request_num < mDemo_REQUEST_NUM) {
         if (type >= demo->priority_type) {
             mDemo_Request_c* req = &demo->request[request_num];
@@ -987,6 +1017,11 @@ extern int mDemo_Request(int type, ACTOR* actor, mDemo_REQUEST_PROC req_proc) {
                     return FALSE;
                 }
             } else if (type == mDemo_TYPE_SPEAK && mPlib_Check_able_force_speak_label(gamePT, actor) == FALSE) {
+#if defined(TARGET_PC)
+                if (actor != NULL && actor->npc_id == SP_NPC_STATION_MASTER) {
+                    OSReport("[PC][demo][porter] request rejected: force_speak_label check failed\n");
+                }
+#endif
                 return FALSE;
             }
 
@@ -998,7 +1033,22 @@ extern int mDemo_Request(int type, ACTOR* actor, mDemo_REQUEST_PROC req_proc) {
             req->talk_weight = weight;
 
             demo->request_num++;
+
+#if defined(TARGET_PC)
+            if (actor != NULL && actor->npc_id == SP_NPC_STATION_MASTER &&
+                (type == mDemo_TYPE_SPEAK || type == mDemo_TYPE_TALK)) {
+                OSReport("[PC][demo][porter] request queued: type=%d new_prio=%d new_req_num=%d\n", type,
+                         demo->priority_type, demo->request_num);
+            }
+#endif
         }
+#if defined(TARGET_PC)
+        else if (actor != NULL && actor->npc_id == SP_NPC_STATION_MASTER &&
+                 (type == mDemo_TYPE_SPEAK || type == mDemo_TYPE_TALK)) {
+            OSReport("[PC][demo][porter] request starved: type=%d prio=%d req_num=%d\n", type,
+                     demo->priority_type, demo->request_num);
+        }
+#endif
 
         return TRUE;
     }

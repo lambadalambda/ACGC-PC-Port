@@ -17,6 +17,7 @@
 #include "m_skin_matrix.h"
 #include "m_npc.h"
 #include "m_malloc.h"
+#include "dolphin/os.h"
 #include "m_common_data.h"
 #ifdef TARGET_PC
 #include "pc_platform.h"
@@ -638,6 +639,18 @@ static int Actor_data_bank_regist_check(int* bank_id, ACTOR_PROFILE* profile, AC
 static int Actor_malloc_actor_class(ACTOR** actor_pp, ACTOR_PROFILE* profile, ACTOR_DLFTBL* dlftbl, const char* name,
                                     mActor_name_t id) {
     aNPC_draw_data_c draw_data;
+    int porter_request = (id == SP_NPC_STATION_MASTER);
+    int log_porter = FALSE;
+
+#if defined(TARGET_PC)
+    if (porter_request) {
+        static int s_porter_alloc_tick = 0;
+
+        if ((s_porter_alloc_tick++ % 30) == 0) {
+            log_porter = TRUE;
+        }
+    }
+#endif
 
     switch (ITEM_NAME_GET_TYPE(id)) {
         case NAME_TYPE_SPNPC:
@@ -645,10 +658,23 @@ static int Actor_malloc_actor_class(ACTOR** actor_pp, ACTOR_PROFILE* profile, AC
 #ifdef TARGET_PC
             if (CLIP(npc_clip) == NULL) {
                 *actor_pp = (ACTOR*)zelda_malloc(profile->class_size);
+#if defined(TARGET_PC)
+                if (log_porter) {
+                    OSReport("[PC][porter] malloc_actor_class: npc_clip NULL fallback zelda_malloc size=%u ptr=%p\n",
+                             (unsigned int)profile->class_size, (void*)*actor_pp);
+                }
+#endif
                 break;
             }
 #endif
             *actor_pp = CLIP(npc_clip)->get_actor_area_proc(profile->class_size, name, 1);
+#if defined(TARGET_PC)
+            if (log_porter) {
+                OSReport("[PC][porter] malloc_actor_class: npc_clip=%p get_area=%p size=%u ptr=%p\n",
+                         (void*)CLIP(npc_clip), (void*)(uintptr_t)CLIP(npc_clip)->get_actor_area_proc,
+                         (unsigned int)profile->class_size, (void*)*actor_pp);
+            }
+#endif
             (*Common_Get(clip).npc_clip->dma_draw_data_proc)(&draw_data, id); // leftover?
             break;
         }
@@ -717,11 +743,19 @@ extern ACTOR* Actor_info_make_actor(Actor_info* actor_info, GAME* game, s16 prof
     ACTOR_PROFILE* profile;
     ACTOR_DLFTBL* dlftbl;
     mAc_overlay_info_c overlay_info; /* Required to be a struct, stubbed in GC */
+    int porter_request;
 
     play = (GAME_PLAY*)game;
     dlftbl = actor_dlftbls + profile_no;
     overlay_info.actor_name = "";
+    porter_request = (name_id == SP_NPC_STATION_MASTER || profile_no == mAc_PROFILE_NPC_STATION_MASTER);
     if (actor_info->total_num > mAc_MAX_ACTORS) {
+#if defined(TARGET_PC)
+        if (porter_request) {
+            OSReport("[PC][porter] make_actor fail: actor_info full total=%d max=%d profile=%d name=%04x\n",
+                     actor_info->total_num, mAc_MAX_ACTORS, profile_no, (unsigned int)name_id);
+        }
+#endif
         return NULL;
     }
 
@@ -729,14 +763,33 @@ extern ACTOR* Actor_info_make_actor(Actor_info* actor_info, GAME* game, s16 prof
 #ifdef TARGET_PC
     /* Skip actors with NULL or stubbed profiles (stub functions masquerading as struct data) */
     if (profile == NULL || profile->class_size == 0 || profile->class_size > 0x100000) {
+#if defined(TARGET_PC)
+        if (porter_request) {
+            OSReport("[PC][porter] make_actor fail: invalid profile=%p class_size=%u profile_no=%d name=%04x\n",
+                     (void*)profile, profile != NULL ? (unsigned int)profile->class_size : 0, profile_no,
+                     (unsigned int)name_id);
+        }
+#endif
         return NULL;
     }
 #endif
     if (Actor_data_bank_regist_check(&data_bank_idx, profile, dlftbl, play, name_id) == FALSE) {
+#if defined(TARGET_PC)
+        if (porter_request) {
+            OSReport("[PC][porter] make_actor fail: data_bank_regist_check profile=%d name=%04x\n", profile_no,
+                     (unsigned int)name_id);
+        }
+#endif
         return NULL;
     }
 
     if (Actor_malloc_actor_class(&actor, profile, dlftbl, overlay_info.actor_name, name_id) == FALSE) {
+#if defined(TARGET_PC)
+        if (porter_request) {
+            OSReport("[PC][porter] make_actor fail: malloc_actor_class profile=%d part=%d class_size=%u name=%04x\n",
+                     profile_no, profile->part, (unsigned int)profile->class_size, (unsigned int)name_id);
+        }
+#endif
         return NULL;
     }
 
