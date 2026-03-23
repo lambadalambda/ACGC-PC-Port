@@ -137,3 +137,43 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - release repro with watchdog v2 auto-terminates on hang signature without manual force-quit.
   - ASAN repro in same window tends to hit watchdog timeout rather than queue-pressure signature, which matches earlier build-dependent behavior.
   - remaining follow-up: tune defaults (`queue-rate`, streak duration, entropy thresholds) against a healthy non-hang train run to reduce false positives.
+
+## 2026-03-23 - train intro NPC setup returned undefined status
+
+- Symptom/signature:
+  - in `SCENE_START_DEMO` (scene 15), train intro could appear to hang with missing character flow and rapid repeating voice/talk sounds.
+  - progression commonly stopped after `[SCENE_MODE] 3 -> 4` in automated repro windows.
+- Root cause:
+  - `aNPC_setupActor_proc` in `src/actor/npc/ac_npc_ctrl.c_inc` was declared `int` but had no explicit `return`.
+  - callers depend on this boolean status to advance intro setup paths; relying on fallthrough from the final call is undefined behavior and can desync control flow on modern 64-bit builds.
+- Fix approach and touched files:
+  - made `aNPC_setupActor_proc` explicitly return `aNPC_setupActor_sub(...)`.
+  - added contract `pc/tests/check_npc_setup_actor_return_contract.sh`.
+- Verification and follow-up:
+  - full contract sweep (`pc/tests/check_*contract.sh`) passes with the new contract.
+  - both LP64 builds still pass (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - train intro progression reported as playing out correctly after the fix.
+  - keep monitoring long train-flow runs to determine whether any independent queue-pressure stall remains after this control-flow fix.
+
+## 2026-03-23 - dialogue/choice speech-bubble display lists had zero LP64 pointers
+
+- Symptom/signature:
+  - dialogue text rendered, but speech-bubble/window geometry was missing (for example train cat dialogue and K.K. conversations).
+  - emu64 diagnostics repeatedly reported zero pointer words on `con_*` symbols:
+    - `con_kaiwa2_modelT`
+    - `con_kaiwaname_modelT`
+    - `con_sentaku2_modelT`
+- Root cause:
+  - these UI display lists still carried static pointer words for texture/vtx commands.
+  - under LP64 static-pointer mode, those `w1` fields were left zero unless explicitly rehydrated at runtime.
+- Fix approach and touched files:
+  - added guarded one-time LP64 pointer rehydration helpers and call sites in:
+    - `src/game/m_msg_data.c_inc`
+    - `src/game/m_msg_draw_window.c_inc`
+    - `src/game/m_choice_draw.c_inc`
+  - added contract `pc/tests/check_msg_choice_window_ptr_patch_contract.sh`.
+- Verification and follow-up:
+  - full contract sweep (`pc/tests/check_*contract.sh`) passes.
+  - both LP64 builds succeed.
+  - repro log `/tmp/acgc_lp64_msg_choice_bubble_fix_120s.log` shows no `con_*` zero-pointer diagnostics.
+  - in-run confirmation: speech bubbles now render again while text remains correct.

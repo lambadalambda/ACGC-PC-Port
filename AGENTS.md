@@ -65,6 +65,13 @@ Good examples:
 - `emu64: remove pointer truncation in seg2k0 helper`
 - `docs: update macOS blocker checklist`
 
+## Session Workflow Guardrails
+
+- Run a `critical-advisor` checkpoint at least every 2-3 LP64 commits and before touching any file in **Risky Areas**.
+- Keep automated repros windowed by default; only switch to fullscreen for a fullscreen-specific bug and document why.
+- Keep commits frequent and topical; when practical, split diagnostics/tests/docs from behavior changes.
+- Remove temporary diagnostics after root-cause fixes land; if a temporary diagnostic must remain, gate it clearly and note removal follow-up in `docs/lp64_findings.md`.
+
 ## Porting Priorities
 
 For modern macOS work, follow this order unless a task clearly depends on another:
