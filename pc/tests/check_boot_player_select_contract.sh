@@ -21,8 +21,17 @@ for token in required_main:
         print(f"missing contract: {token} in {pc_main_path}", file=sys.stderr)
         raise SystemExit(1)
 
-if "g_pc_boot_player_select" not in graph or "game_dlftbls[6]" not in graph:
-    print(f"missing contract: player-select boot route in {graph_path}", file=sys.stderr)
+required_graph = [
+    "g_pc_boot_player_select",
+    "boot-player-select requested; using default scene chain",
+]
+for token in required_graph:
+    if token not in graph:
+        print(f"missing contract: {token} in {graph_path}", file=sys.stderr)
+        raise SystemExit(1)
+
+if "boot override ->" in graph:
+    print(f"stale direct-scene override marker remains in {graph_path}", file=sys.stderr)
     raise SystemExit(1)
 
 print("check_boot_player_select_contract: OK")

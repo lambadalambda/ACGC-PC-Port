@@ -357,9 +357,11 @@ extern void graph_proc(void* arg) {
     if (g_pc_model_viewer) {
         dlftbl = &game_dlftbls[10]; /* model viewer */
     } else if (g_pc_boot_player_select) {
-        /* Fast debug path that bypasses first/title scenes but keeps normal
-         * player-select -> start-data-init -> select -> play sequencing. */
-        dlftbl = &game_dlftbls[6];
+        /* Keep default scene chain for now: direct scene jumps crash before
+         * stable player-select flow because first/title bootstrap is required. */
+        if (g_pc_verbose) {
+            printf("[PC] graph_proc: boot-player-select requested; using default scene chain\n");
+        }
     }
 #endif
     graph_ct(&graph_class);

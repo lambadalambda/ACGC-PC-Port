@@ -1,6 +1,7 @@
 #include <string.h>
 #include <dolphin.h>
 #include <dolphin/os.h>
+#include "pc_runtime_ptr.h"
 #include "os/__os.h"
 
 typedef void (*EXICallback)(s32, OSContext*);
@@ -187,12 +188,13 @@ int EXIDma(long chan, void * buf, long len, unsigned long type, EXICallback call
         return 0;
     }
     exi->tcCallback = callback;
-    if ((u32)exi->tcCallback) {
+    if (exi->tcCallback != NULL) {
         EXIClearInterrupts(chan, 0, 1, 0);
         __OSUnmaskInterrupts(0x200000U >> (chan * 3));
     }
     exi->state |= 1;
-    __EXIRegs[(chan * 5) + 1] = (u32)buf & 0x03FFFFE0;
+    /* Keep LP64 narrowing checked at the EXI DMA boundary. */
+    __EXIRegs[(chan * 5) + 1] = PC_RUNTIME_U32_PTR(buf) & 0x03FFFFE0;
     __EXIRegs[(chan * 5) + 2] = len;
     __EXIRegs[(chan * 5) + 3] = (type * 4) | 3;
     OSRestoreInterrupts(enabled);

@@ -287,20 +287,74 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64/bin --timeout 8` passes.
   - this loop covers model/pointer regressions for train and keitai quickly; scene-scripted behavior/effect timing still requires runtime intro/path repros.
 
-## 2026-03-23 - added `--boot-player-select` for faster train-flow debugging
+## 2026-03-23 - `--boot-player-select` fast path and boot-smoke coverage
 
 - Symptom/signature:
-  - even with autopress and watchdog tooling, intro/title path setup can add significant wall-clock delay before train/name-entry regressions become observable.
+  - even with autopress and watchdog tooling, intro/title setup adds avoidable delay before train/name-entry regressions become observable.
+  - direct scene-jump implementations (`player_select`, then `trademark`, then `second_game`) reproducibly exited with signal 11 shortly after entering `graph_proc`.
 - Root cause:
-  - there was no CLI fast path to skip first/title scenes while still keeping normal in-game scene transitions (`player_select -> select -> play`) for scripted train-flow checks.
+  - title-scene bootstrap dependencies are stricter than expected; skipping early scene wiring invalidates later scene init assumptions.
+  - there was no dedicated smoke coverage for this CLI path.
 - Fix approach and touched files:
-  - added CLI flag parsing and help text for `--boot-player-select` in `pc/src/pc_main.c`.
-  - added global flag declaration in `pc/include/pc_platform.h`.
-  - routed `graph_proc` initial game selection to `game_dlftbls[6]` (`player_select`) when enabled in `src/graph.c`.
-  - documented the flag in `README.md` and `pc/DOCUMENTATION.md`.
-  - added contract `pc/tests/check_boot_player_select_contract.sh`.
+  - kept `--boot-player-select` as an experimental hook in `pc/src/pc_main.c` with clarified help/docs text.
+  - removed direct scene reassignment in `src/graph.c`; flag now emits a marker and keeps the default scene chain to avoid crashes.
+  - tightened contract `pc/tests/check_boot_player_select_contract.sh` around the CLI hook + safe marker behavior.
+  - added new smokes:
+    - `pc/tests/smoke_lp64_boot_player_select.sh`
+    - `pc/tests/smoke_lp64_asan_boot_player_select.sh`
+  - updated docs in `README.md` and `pc/DOCUMENTATION.md`.
 - Verification and follow-up:
   - `sh pc/tests/check_boot_player_select_contract.sh` passes.
   - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
-  - `/tmp/acgc-p2-config-64/bin/AnimalCrossing --help` shows the new flag.
-  - next step: wire a dedicated smoke script preset around `--boot-player-select` to benchmark train/name-entry time-to-signal against existing watchdog runs.
+  - `sh pc/tests/smoke_lp64_boot_player_select.sh /tmp/acgc-p2-config-64 20` passes.
+  - `sh pc/tests/smoke_lp64_asan_boot_player_select.sh /tmp/acgc-p2-config-64-asan /tmp/acgc-p2-config-64/bin 20` passes.
+  - ASan smoke currently gates on marker presence + `AddressSanitizer` fatal signatures; boot-time UBSan warnings are known pre-existing noise in this path.
+  - follow-up: design a true fast boot that reproduces the required first/title bootstrap state instead of jumping directly to later scenes.
+
+## 2026-03-23 - jaudio message-token narrowing now uses checked LP64 path
+
+- Symptom/signature:
+  - jaudio command/spec queues still decoded `OSMesg` tokens with raw `(u32)(uintptr_t)msg` casts in `sub_sys.c`.
+  - this silently truncates on LP64 and bypasses the runtime narrowing guard used in other queue-token paths.
+- Root cause:
+  - older queue decode sites predated `PC_RUNTIME_U32_PTR` rollout and remained on legacy cast style.
+- Fix approach and touched files:
+  - switched `Nap_CheckSpecChange` and `CreateAudioTask` queue-token decoding to `PC_RUNTIME_U32_PTR(msg)` in `src/static/jaudio_NES/internal/sub_sys.c`.
+  - switched preload/MK queue token decoding to `PC_RUNTIME_U32_PTR(...)` in `src/static/jaudio_NES/internal/system.c`.
+  - added concise intent comment in the command-queue loop to document why checked narrowing is required.
+  - extended `pc/tests/check_osmessage_token_narrowing_contract.sh` to cover `sub_sys.c` and `system.c` include/usage and reject legacy casts.
+- Verification and follow-up:
+  - `sh pc/tests/check_osmessage_token_narrowing_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - keep converting remaining queue-token cast sites subsystem-by-subsystem to the same checked narrowing pattern.
+
+## 2026-03-23 - `OSCreateThread` stack/context setup now avoids LP64 pointer truncation
+
+- Symptom/signature:
+  - `OSCreateThread` in `OSThread.c` still cast stack/function/param pointers through raw `u32` when building stack/context state.
+- Root cause:
+  - legacy 32-bit assumptions in stack setup used direct narrowing casts (`(u32)stack`, `(u32)func`, `(unsigned int)stack - stackSize`).
+- Fix approach and touched files:
+  - switched stack-pointer math to `uintptr_t` and explicit host-width alignment in `src/static/dolphin/os/OSThread.c`.
+  - switched context register writes to `PC_RUNTIME_U32_PTR(...)` for checked narrowing at the ABI boundary.
+  - switched `stackEnd` calculation to host-pointer arithmetic (`(u8*)stack - stackSize`).
+  - extended `pc/tests/check_os_stack_pointer_runtime_ptr_contract.sh` to enforce the new patterns and reject legacy truncating casts.
+- Verification and follow-up:
+  - `sh pc/tests/check_os_stack_pointer_runtime_ptr_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+
+## 2026-03-23 - EXI DMA register address path uses checked LP64 narrowing
+
+- Symptom/signature:
+  - `EXIDma` in `EXIBios.c` still pushed DMA buffer pointers through raw `(u32)buf` casts.
+- Root cause:
+  - EXI register write path predated LP64 runtime pointer checks and still relied on unchecked truncation.
+- Fix approach and touched files:
+  - included `pc_runtime_ptr.h` in `src/static/dolphin/exi/EXIBios.c`.
+  - replaced EXI DMA register write cast with `PC_RUNTIME_U32_PTR(buf)`.
+  - replaced callback non-null check `(u32)exi->tcCallback` with `exi->tcCallback != NULL`.
+  - added contract `pc/tests/check_exi_dma_runtime_ptr_contract.sh`.
+- Verification and follow-up:
+  - `sh pc/tests/check_exi_dma_runtime_ptr_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - title/selftest smokes continue to pass after the EXI narrowing change.

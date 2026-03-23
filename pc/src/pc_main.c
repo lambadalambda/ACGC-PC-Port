@@ -388,7 +388,7 @@ int main(int argc, char* argv[]) {
             printf("  --verbose, -v       Enable diagnostic output\n");
             printf("  --no-framelimit     Disable frame limiter\n");
             printf("  --model-viewer [N]  Launch model viewer (optional start index)\n");
-            printf("  --boot-player-select  Start directly at player select\n");
+            printf("  --boot-player-select  Enable experimental player-select boot path\n");
             printf("  --time HOUR         Override in-game hour (0-23)\n");
             printf("  --selftest          Run startup self-test and exit\n");
             printf("  --help, -h          Show this help message\n");

@@ -2,6 +2,7 @@
 #include <dolphin/base/PPCArch.h>
 #include <dolphin/os.h>
 #include <macros.h>
+#include "pc_runtime_ptr.h"
 
 #include "os/__os.h"
 
@@ -395,7 +396,7 @@ int OSCreateThread(OSThread* thread, void* (*func)(void*), void* param,
                    unsigned short attr)
 {
 	int enabled;
-	unsigned long sp;
+	uintptr_t sp;
 
 	ASSERTMSGLINE(
 	    0x31C, ((priority >= 0) && (priority <= 0x1F)),
@@ -417,16 +418,16 @@ int OSCreateThread(OSThread* thread, void* (*func)(void*), void* param,
 
 	OSInitThreadQueue((void*)&thread->queueMutex); // why
 
-	sp = (u32)stack;
-	sp &= ~7;
+	sp = (uintptr_t)stack;
+	sp &= ~(uintptr_t)7u;
 	sp -= 8;
 	((u32*)sp)[0] = 0;
 	((u32*)sp)[1] = 0;
-	OSInitContext(&thread->context, (u32)func, sp);
-	thread->context.lr     = (unsigned long)&OSExitThread;
-	thread->context.gpr[3] = (unsigned long)param;
+	OSInitContext(&thread->context, PC_RUNTIME_U32_PTR(func), PC_RUNTIME_U32_PTR(sp));
+	thread->context.lr     = PC_RUNTIME_U32_PTR(&OSExitThread);
+	thread->context.gpr[3] = PC_RUNTIME_U32_PTR(param);
 	thread->stackBase      = stack;
-	thread->stackEnd       = (void*)((unsigned int)stack - stackSize);
+	thread->stackEnd       = (u32*)((u8*)stack - stackSize);
 	*thread->stackEnd      = 0xDEADBABE;
 	enabled                = OSDisableInterrupts();
 

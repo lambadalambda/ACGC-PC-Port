@@ -28,7 +28,7 @@ main() [pc_main.c]
 graph_proc() loops over scenes via game_dlftbls[]:
   first_game → second_game → trademark → select (title demo)
   → player_select (scene 19) → play (gameplay)
-  OR: --boot-player-select → player_select (scene 6)
+  OR: --boot-player-select → currently uses default scene chain (experimental)
   OR: --model-viewer → model_viewer_init (scene 10)
 
 Each frame: graph_main()
@@ -442,6 +442,9 @@ cmake --build /tmp/acgc-p2-config-64 -j2
 sh pc/tests/smoke_lp64_selftest.sh
 sh pc/tests/smoke_lp64_title_boot.sh
 sh pc/tests/smoke_lp64_asan_title_boot.sh
+sh pc/tests/check_boot_player_select_contract.sh
+sh pc/tests/smoke_lp64_boot_player_select.sh
+sh pc/tests/smoke_lp64_asan_boot_player_select.sh
 bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64-asan/bin --timeout 10
 ```
 
@@ -459,7 +462,7 @@ bash pc/tests/smoke_model_viewer_targets.sh --bin-dir /tmp/acgc-p2-config-64-asa
 | `--verbose` / `-v` | Enable diagnostic output |
 | `--no-framelimit` | Disable frame pacing |
 | `--model-viewer [N]` | Launch model viewer (optional start index) |
-| `--boot-player-select` | Start directly at `player_select` for faster debug iteration |
+| `--boot-player-select` | Enable experimental player-select boot path |
 | `--time HOUR` | Override in-game hour (0-23) |
 | `--selftest` | Print a startup sanity marker and exit before SDL/platform init |
 | `--help` / `-h` | Show help |

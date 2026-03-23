@@ -420,6 +420,7 @@ extern void Nap_AudioPortProcess(u32 msg) {
 
 extern s32 Nap_CheckSpecChange(void) {
     OSMesg msg;
+    u32 msg_token;
     s32 res;
 
     /* Spec-change is not complete until reset pipeline fully settles. */
@@ -431,7 +432,10 @@ extern s32 Nap_CheckSpecChange(void) {
 
     if (res == -1) {
         return 0;
-    } else if ((u32)(uintptr_t)msg != AG.spec_id) {
+    }
+
+    msg_token = PC_RUNTIME_U32_PTR(msg);
+    if (msg_token != AG.spec_id) {
         return -1;
     } else {
         return 1;
@@ -792,7 +796,9 @@ extern s32 CreateAudioTask(Acmd* cmds, s16* pSamples, u32 nSamples, s32 param_4)
             OSMesg msg;
 
             while (Z_osRecvMesg(AG.thread_cmd_proc_mq_p, &msg, OS_MESG_NOBLOCK) != -1) {
-                Nap_AudioPortProcess((u32)(uintptr_t)msg);
+                /* Message queue carries packed command-window tokens; keep
+                 * narrowing checked so LP64 hosts do not silently truncate. */
+                Nap_AudioPortProcess(PC_RUNTIME_U32_PTR(msg));
                 port_cmds++;
             }
 

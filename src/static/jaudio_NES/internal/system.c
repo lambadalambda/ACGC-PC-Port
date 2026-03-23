@@ -2768,7 +2768,7 @@ s32 Nas_CheckBgWave(s32 reset_status) {
             return FALSE;
         }
 
-        preload_idx = (u32)(uintptr_t)preload_msg;
+        preload_idx = PC_RUNTIME_U32_PTR(preload_msg);
         preload_idx >>= 24;
         preload = &AG.requested_samples[preload_idx];
 
@@ -3020,7 +3020,7 @@ void MK_FrameWork(void) {
     u8* rmes;
 
     if (Z_osRecvMesg(&MK_QUEUE, &ret_msg, OS_MESG_NOBLOCK) != -1) {
-        u32 ret = (u32)(uintptr_t)ret_msg;
+        u32 ret = PC_RUNTIME_U32_PTR(ret_msg);
         idx = ret >> 24;
         rmes = MK_RMES[idx];
         if (rmes != NULL) {
