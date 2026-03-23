@@ -177,3 +177,22 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - both LP64 builds succeed.
   - repro log `/tmp/acgc_lp64_msg_choice_bubble_fix_120s.log` shows no `con_*` zero-pointer diagnostics.
   - in-run confirmation: speech bubbles now render again while text remains correct.
+
+## 2026-03-23 - `ef_ha` effect display list carried zero LP64 pointers
+
+- Symptom/signature:
+  - after speech-bubble fixes, emu64 zero-pointer diagnostics still reported two hits:
+    - `ef_ha01_00_modelT+0x20`
+    - `ef_ha01_00_modelT+0x38`
+- Root cause:
+  - the `ef_ha` effect model display list (`src/data/model/ef_ha01_00.c`) still held static texture/vertex pointer words in `w1`.
+  - LP64 static-pointer mode left those words zero until runtime patching.
+- Fix approach and touched files:
+  - added guarded one-time patch helper `pc_patch_ef_ha01_00_modelT()` in `src/data/model/ef_ha01_00.c`.
+  - invoked the helper from the draw path in `src/effect/ef_ha.c` before `gSPDisplayList`.
+  - added contract `pc/tests/check_ef_ha01_model_ptr_patch_contract.sh`.
+- Verification and follow-up:
+  - full contract sweep (`pc/tests/check_*contract.sh`) passes with the new contract.
+  - both LP64 builds succeed.
+  - repro log `/tmp/acgc_lp64_ef_ha_ptr_fix_120s.log` shows no `\[PC\]\[emu64\]\[zero\]` events.
+  - continue scanning future logs for any remaining non-`con_*` zero-pointer symbols.

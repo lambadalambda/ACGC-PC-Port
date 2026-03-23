@@ -11,6 +11,9 @@ static void eHA_ct(eEC_Effect_c* effect, GAME* game, void* ct_arg);
 static void eHA_mv(eEC_Effect_c* effect, GAME* game);
 static void eHA_dw(eEC_Effect_c* effect, GAME* game);
 extern Gfx ef_ha01_00_modelT[];
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+extern void pc_patch_ef_ha01_00_modelT(void);
+#endif
 eEC_PROFILE_c iam_ef_ha = {
     // clang-format off
     &eHA_init,
@@ -71,6 +74,9 @@ static void eHA_dw(eEC_Effect_c* effect, GAME* game) {
     gSPMatrix(NEXT_POLY_XLU_DISP, _Matrix_to_Mtx_new(game->graph), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gDPSetPrimColor(NEXT_POLY_XLU_DISP, 0, 128, 255, 255, 255, (u8)opacity);
     gDPSetEnvColor(NEXT_POLY_XLU_DISP, 0, 0, 255, 255);
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+    pc_patch_ef_ha01_00_modelT();
+#endif
     gSPDisplayList(NEXT_POLY_XLU_DISP, ef_ha01_00_modelT);
     CLOSE_DISP(game->graph);
 }
