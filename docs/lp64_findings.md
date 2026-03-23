@@ -196,3 +196,57 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - both LP64 builds succeed.
   - repro log `/tmp/acgc_lp64_ef_ha_ptr_fix_120s.log` shows no `\[PC\]\[emu64\]\[zero\]` events.
   - continue scanning future logs for any remaining non-`con_*` zero-pointer symbols.
+
+## 2026-03-23 - naming/editor UI display lists had unresolved LP64 pointers
+
+- Symptom/signature:
+  - longer train-to-name-entry repros showed large `\[PC\]\[emu64\]\[zero\]` clusters in UI symbols:
+    - `nam_win_*`, `mra_win_*`, `rst_win_*`
+    - `kai_sousa_*`, `lat_sousa_spT_model`
+- Root cause:
+  - multiple naming/editor window and keyboard display lists still used static pointer words in `w1`, including nested `gsSPDisplayList` chains and texture/vertex commands.
+  - LP64 static-pointer mode left those words unresolved until explicit runtime patching.
+- Fix approach and touched files:
+  - added LP64 one-time helper patches for naming windows:
+    - `src/data/model/nam_win.c`
+    - `src/data/model/mra_win.c`
+    - `src/data/model/rst_win.c`
+  - added LP64 one-time helper patches for editor overlays:
+    - `src/data/model/kai_sousa.c`
+    - `src/data/model/lat_sp.c`
+    - wired helper invocation in `src/game/m_editor_ovl.c`
+  - added contracts:
+    - `pc/tests/check_name_window_ptr_patch_contract.sh`
+    - `pc/tests/check_editor_overlay_ptr_patch_contract.sh`
+- Verification and follow-up:
+  - full contract sweep (`pc/tests/check_*contract.sh`) passes.
+  - both LP64 builds succeed.
+  - post-fix repros removed all `nam_win_*`, `mra_win_*`, `rst_win_*`, `kai_sousa_*` zero-pointer hits.
+
+## 2026-03-23 - train reaction effects (`warau`/`shock`/`hirameki`) had zero LP64 pointers
+
+- Symptom/signature:
+  - train-scene reaction overlays were missing (for example Rover laugh "ha ha" and idea/surprise effects), with zero-pointer diagnostics in:
+    - `ef_warau01_*_modelT`
+    - `ef_shock01_00_modelT`
+    - `ef_hirameki01_den_modelT`
+    - `ef_hirameki01_hikari_modelT`
+- Root cause:
+  - effect model display lists still carried static texture/vertex pointer words in `w1`.
+- Fix approach and touched files:
+  - added guarded one-time LP64 patch helpers in model files:
+    - `src/data/model/ef_warau01_00.c`
+    - `src/data/model/ef_shock01_00.c`
+    - `src/data/model/ef_hirameki01_den.c`
+  - invoked those helpers in effect draw paths:
+    - `src/effect/ef_warau.c`
+    - `src/effect/ef_shock.c`
+    - `src/effect/ef_hirameki_den.c`
+    - `src/effect/ef_hirameki_hikari.c`
+  - added contracts:
+    - `pc/tests/check_ef_warau_model_ptr_patch_contract.sh`
+    - `pc/tests/check_ef_reaction_ptr_patch_contract.sh`
+- Verification and follow-up:
+  - full contract sweep (`pc/tests/check_*contract.sh`) passes.
+  - both LP64 builds succeed.
+  - repro log `/tmp/acgc_lp64_post_reaction_fix_240s.log` shows no `\[PC\]\[emu64\]\[zero\]` events.
