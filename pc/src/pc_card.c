@@ -114,6 +114,7 @@ s32 CARDUnmount(s32 chan) {
 s32 CARDOpen(s32 chan, const char* fileName, CARDFileInfo_PC* fileInfo) {
     char path[512];
     CARDOpenSlot* slot;
+    long file_len;
     if (!card_filename_safe(fileName)) return CARD_RESULT_NAMETOOLONG;
     snprintf(path, sizeof(path), "%s/%s", save_dir, fileName);
 
@@ -131,8 +132,15 @@ s32 CARDOpen(s32 chan, const char* fileName, CARDFileInfo_PC* fileInfo) {
         return CARD_RESULT_NOFILE;
     }
     fseek(slot->fp, 0, SEEK_END);
-    fileInfo->length = (s32)ftell(slot->fp);
+    file_len = ftell(slot->fp);
     fseek(slot->fp, 0, SEEK_SET);
+    if (file_len < 0 || file_len > 0x7fffffffL) {
+        fclose(slot->fp);
+        slot->fp = NULL;
+        card_slot_free(fileInfo);
+        return CARD_RESULT_IOERROR;
+    }
+    fileInfo->length = (s32)file_len;
     return CARD_RESULT_READY;
 }
 
@@ -166,12 +174,25 @@ s32 CARDCreate(s32 chan, const char* fileName, u32 size, CARDFileInfo_PC* fileIn
     if (!slot->fp) { card_slot_free(fileInfo); return CARD_RESULT_IOERROR; }
 
     {
+        long file_len;
+
         u8* zeros = (u8*)calloc(1, size);
         if (!zeros) { fclose(slot->fp); slot->fp = NULL; card_slot_free(fileInfo); return CARD_RESULT_IOERROR; }
         size_t written = fwrite(zeros, 1, size, slot->fp);
         free(zeros);
         if (written != size) { fclose(slot->fp); slot->fp = NULL; card_slot_free(fileInfo); return CARD_RESULT_IOERROR; }
         fseek(slot->fp, 0, SEEK_SET);
+
+        fseek(slot->fp, 0, SEEK_END);
+        file_len = ftell(slot->fp);
+        fseek(slot->fp, 0, SEEK_SET);
+        if (file_len < 0 || file_len > 0x7fffffffL) {
+            fclose(slot->fp);
+            slot->fp = NULL;
+            card_slot_free(fileInfo);
+            return CARD_RESULT_IOERROR;
+        }
+        fileInfo->length = (s32)file_len;
     }
 
     return CARD_RESULT_READY;
@@ -186,7 +207,8 @@ s32 CARDCreateAsync(s32 chan, const char* fileName, u32 size, void* fileInfo, vo
 s32 CARDRead(CARDFileInfo_PC* fileInfo, void* buf, s32 length, s32 offset) {
     CARDOpenSlot* slot = card_slot_find(fileInfo);
     if (!slot || !slot->fp) return CARD_RESULT_NOFILE;
-    fseek(slot->fp, offset, SEEK_SET);
+    if (length < 0 || offset < 0) return CARD_RESULT_IOERROR;
+    if (fseek(slot->fp, offset, SEEK_SET) != 0) return CARD_RESULT_IOERROR;
     if ((s32)fread(buf, 1, length, slot->fp) != length) return CARD_RESULT_IOERROR;
     return CARD_RESULT_READY;
 }
@@ -200,7 +222,8 @@ s32 CARDReadAsync(void* fileInfo, void* buf, s32 length, s32 offset, void* callb
 s32 CARDWrite(CARDFileInfo_PC* fileInfo, const void* buf, s32 length, s32 offset) {
     CARDOpenSlot* slot = card_slot_find(fileInfo);
     if (!slot || !slot->fp) return CARD_RESULT_NOFILE;
-    fseek(slot->fp, offset, SEEK_SET);
+    if (length < 0 || offset < 0) return CARD_RESULT_IOERROR;
+    if (fseek(slot->fp, offset, SEEK_SET) != 0) return CARD_RESULT_IOERROR;
     if ((s32)fwrite(buf, 1, length, slot->fp) != length) return CARD_RESULT_IOERROR;
     fflush(slot->fp);
     return CARD_RESULT_READY;

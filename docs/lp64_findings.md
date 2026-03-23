@@ -388,3 +388,18 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `sh pc/tests/check_pc_dvd_read_bounds_contract.sh` passes.
   - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
   - LP64 selftest/title/asan-title smokes continue to pass.
+
+## 2026-03-23 - PC card I/O rejects invalid signed ranges before host calls
+
+- Symptom/signature:
+  - `pc_card` accepted negative `length`/`offset` values for `CARDRead`/`CARDWrite`, and narrowed `ftell()` into `s32` without an explicit range guard.
+- Root cause:
+  - memory-card host I/O path mixed signed ABI parameters and host file APIs without explicit precondition checks at the boundary.
+- Fix approach and touched files:
+  - in `pc/src/pc_card.c`, added `length < 0 || offset < 0` checks and `fseek(... ) != 0` checks for `CARDRead`/`CARDWrite`.
+  - added `ftell()` range checks (`[0, 0x7fffffff]`) before storing into `fileInfo->length` in `CARDOpen` and `CARDCreate`.
+  - added contract `pc/tests/check_pc_card_read_write_bounds_contract.sh`.
+- Verification and follow-up:
+  - `sh pc/tests/check_pc_card_read_write_bounds_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - LP64 selftest/title/asan-title smokes continue to pass.
