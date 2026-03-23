@@ -104,6 +104,30 @@ static Gfx con_kaiwaname_modelT[] = {
   gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+static void mMsg_patch_window_display_lists(void) {
+    static int s_patched = 0;
+
+    if (s_patched) {
+        return;
+    }
+
+    /* Message-window bubble display lists carry host pointers in w1 fields.
+     * Rehydrate them once on LP64 so emu64 doesn't see zero texture/vtx refs. */
+    con_kaiwa2_modelT[1].words.w1 = pc_gbi_ptr_encode(con_kaiwa2_w3_tex);
+    con_kaiwa2_modelT[3].words.w1 = pc_gbi_ptr_encode(&con_kaiwa2_v[0]);
+    con_kaiwa2_modelT[6].words.w1 = pc_gbi_ptr_encode(con_kaiwa2_w2_tex);
+    con_kaiwa2_modelT[10].words.w1 = pc_gbi_ptr_encode(con_kaiwa2_w1_tex);
+
+    con_kaiwaname_modelT[1].words.w1 = pc_gbi_ptr_encode(con_namefuti_TXT);
+    con_kaiwaname_modelT[3].words.w1 = pc_gbi_ptr_encode(&con_kaiwaname_v[0]);
+
+    s_patched = 1;
+}
+#else
+#define mMsg_patch_window_display_lists() ((void)0)
+#endif
+
 static Gfx mMsg_init_disp[] = {
   gsDPPipeSync(),
   gsSPClearGeometryMode(G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING | G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR | G_LOD | G_SHADING_SMOOTH),

@@ -87,6 +87,25 @@ static Gfx con_sentaku2_modelT[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+static void mChoice_patch_window_display_list(void) {
+    static int s_patched = 0;
+
+    if (s_patched) {
+        return;
+    }
+
+    /* Choice-window frame display list also stores host texture/vtx pointers
+     * in w1 fields and needs LP64 runtime pointer patching. */
+    con_sentaku2_modelT[2].words.w1 = pc_gbi_ptr_encode(con_waku_swaku3_tex);
+    con_sentaku2_modelT[4].words.w1 = pc_gbi_ptr_encode(&con_sentaku2_v[0]);
+
+    s_patched = 1;
+}
+#else
+#define mChoice_patch_window_display_list() ((void)0)
+#endif
+
 static Gfx mChoice_init_disp[] = {
     gsDPPipeSync(),
     gsSPClearGeometryMode(G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING | G_TEXTURE_GEN |
@@ -106,6 +125,8 @@ static Gfx mChoice_init_disp[] = {
 
 static void mChoice_DrawWindowBody(mChoice_c* choice, GAME* game, int type) {
     GRAPH* graph = game->graph;
+
+    mChoice_patch_window_display_list();
 
     OPEN_DISP(graph);
 

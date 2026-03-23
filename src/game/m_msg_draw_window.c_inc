@@ -76,6 +76,8 @@ static void mMsg_DrawWindowBody(mMsg_Window_c* msg_p, GAME* game, int mode) {
   GRAPH* graph = game->graph;
   rgba_t* window_background_color = &msg_p->window_background_color;
 
+  mMsg_patch_window_display_lists();
+
   OPEN_DISP(graph);
 
   if (mode == mFont_MODE_FONT) {
