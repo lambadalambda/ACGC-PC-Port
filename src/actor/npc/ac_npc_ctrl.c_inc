@@ -516,7 +516,9 @@ static int aNPC_setupActor_proc(GAME_PLAY* play, mActor_name_t name, s8 idx, int
         pos.y = mCoBG_GetBgY_OnlyCenter_FromWpos(pos, 0.0f);
     }
 
-    aNPC_setupActor_sub(play, idx, name, profile, &pos, mvlist_no, arg);
+    /* Keep setupActor return semantics explicit; relying on fallthrough from
+     * the last call is undefined behavior and can desync intro NPC flow. */
+    return aNPC_setupActor_sub(play, idx, name, profile, &pos, mvlist_no, arg);
 }
 
 #ifndef aNPC_NPC2
