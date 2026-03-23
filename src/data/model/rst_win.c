@@ -363,6 +363,86 @@ Gfx rst_win_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_rst_win_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    rst_win_fuki_model[2].words.w1 = pc_gbi_ptr_encode(rst_win_seri_tex);
+    rst_win_fuki_model[4].words.w1 = pc_gbi_ptr_encode(rst_win_v);
+    rst_win_waku11_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw4_tex_rgb_ci4_pal);
+    rst_win_waku11_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw4_tex_rgb_ci4);
+    rst_win_waku11_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[8]);
+    rst_win_ueT_model[2].words.w1 = pc_gbi_ptr_encode(req_win_w4_tex);
+    rst_win_ueT_model[4].words.w1 = pc_gbi_ptr_encode(&rst_win_v[12]);
+    rst_win_ueT_model[6].words.w1 = pc_gbi_ptr_encode(req_win_w3_tex);
+    rst_win_ueT_model[10].words.w1 = pc_gbi_ptr_encode(req_win_w2_tex);
+    rst_win_ueT_model[15].words.w1 = pc_gbi_ptr_encode(req_win_w1_tex);
+    rst_win_ueT_model[17].words.w1 = pc_gbi_ptr_encode(&rst_win_v[40]);
+    rst_win_kaoT_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_kao2_pal);
+    rst_win_kaoT_model[2].words.w1 = pc_gbi_ptr_encode(rst_win_kao_tex);
+    rst_win_kaoT_model[5].words.w1 = pc_gbi_ptr_encode(&rst_win_v[52]);
+    rst_win_kagiT_model[2].words.w1 = pc_gbi_ptr_encode(rst_win_kagi1_tex);
+    rst_win_kagiT_model[4].words.w1 = pc_gbi_ptr_encode(&rst_win_v[56]);
+    rst_win_kagiT_model[6].words.w1 = pc_gbi_ptr_encode(rst_win_kagi2_tex);
+    rst_win_waku1T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4_pal);
+    rst_win_waku1T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4);
+    rst_win_waku1T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[64]);
+    rst_win_waku2T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4_pal);
+    rst_win_waku2T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4);
+    rst_win_waku2T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[68]);
+    rst_win_waku3T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw3_tex_rgb_ci4_pal);
+    rst_win_waku3T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw3_tex_rgb_ci4);
+    rst_win_waku3T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[72]);
+    rst_win_waku4T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4_pal);
+    rst_win_waku4T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4);
+    rst_win_waku4T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[76]);
+    rst_win_waku5T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4_pal);
+    rst_win_waku5T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4);
+    rst_win_waku5T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[80]);
+    rst_win_waku6T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4_pal);
+    rst_win_waku6T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4);
+    rst_win_waku6T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[84]);
+    rst_win_waku7T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4_pal);
+    rst_win_waku7T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4);
+    rst_win_waku7T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[88]);
+    rst_win_waku8T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw3_tex_rgb_ci4_pal);
+    rst_win_waku8T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw3_tex_rgb_ci4);
+    rst_win_waku8T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[92]);
+    rst_win_waku9T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4_pal);
+    rst_win_waku9T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw2_tex_rgb_ci4);
+    rst_win_waku9T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[96]);
+    rst_win_waku10T_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4_pal);
+    rst_win_waku10T_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_sw1_tex_rgb_ci4);
+    rst_win_waku10T_model[3].words.w1 = pc_gbi_ptr_encode(&rst_win_v[100]);
+    rst_win_mode[0].words.w1 = pc_gbi_ptr_encode(rst_win_bittkuri_tex_rgb_ci4_pal);
+    rst_win_mode[1].words.w1 = pc_gbi_ptr_encode(rst_win_bittkuri_tex_rgb_ci4);
+    rst_win_model[0].words.w1 = pc_gbi_ptr_encode(rst_win_waku1T_model);
+    rst_win_model[1].words.w1 = pc_gbi_ptr_encode(rst_win_waku2T_model);
+    rst_win_model[2].words.w1 = pc_gbi_ptr_encode(rst_win_waku3T_model);
+    rst_win_model[3].words.w1 = pc_gbi_ptr_encode(rst_win_waku4T_model);
+    rst_win_model[4].words.w1 = pc_gbi_ptr_encode(rst_win_waku5T_model);
+    rst_win_model[5].words.w1 = pc_gbi_ptr_encode(rst_win_waku6T_model);
+    rst_win_model[6].words.w1 = pc_gbi_ptr_encode(rst_win_waku7T_model);
+    rst_win_model[7].words.w1 = pc_gbi_ptr_encode(rst_win_waku8T_model);
+    rst_win_model[8].words.w1 = pc_gbi_ptr_encode(rst_win_waku9T_model);
+    rst_win_model[9].words.w1 = pc_gbi_ptr_encode(rst_win_waku10T_model);
+    rst_win_model[10].words.w1 = pc_gbi_ptr_encode(rst_win_waku11_model);
+    rst_win_model[14].words.w1 = pc_gbi_ptr_encode(rst_win_ueT_model);
+    rst_win_model[15].words.w1 = pc_gbi_ptr_encode(rst_win_fuki_model);
+    rst_win_model[16].words.w1 = pc_gbi_ptr_encode(rst_win_kaoT_model);
+    rst_win_model[17].words.w1 = pc_gbi_ptr_encode(rst_win_kagiT_model);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_rst_win_display_lists(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_rst_win_c(void) {
@@ -370,5 +450,6 @@ void _pc_load_src_data_model_rst_win_c(void) {
     pc_load_asset("assets/rst_win/req_win_w2_tex.bin", req_win_w2_tex, 0x400, 0x750C60, 0, 0);
     pc_load_asset("assets/rst_win/req_win_w3_tex.bin", req_win_w3_tex, 0x200, 0x751060, 0, 0);
     pc_load_asset("assets/rst_win/req_win_w4_tex.bin", req_win_w4_tex, 0x80, 0x751AE0, 0, 0);
+    pc_patch_rst_win_display_lists();
 }
 #endif

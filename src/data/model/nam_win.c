@@ -430,9 +430,103 @@ Gfx nam_win_model[] = {
     gsSPDisplayList(nam_win_nm_model),    gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_nam_win_display_lists(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    nam_win_nm_model[2].words.w1 = pc_gbi_ptr_encode(nam_win_waku2_tex);
+    nam_win_nm_model[4].words.w1 = pc_gbi_ptr_encode(nam_win_v);
+    nam_win_nm_model[6].words.w1 = pc_gbi_ptr_encode(nam_win_waku1_tex);
+    nam_win_ueT_model[2].words.w1 = pc_gbi_ptr_encode(nam_win_w5_tex);
+    nam_win_ueT_model[4].words.w1 = pc_gbi_ptr_encode(&nam_win_v[8]);
+    nam_win_ueT_model[7].words.w1 = pc_gbi_ptr_encode(nam_win_w4_tex);
+    nam_win_ueT_model[11].words.w1 = pc_gbi_ptr_encode(nam_win_w3_tex);
+    nam_win_ueT_model[15].words.w1 = pc_gbi_ptr_encode(nam_win_w2_tex);
+    nam_win_ueT_model[17].words.w1 = pc_gbi_ptr_encode(&nam_win_v[35]);
+    nam_win_ueT_model[20].words.w1 = pc_gbi_ptr_encode(nam_win_w1_tex);
+    nam_win_fukiT_model[2].words.w1 = pc_gbi_ptr_encode(nam_win_fuki_tex);
+    nam_win_fukiT_model[4].words.w1 = pc_gbi_ptr_encode(&nam_win_v[51]);
+    nam_win_enpituT_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_enpitu_pal);
+    nam_win_enpituT_model[2].words.w1 = pc_gbi_ptr_encode(nam_win_enpitu_tex);
+    nam_win_enpituT_model[5].words.w1 = pc_gbi_ptr_encode(&nam_win_v[55]);
+    nam_win_sw1T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw1_tex_rgb_ci4_pal);
+    nam_win_sw1T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw1_tex_rgb_ci4);
+    nam_win_sw1T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[59]);
+    nam_win_sw2T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw2_tex_rgb_ci4_pal);
+    nam_win_sw2T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw2_tex_rgb_ci4);
+    nam_win_sw2T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[63]);
+    nam_win_sw3T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw3_tex_rgb_ci4_pal);
+    nam_win_sw3T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw3_tex_rgb_ci4);
+    nam_win_sw3T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[67]);
+    nam_win_sw4T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw4_tex_rgb_ci4_pal);
+    nam_win_sw4T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw4_tex_rgb_ci4);
+    nam_win_sw4T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[71]);
+    nam_win_sw5T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw5_tex_rgb_ci4_pal);
+    nam_win_sw5T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw5_tex_rgb_ci4);
+    nam_win_sw5T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[75]);
+    nam_win_sw6T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw6_tex_rgb_ci4_pal);
+    nam_win_sw6T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw6_tex_rgb_ci4);
+    nam_win_sw6T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[79]);
+    nam_win_sw7T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw7_tex_rgb_ci4_pal);
+    nam_win_sw7T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw7_tex_rgb_ci4);
+    nam_win_sw7T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[83]);
+    nam_win_sw8T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw1_tex_rgb_ci4_pal);
+    nam_win_sw8T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw1_tex_rgb_ci4);
+    nam_win_sw8T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[87]);
+    nam_win_sw9T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw2_tex_rgb_ci4_pal);
+    nam_win_sw9T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw2_tex_rgb_ci4);
+    nam_win_sw9T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[91]);
+    nam_win_sw10T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw3_tex_rgb_ci4_pal);
+    nam_win_sw10T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw3_tex_rgb_ci4);
+    nam_win_sw10T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[95]);
+    nam_win_sw11T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw3_tex_rgb_ci4_pal);
+    nam_win_sw11T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw3_tex_rgb_ci4);
+    nam_win_sw11T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[99]);
+    nam_win_sw12T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw5_tex_rgb_ci4_pal);
+    nam_win_sw12T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw5_tex_rgb_ci4);
+    nam_win_sw12T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[103]);
+    nam_win_sw13T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw6_tex_rgb_ci4_pal);
+    nam_win_sw13T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw6_tex_rgb_ci4);
+    nam_win_sw13T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[107]);
+    nam_win_sw14T_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw7_tex_rgb_ci4_pal);
+    nam_win_sw14T_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw7_tex_rgb_ci4);
+    nam_win_sw14T_model[3].words.w1 = pc_gbi_ptr_encode(&nam_win_v[111]);
+    nam_win_mode[0].words.w1 = pc_gbi_ptr_encode(nam_win_uzu_tex_rgb_ci4_pal);
+    nam_win_mode[1].words.w1 = pc_gbi_ptr_encode(nam_win_uzu_tex_rgb_ci4);
+    nam_win_model[0].words.w1 = pc_gbi_ptr_encode(nam_win_sw1T_model);
+    nam_win_model[1].words.w1 = pc_gbi_ptr_encode(nam_win_sw2T_model);
+    nam_win_model[2].words.w1 = pc_gbi_ptr_encode(nam_win_sw3T_model);
+    nam_win_model[3].words.w1 = pc_gbi_ptr_encode(nam_win_sw4T_model);
+    nam_win_model[4].words.w1 = pc_gbi_ptr_encode(nam_win_sw5T_model);
+    nam_win_model[5].words.w1 = pc_gbi_ptr_encode(nam_win_sw6T_model);
+    nam_win_model[6].words.w1 = pc_gbi_ptr_encode(nam_win_sw7T_model);
+    nam_win_model[7].words.w1 = pc_gbi_ptr_encode(nam_win_sw8T_model);
+    nam_win_model[8].words.w1 = pc_gbi_ptr_encode(nam_win_sw9T_model);
+    nam_win_model[9].words.w1 = pc_gbi_ptr_encode(nam_win_sw10T_model);
+    nam_win_model[10].words.w1 = pc_gbi_ptr_encode(nam_win_sw11T_model);
+    nam_win_model[11].words.w1 = pc_gbi_ptr_encode(nam_win_sw12T_model);
+    nam_win_model[12].words.w1 = pc_gbi_ptr_encode(nam_win_sw13T_model);
+    nam_win_model[13].words.w1 = pc_gbi_ptr_encode(nam_win_sw14T_model);
+    nam_win_model[17].words.w1 = pc_gbi_ptr_encode(nam_win_ueT_model);
+    nam_win_model[18].words.w1 = pc_gbi_ptr_encode(nam_win_fukiT_model);
+    nam_win_model[19].words.w1 = pc_gbi_ptr_encode(nam_win_enpituT_model);
+    nam_win_model[20].words.w1 = pc_gbi_ptr_encode(nam_win_nm_model);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_nam_win_display_lists(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_nam_win_c(void) {
     pc_load_asset("assets/nam_win/nam_win_fuki_tex.bin", nam_win_fuki_tex, 0x800, 0x748660, 0, 0);
+    pc_patch_nam_win_display_lists();
 }
 #endif
