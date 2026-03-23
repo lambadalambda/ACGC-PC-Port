@@ -18,8 +18,14 @@ check_contains() {
 
 check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" '#if defined\(TARGET_PC\) && defined\(PC_EXPERIMENTAL_64BIT\)' 'LP64-only fallback guard'
 check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'if \(systemHeap == nullptr && rootHeap != nullptr\)' 'retry path only when initial create fails'
-check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'u32 retrySize = \(u32\)rootHeap->getFreeSize\(\);' 'retry starts from current root free size'
+check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" '#include "pc_runtime_ptr.h"' 'JFWSystem includes runtime checked narrowing helper'
+check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'u32 retrySize = PC_RUNTIME_U32_PTR\(rootHeap->getFreeSize\(\)\);' 'retry starts from current root free size with checked narrowing'
 check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'retrySize = \(retrySize - 0x10\) & ~0xFu;' 'retry size keeps 16-byte alignment and headroom'
 check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'systemHeap = JKRExpHeap::create\(retrySize, rootHeap, false\);' 'retry path re-attempts system heap create'
 check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'CSetUpParam::sysHeapSize = retrySize;' 'successful retry updates configured system heap size'
 check_contains "src/static/JSystem/JFramework/JFWSystem.cpp" 'JFWSystem::firstInit: reduced sys heap size to %08x' 'retry path logs adjusted size for diagnosis'
+
+if rg -q 'u32 retrySize = \(u32\)rootHeap->getFreeSize\(\);' "$REPO_ROOT/src/static/JSystem/JFramework/JFWSystem.cpp"; then
+    printf '%s\n' 'unexpected legacy JFW heap retry truncating cast remains' >&2
+    exit 1
+fi

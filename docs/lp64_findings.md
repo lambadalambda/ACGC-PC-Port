@@ -358,3 +358,18 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `sh pc/tests/check_exi_dma_runtime_ptr_contract.sh` passes.
   - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
   - title/selftest smokes continue to pass after the EXI narrowing change.
+
+## 2026-03-23 - JFW system-heap retry path now uses checked LP64 narrowing
+
+- Symptom/signature:
+  - LP64 fallback path in `JFWSystem::firstInit` narrowed `rootHeap->getFreeSize()` through raw `(u32)` cast before retrying system-heap creation.
+- Root cause:
+  - retry logic was added for LP64 bringup, but retained unchecked 32-bit narrowing on host-width free-size values.
+- Fix approach and touched files:
+  - included `pc_runtime_ptr.h` in `src/static/JSystem/JFramework/JFWSystem.cpp`.
+  - replaced `u32 retrySize = (u32)rootHeap->getFreeSize();` with `PC_RUNTIME_U32_PTR(rootHeap->getFreeSize())`.
+  - extended `pc/tests/check_jfw_system_heap_retry_contract.sh` to require checked narrowing and reject the legacy truncating cast.
+- Verification and follow-up:
+  - `sh pc/tests/check_jfw_system_heap_retry_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - LP64 selftest/title/asan-title smokes continue to pass.

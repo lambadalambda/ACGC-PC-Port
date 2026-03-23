@@ -15,6 +15,7 @@
 #include "JSystem/JUtility/JUTGraphFifo.h"
 #include "JSystem/JUtility/JUTVideo.h"
 #include "JSystem/JFramework/JFWSystem.h"
+#include "pc_runtime_ptr.h"
 
 #ifdef TARGET_PC
 #include "pc_bswap.h"
@@ -117,7 +118,9 @@ void JFWSystem::firstInit() {
 
 #if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
     if (systemHeap == nullptr && rootHeap != nullptr) {
-        u32 retrySize = (u32)rootHeap->getFreeSize();
+        /* Keep LP64 narrowing checked while deriving retry size from
+         * host-width heap free space. */
+        u32 retrySize = PC_RUNTIME_U32_PTR(rootHeap->getFreeSize());
         if (retrySize >= 0x10) {
             retrySize = (retrySize - 0x10) & ~0xFu;
         }
