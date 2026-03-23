@@ -403,3 +403,19 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `sh pc/tests/check_pc_card_read_write_bounds_contract.sh` passes.
   - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
   - LP64 selftest/title/asan-title smokes continue to pass.
+
+## 2026-03-23 - runtime narrowing helper now emits LP64 overflow callsite diagnostics
+
+- Symptom/signature:
+  - `PC_RUNTIME_U32_PTR` aborted on overflow without callsite context, making LP64 truncation regressions slow to triage from CI/smoke logs.
+- Root cause:
+  - helper API only accepted a value and did not carry expression/file/line metadata into the overflow path.
+- Fix approach and touched files:
+  - replaced helper with `pc_runtime_u32_ptr_checked_at(value, expr, file, line)` in `include/pc_runtime_ptr.h`.
+  - updated `PC_RUNTIME_U32_PTR(value)` macro to pass `#value`, `__FILE__`, and `__LINE__`.
+  - added explicit `[PC][LP64] PC_RUNTIME_U32_PTR overflow:` diagnostic line before abort.
+  - added contract `pc/tests/check_runtime_ptr_diagnostics_contract.sh`.
+- Verification and follow-up:
+  - `sh pc/tests/check_runtime_ptr_diagnostics_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - LP64 selftest/title/asan-title smokes continue to pass.
