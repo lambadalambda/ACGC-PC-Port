@@ -1,6 +1,7 @@
 /* pc_dvd.c - DVD filesystem: reads from disc image (CISO/ISO/GCM) or extracted files */
 #include "pc_platform.h"
 #include "pc_disc.h"
+#include <limits.h>
 
 typedef struct {
     void* next;
@@ -141,7 +142,7 @@ BOOL DVDFastOpen(s32 entrynum, DVDFileInfo* fileInfo) {
     {
         char fullpath[768];
         FILE* fp;
-        u32 len;
+        long len;
 
         if (path[0] == '/') {
             snprintf(fullpath, sizeof(fullpath), "%s%s", assets_base_path, path);
@@ -155,13 +156,19 @@ BOOL DVDFastOpen(s32 entrynum, DVDFileInfo* fileInfo) {
         }
 
         fseek(fp, 0, SEEK_END);
-        len = (u32)ftell(fp);
+        len = ftell(fp);
         fseek(fp, 0, SEEK_SET);
+
+        /* Keep host file lengths inside the 32-bit DVD ABI surface. */
+        if (len < 0 || (unsigned long)len > UINT32_MAX) {
+            fclose(fp);
+            return FALSE;
+        }
 
         memset(fileInfo, 0, sizeof(*fileInfo));
         *dvd_fi_fp(fileInfo) = fp;
         *dvd_fi_startAddr(fileInfo) = 0;
-        *dvd_fi_length(fileInfo) = len;
+        *dvd_fi_length(fileInfo) = (u32)len;
     }
 
     return TRUE;
@@ -185,6 +192,10 @@ BOOL DVDClose(DVDFileInfo* fileInfo) {
 s32 DVDReadPrio(DVDFileInfo* fileInfo, void* buf, s32 length, s32 offset, s32 prio) {
     FILE* fp = *dvd_fi_fp(fileInfo);
     (void)prio;
+
+    if (length < 0 || offset < 0) {
+        return -1;
+    }
 
     if (fp == DISC_SENTINEL) {
         /* disc image read */

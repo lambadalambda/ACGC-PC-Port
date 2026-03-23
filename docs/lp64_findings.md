@@ -373,3 +373,18 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - `sh pc/tests/check_jfw_system_heap_retry_contract.sh` passes.
   - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
   - LP64 selftest/title/asan-title smokes continue to pass.
+
+## 2026-03-23 - PC DVD file-length/read parameters now reject unsafe narrowing
+
+- Symptom/signature:
+  - `pc_dvd` fallback file path narrowed `ftell()` directly to `u32` and accepted negative `length`/`offset` read parameters, which could wrap during cast/conversion.
+- Root cause:
+  - host file-size/read argument handling lacked explicit bounds checks before crossing the 32-bit DVD ABI boundary.
+- Fix approach and touched files:
+  - switched fallback file length capture to `long` in `pc/src/pc_dvd.c` and reject values outside `[0, UINT32_MAX]` before storing into `DVDFileInfo.length`.
+  - added early `length < 0 || offset < 0` rejection in `DVDReadPrio`.
+  - added contract `pc/tests/check_pc_dvd_read_bounds_contract.sh`.
+- Verification and follow-up:
+  - `sh pc/tests/check_pc_dvd_read_bounds_contract.sh` passes.
+  - both LP64 builds succeed (`/tmp/acgc-p2-config-64`, `/tmp/acgc-p2-config-64-asan`).
+  - LP64 selftest/title/asan-title smokes continue to pass.
