@@ -12,6 +12,10 @@
 extern "C" uintptr_t pc_image_base;
 extern "C" uintptr_t pc_image_end;
 
+/* Arena range from pc_os.c — heap pointers in arena also bypass segment resolution */
+extern "C" unsigned char* pc_arena_base;
+extern "C" unsigned char* pc_arena_end;
+
 #if defined(PC_EXPERIMENTAL_64BIT)
 #define PC_GBI_PTR_MAP_CAPACITY 65536u
 #define PC_GBI_PTR_KEY_TAG 0xE0000000u
@@ -313,6 +317,13 @@ uintptr_t emu64::seg2k0(u32 segadr) {
         return (uintptr_t)segadr;
     }
 
+    /* Check if address falls within the main memory arena (JKRHeap, Object_Exchange
+       banks, cloth data, etc.).*/
+    if (pc_arena_base && segadr >= (u32)(uintptr_t)pc_arena_base &&
+        segadr < (u32)(uintptr_t)pc_arena_end) {
+        return segadr;
+    }
+
     u32 seg = (segadr >> 24) & 0xF;
     u32 offset = segadr & 0xFFFFFF;
 
@@ -329,9 +340,16 @@ uintptr_t emu64::seg2k0(u32 segadr) {
        colliding with N64 segmented addresses (seg<<24|offset). On GC, all real
        pointers had bit 31 set (k0 space) so they bypassed segment resolution.
 
-       Strategy: try segment resolution first (this is what the game expects).
-       If the resolved address is NOT in committed memory, it's likely a
-       misidentification — the original address was a raw PC pointer. */
+       Real N64 segment addresses come from GBI macros like SEGMENT_ADDR(seg, offset)
+       and usually have small offsets. If we see a large offset with a committed
+       raw address, prefer treating it as a host pointer instead of a segment ref.
+       */
+
+    if (offset > 0x80000 && seg2k0_is_committed((uintptr_t)segadr)) {
+        return (uintptr_t)segadr;
+    }
+
+    /* Normal segment resolution path */
     uintptr_t resolved = this->segments[seg] + (uintptr_t)offset;
 
     if (seg2k0_is_committed(resolved)) {
