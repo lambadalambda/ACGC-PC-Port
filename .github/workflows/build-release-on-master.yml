@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-macos-release:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -26,6 +26,12 @@ jobs:
           HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
           brew install cmake sdl2 make
+
+      - name: Print toolchain versions
+        run: |
+          sw_vers
+          xcodebuild -version
+          clang --version | head -n 2
 
       - name: Build
         run: make BUILD_DIR=pc/build-macos
