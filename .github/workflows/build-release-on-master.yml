@@ -82,10 +82,13 @@ jobs:
           2) Put your disc image (.ciso/.iso/.gcm) in one of:
                ~/Documents/ACGC/
                ~/Documents/ACGC/rom/
-          3) Launch AnimalCrossing.app.
+          3) Optional runtime folders:
+               ~/Documents/ACGC/save/
+               ~/Documents/ACGC/texture_pack/
+          4) Launch AnimalCrossing.app.
 
           Notes:
-          - The app also checks ./rom/ when launched from a terminal-based build layout.
+          - The app also checks ./rom/, ./save/, and ./texture_pack/ for terminal-based builds.
           - No asset extraction step is required.
           EOF
 

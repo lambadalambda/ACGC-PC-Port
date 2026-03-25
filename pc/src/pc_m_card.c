@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #ifdef _WIN32
@@ -25,10 +26,21 @@
 #endif
 #include <dolphin/os.h>  /* OSReport */
 
-#define PC_GCI_PATH     "save/DobutsunomoriP_MURA.gci"
-#define PC_GCI_TMP_PATH "save/DobutsunomoriP_MURA.gci.tmp"
-#define PC_SAVE_DIR     "save"
+#define PC_GCI_FILENAME     "DobutsunomoriP_MURA.gci"
+#define PC_GCI_TMP_FILENAME "DobutsunomoriP_MURA.gci.tmp"
+#define PC_LEGACY_GCI_PATH  "save/DobutsunomoriP_MURA.gci"
+#define PC_LEGACY_ALT_GCI_PATH "save/8P-GAFE-DobutsunomoriP_MURA.gci"
 #define PC_SAVE_MAX_BACKUPS 3
+
+static char g_pc_save_root[512];
+static char g_pc_save_dir[512];
+static char g_pc_gci_path[640];
+static char g_pc_gci_tmp_path[640];
+static int g_pc_save_paths_ready = 0;
+
+#define PC_SAVE_DIR g_pc_save_dir
+#define PC_GCI_PATH g_pc_gci_path
+#define PC_GCI_TMP_PATH g_pc_gci_tmp_path
 
 #define GCI_HEADER_SIZE      sizeof(CARDDir)        /* 64 bytes */
 #define GCI_FILE_DATA_SIZE   mCD_LAND_SAVE_SIZE     /* 0x72000 */
@@ -39,6 +51,54 @@
 
 int pc_save_loaded = 0;
 static int pc_save_ready = 0;
+
+static int pc_mkdir_if_needed(const char* path) {
+    struct stat st;
+
+    if (!path || path[0] == '\0') return 0;
+#ifdef _WIN32
+    if (_mkdir(path) == 0) {
+        return 1;
+    }
+#else
+    if (mkdir(path, 0755) == 0) {
+        return 1;
+    }
+#endif
+
+    if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static void pc_save_init_paths(void) {
+    const char* home;
+
+    if (g_pc_save_paths_ready) {
+        return;
+    }
+
+    home = getenv("HOME");
+#ifdef _WIN32
+    if (!home || home[0] == '\0') {
+        home = getenv("USERPROFILE");
+    }
+#endif
+
+    if (home && home[0] != '\0') {
+        snprintf(g_pc_save_root, sizeof(g_pc_save_root), "%s/Documents/ACGC", home);
+        snprintf(g_pc_save_dir, sizeof(g_pc_save_dir), "%s/save", g_pc_save_root);
+    } else {
+        g_pc_save_root[0] = '\0';
+        snprintf(g_pc_save_dir, sizeof(g_pc_save_dir), "save");
+    }
+
+    snprintf(g_pc_gci_path, sizeof(g_pc_gci_path), "%s/%s", g_pc_save_dir, PC_GCI_FILENAME);
+    snprintf(g_pc_gci_tmp_path, sizeof(g_pc_gci_tmp_path), "%s/%s", g_pc_save_dir, PC_GCI_TMP_FILENAME);
+    g_pc_save_paths_ready = 1;
+}
 
 /* ARAM data blocks (mail/diary/original designs) — malloc'd instead of ARAM DMA */
 
@@ -143,7 +203,7 @@ static void put_be16(u8* dst, u16 val) {
 
 /* rotate backups: .bak3→delete, .bak2→.bak3, .bak1→.bak2, current→.bak1 */
 static void pc_save_rotate_backups(const char* base_path) {
-    char older[300], newer[300];
+    char older[640], newer[640];
     int i;
     struct stat st;
 
@@ -175,11 +235,17 @@ static int pc_save_write_gci(void) {
 
     if (!pc_save_ready) return TRUE;
 
-#ifdef _WIN32
-    _mkdir(PC_SAVE_DIR);
-#else
-    mkdir(PC_SAVE_DIR, 0755);
-#endif
+    pc_save_init_paths();
+
+    if (g_pc_save_root[0] != '\0' && !pc_mkdir_if_needed(g_pc_save_root)) {
+        OSReport("[PC] GCI save: failed to create root directory '%s'\n", g_pc_save_root);
+        return FALSE;
+    }
+
+    if (!pc_mkdir_if_needed(PC_SAVE_DIR)) {
+        OSReport("[PC] GCI save: failed to create save directory '%s'\n", PC_SAVE_DIR);
+        return FALSE;
+    }
 
     Save_Get(save_exist) = TRUE;
     Save_Get(save_check).version = mFRm_VERSION;
@@ -288,7 +354,7 @@ static int pc_save_write_gci(void) {
                  PC_GCI_TMP_PATH, PC_GCI_PATH);
         /* restore .bak1 so the save isn't orphaned */
         {
-            char bak1[300];
+            char bak1[640];
             snprintf(bak1, sizeof(bak1), "%s.bak1", PC_GCI_PATH);
             rename(bak1, PC_GCI_PATH);
         }
@@ -405,14 +471,33 @@ static int pc_save_read_gci(const char* path) {
 }
 
 static int pc_save_scan_gci_dir(void) {
-    /* Try common AC save filenames */
-    static const char* gci_names[] = {
-        "save/DobutsunomoriP_MURA.gci",
-        "save/8P-GAFE-DobutsunomoriP_MURA.gci",
-        NULL
-    };
+    const char* gci_names[6];
+    char docs_root_path[640];
+    char docs_root_alt_path[640];
+    int count = 0;
     int i;
     struct stat st;
+
+    pc_save_init_paths();
+
+    gci_names[count++] = PC_GCI_PATH;
+
+    if (strcmp(PC_GCI_PATH, PC_LEGACY_GCI_PATH) != 0) {
+        gci_names[count++] = PC_LEGACY_GCI_PATH;
+    }
+    if (strcmp(PC_GCI_PATH, PC_LEGACY_ALT_GCI_PATH) != 0) {
+        gci_names[count++] = PC_LEGACY_ALT_GCI_PATH;
+    }
+
+    if (g_pc_save_root[0] != '\0') {
+        snprintf(docs_root_path, sizeof(docs_root_path), "%s/%s", g_pc_save_root, PC_GCI_FILENAME);
+        snprintf(docs_root_alt_path, sizeof(docs_root_alt_path), "%s/%s", g_pc_save_root,
+                 "8P-GAFE-DobutsunomoriP_MURA.gci");
+        gci_names[count++] = docs_root_path;
+        gci_names[count++] = docs_root_alt_path;
+    }
+
+    gci_names[count] = NULL;
 
     for (i = 0; gci_names[i] != NULL; i++) {
         if (stat(gci_names[i], &st) == 0) {
@@ -429,6 +514,7 @@ static int pc_save_scan_gci_dir(void) {
  * memory card. */
 int pc_save_reload(void) {
     struct stat st;
+    pc_save_init_paths();
     if (!pc_save_loaded) return 0;
     if (stat(PC_GCI_PATH, &st) == 0) {
         return pc_save_read_gci(PC_GCI_PATH);
@@ -438,6 +524,7 @@ int pc_save_reload(void) {
 
 int pc_save_check_and_load(void) {
     struct stat st;
+    pc_save_init_paths();
     {
         char cwd[512];
         if (getcwd(cwd, sizeof(cwd))) {
@@ -471,7 +558,7 @@ int pc_save_check_and_load(void) {
         }
     }
     {
-        char bak_path[300];
+        char bak_path[640];
         int b;
         for (b = 1; b <= PC_SAVE_MAX_BACKUPS; b++) {
             snprintf(bak_path, sizeof(bak_path), "%s.bak%d", PC_GCI_PATH, b);

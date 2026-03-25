@@ -15,7 +15,10 @@ Pre-built releases for this fork are listed on the [Releases](https://github.com
 1. Download the latest macOS `.dmg` from [Releases](https://github.com/lambadalambda/ACGC-PC-Port/releases)
 2. Open the DMG and move `AnimalCrossing.app` where you want (for example, `Applications`)
 3. Place your disc image in `~/Documents/ACGC/` or `~/Documents/ACGC/rom/`
-4. Launch `AnimalCrossing.app`
+4. Optional runtime folders:
+   - saves: `~/Documents/ACGC/save/`
+   - HD textures: `~/Documents/ACGC/texture_pack/`
+5. Launch `AnimalCrossing.app`
 
 The game reads all assets directly from the disc image at startup. No extraction or preprocessing step is needed.
 
@@ -65,6 +68,10 @@ brew install cmake sdl2 make
    ```
 
    You can also keep it in `~/Documents/ACGC/` or `~/Documents/ACGC/rom/`.
+
+   Save files are stored in `~/Documents/ACGC/save/` and HD texture packs are loaded from
+   `~/Documents/ACGC/texture_pack/` (with local `./save/` and `./texture_pack/` fallback for
+   terminal-driven builds).
 
 4. Run:
    ```bash

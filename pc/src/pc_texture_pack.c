@@ -164,6 +164,39 @@ typedef struct {
 static TexPackEntry* g_texpack_map = NULL;
 static int g_texpack_count = 0;
 static int g_texpack_active = 0;
+static int g_texpack_paths_ready = 0;
+static char g_texpack_dir[512];
+static char g_tpc_file[640];
+
+static void pc_texture_pack_set_paths(const char* texpack_dir) {
+    snprintf(g_texpack_dir, sizeof(g_texpack_dir), "%s", texpack_dir);
+    snprintf(g_tpc_file, sizeof(g_tpc_file), "%s/texture_cache.bin", g_texpack_dir);
+}
+
+static void pc_texture_pack_init_paths(void) {
+    const char* home;
+
+    if (g_texpack_paths_ready) {
+        return;
+    }
+
+    home = getenv("HOME");
+#ifdef _WIN32
+    if (!home || home[0] == '\0') {
+        home = getenv("USERPROFILE");
+    }
+#endif
+
+    if (home && home[0] != '\0') {
+        char docs_path[512];
+        snprintf(docs_path, sizeof(docs_path), "%s/Documents/ACGC/texture_pack", home);
+        pc_texture_pack_set_paths(docs_path);
+    } else {
+        pc_texture_pack_set_paths("texture_pack");
+    }
+
+    g_texpack_paths_ready = 1;
+}
 
 /* Wildcard TLUT entries: tex1_WxH_DATAHASH_$_FMT.dds (matches any palette) */
 #define TEXPACK_WC_BITS  14
@@ -691,6 +724,8 @@ static void xxhash64_selftest(void) {
 }
 
 void pc_texture_pack_init(void) {
+    char primary_dir[512];
+
     g_texpack_count = 0;
     g_texpack_active = 0;
     g_stat_lookups = g_stat_hits = g_stat_loaded = g_stat_cache_hits = g_stat_neg_hits = 0;
@@ -710,16 +745,28 @@ void pc_texture_pack_init(void) {
         return;
     }
 
-    scan_directory("texture_pack");
+    pc_texture_pack_init_paths();
+    snprintf(primary_dir, sizeof(primary_dir), "%s", g_texpack_dir);
+    scan_directory(g_texpack_dir);
+
+    if (g_texpack_count == 0 && strcmp(g_texpack_dir, "texture_pack") != 0) {
+        pc_texture_pack_set_paths("texture_pack");
+        scan_directory(g_texpack_dir);
+    }
 
     if (g_texpack_count > 0) {
         g_texpack_active = 1;
-        printf("[TexturePack] Loaded %d texture entries (BC7:%s S3TC:%s)\n",
+        printf("[TexturePack] Loaded %d texture entries from %s (BC7:%s S3TC:%s)\n",
                g_texpack_count,
+               g_texpack_dir,
                g_has_bc7 ? "yes" : "no",
                g_has_s3tc ? "yes" : "no");
     } else {
-        printf("[TexturePack] No texture pack found in texture_pack/\n");
+        if (strcmp(primary_dir, "texture_pack") == 0) {
+            printf("[TexturePack] No texture pack found in %s/\n", primary_dir);
+        } else {
+            printf("[TexturePack] No texture pack found in %s/ or texture_pack/\n", primary_dir);
+        }
     }
 }
 
@@ -734,7 +781,6 @@ void pc_texture_pack_init(void) {
  */
 #define TPC_MAGIC   0x43505431  /* "TPC1" */
 #define TPC_VERSION 1
-#define TPC_FILE    "texture_pack/texture_cache.bin"
 
 typedef struct {
     xxh_u64 cache_key;
@@ -776,7 +822,10 @@ static int tpc_upload_entry(const TPCEntryHeader* eh, const unsigned char* pixel
 /* Try loading from binary cache file. Returns 1 on success, 0 if cache missing/stale. */
 static int preload_from_cache(int expected_count) {
     extern SDL_Window* g_pc_window;
-    FILE* f = fopen(TPC_FILE, "rb");
+    FILE* f;
+
+    pc_texture_pack_init_paths();
+    f = fopen(g_tpc_file, "rb");
     if (!f) return 0;
 
     xxh_u32 header[4];
@@ -951,7 +1000,8 @@ void pc_texture_pack_preload_all(void) {
     /* Collect entries and load DDS + upload to GL + write cache simultaneously */
     FILE* cache_f = NULL;
     if (use_cache) {
-        cache_f = fopen(TPC_FILE, "wb");
+        pc_texture_pack_init_paths();
+        cache_f = fopen(g_tpc_file, "wb");
         if (cache_f) {
             xxh_u32 header[4] = { TPC_MAGIC, TPC_VERSION, 0, (xxh_u32)g_texpack_count };
             fwrite(header, 4, 4, cache_f); /* entry_count placeholder, patched later */
@@ -1082,7 +1132,7 @@ void pc_texture_pack_preload_all(void) {
         xxh_u32 count32 = (xxh_u32)cache_entries;
         fwrite(&count32, 4, 1, cache_f);
         fclose(cache_f);
-        printf("[TexturePack] Wrote cache: %d textures to %s\n", cache_entries, TPC_FILE);
+        printf("[TexturePack] Wrote cache: %d textures to %s\n", cache_entries, g_tpc_file);
     }
 
     if (g_pc_window) SDL_SetWindowTitle(g_pc_window, "Animal Crossing");
