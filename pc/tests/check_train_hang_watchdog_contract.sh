@@ -2,7 +2,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-WATCHDOG="$REPO_ROOT/pc/tools/train_hang_watchdog.py"
+WATCHDOG="$REPO_ROOT/pc/tools/repro_watchdog.py"
+LEGACY_WATCHDOG="$REPO_ROOT/pc/tools/train_hang_watchdog.py"
 
 check_contains() {
     local file="$1"
@@ -24,5 +25,6 @@ check_contains "$WATCHDOG" 'scene4-stall-seconds' 'watchdog supports prolonged s
 check_contains "$WATCHDOG" 'NEOS_FRAME_RE' 'watchdog tracks neos frame progress markers'
 check_contains "$WATCHDOG" 'SCENE_MODE_RE' 'watchdog tracks scene transition progress markers'
 check_contains "$WATCHDOG" 'select\.select' 'watchdog uses polling rather than blocking readline loop'
+check_contains "$LEGACY_WATCHDOG" 'repro_watchdog\.py' 'legacy watchdog wrapper points to renamed script'
 
 printf '%s\n' 'check_train_hang_watchdog_contract: OK'
