@@ -115,6 +115,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
+          retry() {
+            local attempt=1
+            local max_attempts=5
+            while true; do
+              if "$@"; then
+                return 0
+              fi
+              if [ "${attempt}" -ge "${max_attempts}" ]; then
+                echo "[release] command failed after ${max_attempts} attempts: $*" >&2
+                return 1
+              fi
+              sleep $((attempt * 5))
+              attempt=$((attempt + 1))
+            done
+          }
+
           RELEASE_TAG="master-latest"
           RELEASE_TITLE="master-latest"
           NOTES_FILE="dist/RELEASE_NOTES.md"
@@ -126,22 +142,23 @@ jobs:
           - Workflow run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
           EOF
 
-          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            gh release edit "${RELEASE_TAG}" \
+          if retry gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            retry gh release edit "${RELEASE_TAG}" \
               --target "${GITHUB_SHA}" \
               --title "${RELEASE_TITLE}" \
               --prerelease \
               --notes-file "${NOTES_FILE}"
           else
-            gh release create "${RELEASE_TAG}" \
+            retry gh release create "${RELEASE_TAG}" \
               --target "${GITHUB_SHA}" \
               --title "${RELEASE_TITLE}" \
               --prerelease \
               --notes-file "${NOTES_FILE}"
           fi
 
-          for asset in $(gh release view "${RELEASE_TAG}" --json assets --jq '.assets[].name'); do
-            gh release delete-asset "${RELEASE_TAG}" "${asset}" --yes
+          ASSETS="$(retry gh release view "${RELEASE_TAG}" --json assets --jq '.assets[].name')"
+          for asset in ${ASSETS}; do
+            retry gh release delete-asset "${RELEASE_TAG}" "${asset}" --yes
           done
 
-          gh release upload "${RELEASE_TAG}" dist/AnimalCrossing-macos-*.dmg dist/AnimalCrossing-macos-*.tar.gz
+          retry gh release upload "${RELEASE_TAG}" dist/AnimalCrossing-macos-*.dmg dist/AnimalCrossing-macos-*.tar.gz
