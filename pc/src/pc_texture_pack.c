@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* bcdec is used for BC7 CPU fallback when GL BPTC is unavailable. */
+#define BCDEC_STATIC
+#define BCDEC_IMPLEMENTATION
+#include "third_party/bcdec.h"
+
 /* --- XXHash64 (seed=0, matches Dolphin's GetHash64) --- */
 
 typedef unsigned long long xxh_u64;
@@ -140,6 +145,7 @@ static xxh_u64 xxhash64(const void* input, int len) {
 
 static int g_has_bc7 = 0;
 static int g_has_s3tc = 0;
+static int g_bc7_cpu_fallback_logged = 0;
 
 static int g_stat_lookups = 0;
 static int g_stat_hits = 0;
@@ -462,6 +468,39 @@ static void scan_directory(const char* dir_path) {
 
 /* --- DDS file loader --- */
 
+static unsigned char* decode_bc7_to_rgba(const unsigned char* bc7_data, int width, int height, int* out_size) {
+    int blocks_x = (width + 3) / 4;
+    int blocks_y = (height + 3) / 4;
+    int rgba_size = width * height * 4;
+    unsigned char* rgba = (unsigned char*)malloc(rgba_size);
+    if (!rgba) return NULL;
+
+    for (int by = 0; by < blocks_y; by++) {
+        for (int bx = 0; bx < blocks_x; bx++) {
+            unsigned char block_rgba[4 * 4 * 4];
+            const unsigned char* block_src = bc7_data + ((by * blocks_x + bx) * 16);
+            int copy_w;
+            int copy_h;
+
+            bcdec_bc7(block_src, block_rgba, 16);
+
+            copy_w = width - (bx * 4);
+            copy_h = height - (by * 4);
+            if (copy_w > 4) copy_w = 4;
+            if (copy_h > 4) copy_h = 4;
+
+            for (int row = 0; row < copy_h; row++) {
+                unsigned char* dst = rgba + (((by * 4 + row) * width + (bx * 4)) * 4);
+                const unsigned char* src = block_rgba + (row * 16);
+                memcpy(dst, src, copy_w * 4);
+            }
+        }
+    }
+
+    if (out_size) *out_size = rgba_size;
+    return rgba;
+}
+
 static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
     FILE* f = fopen(filepath, "rb");
     if (!f) return 0;
@@ -485,6 +524,7 @@ static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
     GLenum gl_internal = 0;
     int compressed = 0;
     int block_size = 0;
+    int decode_bc7_cpu = 0;
 
     if ((pf_flags & DDPF_FOURCC) && pf_fourcc == 0x30315844) {
         /* "DX10" FourCC — read extended header */
@@ -493,10 +533,20 @@ static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
 
         switch (dxgi_format) {
             case DXGI_FORMAT_BC7_UNORM:
-                if (!g_has_bc7) { fclose(f); return 0; }
-                gl_internal = GL_COMPRESSED_RGBA_BPTC_UNORM;
-                compressed = 1;
-                block_size = 16;
+                if (g_has_bc7) {
+                    gl_internal = GL_COMPRESSED_RGBA_BPTC_UNORM;
+                    compressed = 1;
+                    block_size = 16;
+                } else {
+                    decode_bc7_cpu = 1;
+                    gl_internal = GL_RGBA;
+                    compressed = 0;
+                    block_size = 16;
+                    if (!g_bc7_cpu_fallback_logged) {
+                        printf("[TexturePack] BC7 GPU decode unavailable; using CPU fallback\n");
+                        g_bc7_cpu_fallback_logged = 1;
+                    }
+                }
                 break;
             case DXGI_FORMAT_BC1_UNORM:
                 if (!g_has_s3tc) { fclose(f); return 0; }
@@ -548,23 +598,31 @@ static GLuint load_dds_file(const char* filepath, int* out_w, int* out_h) {
         }
     }
 
-    int data_size;
-    if (compressed) {
+    int file_data_size;
+    if (block_size != 0) {
         int blocks_x = ((int)dds_width + 3) / 4;
         int blocks_y = ((int)dds_height + 3) / 4;
-        data_size = blocks_x * blocks_y * block_size;
+        file_data_size = blocks_x * blocks_y * block_size;
     } else {
-        data_size = (int)(dds_width * dds_height * 4);
+        file_data_size = (int)(dds_width * dds_height * 4);
     }
 
-    unsigned char* pixels = (unsigned char*)malloc(data_size);
+    int data_size = file_data_size;
+    unsigned char* pixels = (unsigned char*)malloc(file_data_size);
     if (!pixels) { fclose(f); return 0; }
-    if ((int)fread(pixels, 1, data_size, f) != data_size) {
+    if ((int)fread(pixels, 1, file_data_size, f) != file_data_size) {
         free(pixels);
         fclose(f);
         return 0;
     }
     fclose(f);
+
+    if (decode_bc7_cpu) {
+        unsigned char* decoded = decode_bc7_to_rgba(pixels, (int)dds_width, (int)dds_height, &data_size);
+        free(pixels);
+        if (!decoded) return 0;
+        pixels = decoded;
+    }
 
     /* BGRA→RGBA swap if needed */
     if (!compressed && dxgi_format == DXGI_FORMAT_B8G8R8A8_UNORM) {
@@ -728,6 +786,7 @@ void pc_texture_pack_init(void) {
 
     g_texpack_count = 0;
     g_texpack_active = 0;
+    g_bc7_cpu_fallback_logged = 0;
     g_stat_lookups = g_stat_hits = g_stat_loaded = g_stat_cache_hits = g_stat_neg_hits = 0;
     memset(g_loaded_cache, 0, sizeof(g_loaded_cache));
     memset(g_neg_cache_valid, 0, sizeof(g_neg_cache_valid));
@@ -881,8 +940,8 @@ static int preload_from_cache(int expected_count) {
 /* Load raw DDS file data without creating a GL texture (for cache building).
  * Returns malloc'd pixel data, fills out metadata. Caller must free(). */
 static unsigned char* load_dds_raw(const char* filepath, xxh_u32* out_w, xxh_u32* out_h,
-                                    xxh_u32* out_gl_internal, xxh_u32* out_compressed,
-                                    int* out_data_size) {
+                                     xxh_u32* out_gl_internal, xxh_u32* out_compressed,
+                                     int* out_data_size) {
     FILE* f = fopen(filepath, "rb");
     if (!f) return NULL;
 
@@ -905,14 +964,28 @@ static unsigned char* load_dds_raw(const char* filepath, xxh_u32* out_w, xxh_u32
     GLenum gl_internal = 0;
     int compressed = 0;
     int block_size = 0;
+    int decode_bc7_cpu = 0;
 
     if ((pf_flags & DDPF_FOURCC) && pf_fourcc == 0x30315844) {
         if (fread(header + 128, 1, 20, f) != 20) { fclose(f); return NULL; }
         memcpy(&dxgi_format, header + 128, 4);
         switch (dxgi_format) {
             case DXGI_FORMAT_BC7_UNORM:
-                if (!g_has_bc7) { fclose(f); return NULL; }
-                gl_internal = GL_COMPRESSED_RGBA_BPTC_UNORM; compressed = 1; block_size = 16; break;
+                if (g_has_bc7) {
+                    gl_internal = GL_COMPRESSED_RGBA_BPTC_UNORM;
+                    compressed = 1;
+                    block_size = 16;
+                } else {
+                    decode_bc7_cpu = 1;
+                    gl_internal = GL_RGBA;
+                    compressed = 0;
+                    block_size = 16;
+                    if (!g_bc7_cpu_fallback_logged) {
+                        printf("[TexturePack] BC7 GPU decode unavailable; using CPU fallback\n");
+                        g_bc7_cpu_fallback_logged = 1;
+                    }
+                }
+                break;
             case DXGI_FORMAT_BC1_UNORM:
                 if (!g_has_s3tc) { fclose(f); return NULL; }
                 gl_internal = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; compressed = 1; block_size = 8; break;
@@ -939,19 +1012,27 @@ static unsigned char* load_dds_raw(const char* filepath, xxh_u32* out_w, xxh_u32
         else { fclose(f); return NULL; }
     }
 
-    int data_size;
-    if (compressed) {
+    int file_data_size;
+    if (block_size != 0) {
         int blocks_x = ((int)dds_width + 3) / 4;
         int blocks_y = ((int)dds_height + 3) / 4;
-        data_size = blocks_x * blocks_y * block_size;
+        file_data_size = blocks_x * blocks_y * block_size;
     } else {
-        data_size = (int)(dds_width * dds_height * 4);
+        file_data_size = (int)(dds_width * dds_height * 4);
     }
 
-    unsigned char* pixels = (unsigned char*)malloc(data_size);
+    int data_size = file_data_size;
+    unsigned char* pixels = (unsigned char*)malloc(file_data_size);
     if (!pixels) { fclose(f); return NULL; }
-    if ((int)fread(pixels, 1, data_size, f) != data_size) { free(pixels); fclose(f); return NULL; }
+    if ((int)fread(pixels, 1, file_data_size, f) != file_data_size) { free(pixels); fclose(f); return NULL; }
     fclose(f);
+
+    if (decode_bc7_cpu) {
+        unsigned char* decoded = decode_bc7_to_rgba(pixels, (int)dds_width, (int)dds_height, &data_size);
+        free(pixels);
+        if (!decoded) return NULL;
+        pixels = decoded;
+    }
 
     if (!compressed && dxgi_format == DXGI_FORMAT_B8G8R8A8_UNORM) {
         for (int i = 0; i < data_size; i += 4) {
