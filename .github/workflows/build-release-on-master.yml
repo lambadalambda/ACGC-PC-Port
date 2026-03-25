@@ -1,0 +1,53 @@
+name: Build Release Bundle
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-macos-release:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          brew install cmake sdl2 make
+
+      - name: Build
+        run: make BUILD_DIR=pc/build-macos
+
+      - name: Package release bundle
+        run: |
+          set -eu
+          SHA_SHORT="${GITHUB_SHA::7}"
+          PKG_DIR="dist/AnimalCrossing-macos-${SHA_SHORT}"
+          mkdir -p "${PKG_DIR}"
+
+          cp "pc/build-macos/bin/AnimalCrossing" "${PKG_DIR}/"
+          cp -R "pc/build-macos/bin/shaders" "${PKG_DIR}/shaders"
+
+          mkdir -p "${PKG_DIR}/rom" "${PKG_DIR}/save" "${PKG_DIR}/texture_pack"
+          cp "README.md" "${PKG_DIR}/"
+
+          tar -czf "dist/AnimalCrossing-macos-${SHA_SHORT}.tar.gz" -C dist "AnimalCrossing-macos-${SHA_SHORT}"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnimalCrossing-macos-${{ github.sha }}
+          path: dist/AnimalCrossing-macos-*.tar.gz
+          if-no-files-found: error

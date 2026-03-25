@@ -10,57 +10,78 @@ Supported versions: GAFE01_00: Rev 0 (USA)
 
 ## Quick Start (Pre-built Release)
 
-Pre-built releases are available on the [Releases](https://github.com/flyngmt/ACGC-PC-Port/releases) page. No build tools required.
+Pre-built releases for this fork are listed on the [Releases](https://github.com/lambadalambda/ACGC-PC-Port/releases) page.
 
 1. Download and extract the latest release zip
 2. Place your disc image in the `rom/` folder
-3. Run `AnimalCrossing.exe`
+3. Run the included `AnimalCrossing` binary (`AnimalCrossing.exe` on Windows builds)
 
 The game reads all assets directly from the disc image at startup. No extraction or preprocessing step is needed.
 
+### Automated master builds
+
+Every push to `master` runs a GitHub Actions release-bundle build for macOS and uploads a `.tar.gz` artifact.
+
+- Actions page: https://github.com/lambadalambda/ACGC-PC-Port/actions
+- Workflow: `Build Release Bundle`
+
 ## Building from Source
 
-Only needed if you want to modify the code. Otherwise, use the [pre-built release](https://github.com/flyngmt/ACGC-PC-Port/releases) above.
+Only needed if you want to modify the code. Otherwise, use the [pre-built release](https://github.com/lambadalambda/ACGC-PC-Port/releases) above.
 
 ### Requirements
 
-- **MSYS2** (https://www.msys2.org/)
+- **macOS** (Apple Silicon or Intel)
+- **Xcode Command Line Tools**
+- **Homebrew**
 - **Animal Crossing (USA) disc image** (ISO, GCM, or CISO format)
 
-### MSYS2 Packages
-
-Open **MSYS2 MINGW32** from your Start menu and install:
+### Install Build Dependencies
 
 ```bash
-pacman -S mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-SDL2 mingw-w64-i686-make
+xcode-select --install
+brew install cmake sdl2 make
 ```
 
 ### Build Steps
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/flyngmt/ACGC-PC-Port.git
+   git clone https://github.com/lambadalambda/ACGC-PC-Port.git
    cd ACGC-PC-Port
    ```
 
-2. Build (from **MSYS2 MINGW32** shell):
+2. Build:
    ```bash
    make
    ```
-   Legacy helper (still supported):
-   ```bash
-   ./build_pc.sh
-   ```
+
+   This configures `pc/build-macos` and enables LP64 bringup mode by default.
 
 3. Place your disc image in the `rom/` folder:
    ```
-   pc/build32/bin/rom/YourGame.ciso
+   pc/build-macos/bin/rom/YourGame.ciso
    ```
 
 4. Run:
    ```bash
-   pc/build32/bin/AnimalCrossing.exe
+   pc/build-macos/bin/AnimalCrossing
    ```
+
+### Optional Build Overrides
+
+```bash
+make BUILD_DIR=pc/build-custom
+make CMAKE_OPTIONS='-DPC_EXPERIMENTAL_64BIT=ON -DPC_CONSOLE=ON'
+```
+
+### Legacy Windows Helper
+
+The old MSYS2 helper is still available for the 32-bit reference path:
+
+```bash
+./build_pc.sh
+```
 
 ## Controls
 
