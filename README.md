@@ -24,10 +24,11 @@ The game reads all assets directly from the disc image at startup. No extraction
 
 ### Automated master builds
 
-Every push to `master` runs a GitHub Actions macOS build and uploads release artifacts (`.dmg` and `.tar.gz`). The packaged bundle contains only `AnimalCrossing.app` and a short `README.txt`.
+Every push to `master` runs a GitHub Actions macOS build, uploads workflow artifacts (`.dmg` and `.tar.gz`), and refreshes the rolling prerelease tag `master-latest` with the newest build files. The packaged bundle contains only `AnimalCrossing.app` and a short `README.txt`.
 
 - Actions page: https://github.com/lambadalambda/ACGC-PC-Port/actions
 - Workflow: `Build macOS Release DMG`
+- Rolling prerelease: https://github.com/lambadalambda/ACGC-PC-Port/releases/tag/master-latest
 
 ## Building from Source
 
