@@ -41,19 +41,52 @@ jobs:
           set -eu
           SHA_SHORT="${GITHUB_SHA::7}"
           PKG_DIR="dist/AnimalCrossing-macos-${SHA_SHORT}"
+          APP_DIR="${PKG_DIR}/AnimalCrossing.app"
+          APP_CONTENTS="${APP_DIR}/Contents"
+          APP_MACOS="${APP_CONTENTS}/MacOS"
+          APP_RESOURCES="${APP_CONTENTS}/Resources"
           mkdir -p "${PKG_DIR}" "dist"
+          mkdir -p "${APP_MACOS}" "${APP_RESOURCES}"
 
-          cp "pc/build-macos/bin/AnimalCrossing" "${PKG_DIR}/"
-          cp -R "pc/build-macos/bin/shaders" "${PKG_DIR}/shaders"
+          cp "pc/build-macos/bin/AnimalCrossing" "${APP_MACOS}/AnimalCrossing"
+          cp -R "pc/build-macos/bin/shaders" "${APP_MACOS}/shaders"
+          chmod +x "${APP_MACOS}/AnimalCrossing"
 
-          mkdir -p "${PKG_DIR}/rom" "${PKG_DIR}/save" "${PKG_DIR}/texture_pack"
-          cp "README.md" "${PKG_DIR}/"
+          cat > "${APP_CONTENTS}/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key>
+            <string>AnimalCrossing</string>
+            <key>CFBundleDisplayName</key>
+            <string>Animal Crossing</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.lambadalambda.acgcpcport</string>
+            <key>CFBundleVersion</key>
+            <string>${SHA_SHORT}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${SHA_SHORT}</string>
+            <key>CFBundleExecutable</key>
+            <string>AnimalCrossing</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+          </dict>
+          </plist>
+          EOF
 
-          cat > "${PKG_DIR}/ROM-LOCATION.txt" <<'EOF'
-          Place your disc image (.ciso/.iso/.gcm) in one of these paths:
-            - ./rom/                 (next to the binary)
-            - ~/Documents/ACGC/
-            - ~/Documents/ACGC/rom/
+          cat > "${PKG_DIR}/README.txt" <<'EOF'
+          Animal Crossing PC Port (macOS)
+
+          1) Drag AnimalCrossing.app to Applications (optional).
+          2) Put your disc image (.ciso/.iso/.gcm) in one of:
+               ~/Documents/ACGC/
+               ~/Documents/ACGC/rom/
+          3) Launch AnimalCrossing.app.
+
+          Notes:
+          - The app also checks ./rom/ when launched from a terminal-based build layout.
+          - No asset extraction step is required.
           EOF
 
           hdiutil create \

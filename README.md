@@ -12,15 +12,16 @@ Supported versions: GAFE01_00: Rev 0 (USA)
 
 Pre-built releases for this fork are listed on the [Releases](https://github.com/lambadalambda/ACGC-PC-Port/releases) page.
 
-1. Download and extract the latest release zip
-2. Place your disc image in the `rom/` folder, `~/Documents/ACGC/`, or `~/Documents/ACGC/rom/`
-3. Run the included `AnimalCrossing` binary (`AnimalCrossing.exe` on Windows builds)
+1. Download the latest macOS `.dmg` from [Releases](https://github.com/lambadalambda/ACGC-PC-Port/releases)
+2. Open the DMG and move `AnimalCrossing.app` where you want (for example, `Applications`)
+3. Place your disc image in `~/Documents/ACGC/` or `~/Documents/ACGC/rom/`
+4. Launch `AnimalCrossing.app`
 
 The game reads all assets directly from the disc image at startup. No extraction or preprocessing step is needed.
 
 ### Automated master builds
 
-Every push to `master` runs a GitHub Actions macOS build and uploads release artifacts (`.dmg` and `.tar.gz`).
+Every push to `master` runs a GitHub Actions macOS build and uploads release artifacts (`.dmg` and `.tar.gz`). The packaged bundle contains only `AnimalCrossing.app` and a short `README.txt`.
 
 - Actions page: https://github.com/lambadalambda/ACGC-PC-Port/actions
 - Workflow: `Build macOS Release DMG`
