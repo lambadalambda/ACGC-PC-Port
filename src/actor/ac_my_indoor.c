@@ -56,6 +56,8 @@ extern Gfx rom_myhome1_floor_new_model[];
 extern Gfx rom_myhome1_wall_new_model[];
 extern Gfx rom_myhome1_floor_new2_model[];
 extern Gfx rom_myhome1_wall_new2_model[];
+extern void pc_patch_rom_myhome1_floor_models(void);
+extern void pc_patch_rom_myhome1_wall_models(void);
 
 extern Gfx rom_myhome2B_floor_model[];
 extern Gfx rom_myhome2B_wall_model[];
@@ -703,6 +705,9 @@ static void aMI_DrawMyOriginalWall(ACTOR* actorx, GAME* game) {
 
 static void My_Indoor_Actor_draw(ACTOR* actorx, GAME* game) {
     MY_INDOOR_ACTOR* my_indoor = (MY_INDOOR_ACTOR*)actorx;
+
+    pc_patch_rom_myhome1_wall_models();
+    pc_patch_rom_myhome1_floor_models();
 
     // Draw the wall
     (*my_indoor->banks[my_indoor->wall_bank_idx & 1].wall_draw_proc)(actorx, game);

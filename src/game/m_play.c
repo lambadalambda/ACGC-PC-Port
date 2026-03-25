@@ -801,6 +801,34 @@ static void draw_version(GRAPH* graph) {
     JW_JUTReport(0x82, 0x18E, 1, "[Creator:%s]", &__Creator__);
 }
 
+#ifdef TARGET_PC
+static void draw_pc_onscreen_timer(void) {
+    Uint32 elapsed_ms;
+    unsigned int elapsed_seconds;
+    unsigned int elapsed_minutes;
+    unsigned int elapsed_hours;
+    unsigned int minute_part;
+    unsigned int second_part;
+
+    if (g_pc_onscreen_timer == 0) {
+        return;
+    }
+
+    elapsed_ms = SDL_GetTicks();
+    elapsed_seconds = (unsigned int)(elapsed_ms / 1000U);
+    elapsed_minutes = elapsed_seconds / 60U;
+    elapsed_hours = elapsed_minutes / 60U;
+    minute_part = elapsed_minutes % 60U;
+    second_part = elapsed_seconds % 60U;
+
+    if (elapsed_hours != 0U) {
+        JW_JUTReport(24, 24, 1, "T+%02u:%02u:%02u", elapsed_hours, minute_part, second_part);
+    } else {
+        JW_JUTReport(24, 24, 1, "T+%02u:%02u", elapsed_minutes, second_part);
+    }
+}
+#endif
+
 static void Game_play_draw(GAME_PLAY* play) {
     GRAPH* graph = play->game.graph;
     u8 fill_r = 0;
@@ -847,6 +875,10 @@ static void Game_play_draw(GAME_PLAY* play) {
                 break;
         }
     }
+#ifdef TARGET_PC
+    /* Optional repro aid so bug reports can cite an exact in-run timestamp. */
+    draw_pc_onscreen_timer();
+#endif
 }
 
 extern void play_main(GAME* game) {

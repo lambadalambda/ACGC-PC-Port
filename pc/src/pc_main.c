@@ -19,6 +19,7 @@ SDL_GLContext  g_pc_gl_context = NULL;
 int           g_pc_running = 1;
 int           g_pc_no_framelimit = 0;
 int           g_pc_verbose = 0;
+int           g_pc_onscreen_timer = 0;
 int           g_pc_selftest = 0;
 int           g_pc_time_override = -1; /* -1=system clock, 0-23=override hour */
 int           g_pc_min_override = -1; /* -1=system clock, 0-59=override minute */
@@ -400,6 +401,7 @@ int main(int argc, char* argv[]) {
             printf("  --model-viewer [N]  Launch model viewer (optional start index)\n");
             printf("  --boot-player-select  Enable experimental player-select boot path\n");
             printf("  --time H[:M[:S]]    Override in-game time (e.g. 5, 17:30, 5:55:00)\n");
+            printf("  --on-screen-timer  Show T+MM:SS timer overlay\n");
             printf("  --selftest          Run startup self-test and exit\n");
             printf("  --help, -h          Show this help message\n");
             return 0;
@@ -422,6 +424,8 @@ int main(int argc, char* argv[]) {
             if (m >= 0 && m <= 59) g_pc_min_override = m;
             if (s >= 0 && s <= 59) g_pc_sec_override = s;
             i++;
+        } else if (strcmp(argv[i], "--on-screen-timer") == 0 || strcmp(argv[i], "--onscreen-timer") == 0) {
+            g_pc_onscreen_timer = 1;
         } else if (strcmp(argv[i], "--selftest") == 0) {
             g_pc_selftest = 1;
         }

@@ -114,6 +114,55 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - long delayed-autopress LP64 run still reaches post-train progression (`0 -> 3 -> 4 -> 18 -> 9 -> 12 -> 10 -> 14 -> 9`) with no NPC model zero-pointer hits (`npc_model_zero_symbols=0` against all `mdl/*.c` stems).
   - remaining zero-pointer symbols are now concentrated outside NPC species models (for example `rom_myhome1_wall_model` / `rom_myhome1_floor_model`), matching current "black interior" follow-up.
 
+## 2026-03-23 - myhome interior black screen (floor/wall display lists)
+
+- Symptom/signature:
+  - after NPC sweep, user reported indoor house became visible logic-wise but interior rendered black.
+  - LP64 repro logs showed zero-pointer hits on `rom_myhome1_wall_model` and `rom_myhome1_floor_model`.
+- Root cause:
+  - myhome floor/wall display lists still carried static `w1` pointer words (segment texture pointers + vertex pointers) that were zero under LP64 static-pointer mode.
+- Fix approach and touched files:
+  - added guarded LP64 helper `pc_patch_rom_myhome1_floor_models()` in `src/data/model/rom_myhome1_floor.c` and generated fixups with `pc/tools/gen_gfx_w1_fixups.py --apply-helper`.
+  - added guarded LP64 helper `pc_patch_rom_myhome1_wall_models()` in `src/data/model/rom_myhome1_wall.c`, generated fixups, and invoked it from the wall asset loader.
+  - invoked both helpers from indoor draw path in `src/actor/ac_my_indoor.c` so first-use interior rendering always patches before `gSPDisplayList`.
+  - added contract `pc/tests/check_myhome_indoor_ptr_patch_contract.sh`.
+- Verification and follow-up:
+  - `bash pc/tests/check_myhome_indoor_ptr_patch_contract.sh` passes.
+  - LP64 build succeeds (`cmake --build /tmp/acgc-p2-config-64 -j4`).
+  - delayed-autopress repro log `/tmp/acgc_lp64_myhome_phase1_420s.log` no longer reports `rom_myhome1_floor_model` / `rom_myhome1_wall_model` zero-pointer hits.
+  - user confirmed house interior became visible after this patch; next symptom shifted to black area around houses outside.
+
+## 2026-03-23 - house-area acre black rendering (batch patching)
+
+- Symptom/signature:
+  - after interior fix, user reported black rendering around houses in the outdoor area.
+  - LP64 logs showed concentrated acre symbol hits (for example `grd_s_c1_3_model`, `grd_s_c6_3_model`, `grd_s_r3_3_model`, `grd_s_t_2_model`, `grd_s_f_8_model`, `grd_s_c5_s_2_model`, `grd_s_f_mh_3_model`, `grd_s_r7_2_model`, then `grd_s_r1_b_2_model`, `grd_s_c5_2_model`, `grd_s_f_5_model`).
+- Root cause:
+  - additional acre display-list `w1` pointers were still unpatched in whichever terrain set streamed for that run/position.
+- Fix approach and touched files:
+  - added/generated guarded LP64 helpers + loader calls for:
+    - `src/data/field/bg/acre/grd_s_c1_3/grd_s_c1_3.c`
+    - `src/data/field/bg/acre/grd_s_c6_3/grd_s_c6_3.c`
+    - `src/data/field/bg/acre/grd_s_r3_3/grd_s_r3_3.c`
+    - `src/data/field/bg/acre/grd_s_t_2/grd_s_t_2.c`
+    - `src/data/field/bg/acre/grd_s_f_8/grd_s_f_8.c`
+    - `src/data/field/bg/acre/grd_s_c5_s_2/grd_s_c5_s_2.c`
+    - `src/data/field/bg/acre/grd_s_f_mh_3/grd_s_f_mh_3.c`
+    - `src/data/field/bg/acre/grd_s_r7_2/grd_s_r7_2.c`
+    - `src/data/field/bg/acre/grd_s_r1_b_2/grd_s_r1_b_2.c`
+    - `src/data/field/bg/acre/grd_s_c5_2/grd_s_c5_2.c`
+    - `src/data/field/bg/acre/grd_s_f_5/grd_s_f_5.c`
+  - generated helper bodies with `pc/tools/gen_gfx_w1_fixups.py --apply-helper`.
+  - added contract `pc/tests/check_house_area_acre_ptr_patch_contract.sh` (generator-backed helper checks + loader-call checks).
+- Verification and follow-up:
+  - contracts pass:
+    - `bash pc/tests/check_house_area_acre_ptr_patch_contract.sh`
+    - `bash pc/tests/check_post_train_scene_ptr_patch_contract.sh`
+    - `bash pc/tests/check_train_npc_model_ptr_patch_contract.sh`
+  - LP64 build succeeds after each batch.
+  - delayed-autopress log `/tmp/acgc_lp64_house_area_acre_batch2_420s.log` shows no zero-pointer hits for the 11 targeted acre symbols above.
+  - remaining zero-pointer hits are now in a new acre/UI subset (for example `grd_s_c5_3_model`, `grd_s_c6_s_1_model`, `grd_s_r6_b_2_model`, `inv_mwin_model`, `ef_wipe1_modelT`), confirming this path should continue as iterative loader-backed batches plus no-loader integration.
+
 ## 2026-03-22 - gSetImage pointer-word encoding
 
 - Symptom/signature: `gSetImage` packed image pointers with `_g->words.w1 = (unsigned int)(i);`, which can truncate host pointers on LP64 and feed bad `G_SET*IMG` addresses into emu64/RDP paths.

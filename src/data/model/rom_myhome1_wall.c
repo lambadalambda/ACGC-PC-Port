@@ -194,11 +194,64 @@ Gfx rom_myhome1_wall_new2_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_rom_myhome1_wall_models(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    rom_myhome1_wall_model[3].words.w1 = pc_gbi_ptr_encode(rom_myhome_pal);
+    rom_myhome1_wall_model[4].words.w1 = pc_gbi_ptr_encode(rom_myhome_window_tex);
+    rom_myhome1_wall_model[7].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[77]);
+    rom_myhome1_wall_model[10].words.w1 = pc_gbi_ptr_encode(rom_myhome_enter2_tex);
+    rom_myhome1_wall_model[12].words.w1 = pc_gbi_ptr_encode(rom_myhome1_wall_v);
+    rom_myhome1_wall_model[18].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    rom_myhome1_wall_model[19].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    rom_myhome1_wall_model[21].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[6]);
+    rom_myhome1_wall_model[29].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    rom_myhome1_wall_model[31].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[29]);
+    rom_myhome1_wall_model[40].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[61]);
+    rom_myhome1_wall_model[45].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[69]);
+    rom_myhome1_wall_new_model[3].words.w1 = pc_gbi_ptr_encode(rom_myhome_pal);
+    rom_myhome1_wall_new_model[4].words.w1 = pc_gbi_ptr_encode(rom_myhome_window_tex);
+    rom_myhome1_wall_new_model[7].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[77]);
+    rom_myhome1_wall_new_model[10].words.w1 = pc_gbi_ptr_encode(rom_myhome_enter2_tex);
+    rom_myhome1_wall_new_model[12].words.w1 = pc_gbi_ptr_encode(rom_myhome1_wall_v);
+    rom_myhome1_wall_new_model[18].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    rom_myhome1_wall_new_model[19].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    rom_myhome1_wall_new_model[21].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[6]);
+    rom_myhome1_wall_new_model[29].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    rom_myhome1_wall_new_model[31].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[29]);
+    rom_myhome1_wall_new_model[40].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[61]);
+    rom_myhome1_wall_new_model[45].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[69]);
+    rom_myhome1_wall_new2_model[3].words.w1 = pc_gbi_ptr_encode(rom_myhome_pal);
+    rom_myhome1_wall_new2_model[4].words.w1 = pc_gbi_ptr_encode(rom_myhome_window_tex);
+    rom_myhome1_wall_new2_model[7].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[77]);
+    rom_myhome1_wall_new2_model[10].words.w1 = pc_gbi_ptr_encode(rom_myhome_enter2_tex);
+    rom_myhome1_wall_new2_model[12].words.w1 = pc_gbi_ptr_encode(rom_myhome1_wall_v);
+    rom_myhome1_wall_new2_model[18].words.w1 = SEGMENT_ADDR(0xA, 0x0);
+    rom_myhome1_wall_new2_model[19].words.w1 = SEGMENT_ADDR(0x8, 0x0);
+    rom_myhome1_wall_new2_model[22].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[6]);
+    rom_myhome1_wall_new2_model[30].words.w1 = SEGMENT_ADDR(0x9, 0x0);
+    rom_myhome1_wall_new2_model[33].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[29]);
+    rom_myhome1_wall_new2_model[42].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[61]);
+    rom_myhome1_wall_new2_model[47].words.w1 = pc_gbi_ptr_encode(&rom_myhome1_wall_v[69]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_rom_myhome1_wall_models(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_rom_myhome1_wall_c(void) {
     pc_load_asset("assets/rom_myhome1_wall/rom_myhome_pal.bin", rom_myhome_pal, 0x20, 0x594E40, 0, 1);
     pc_load_asset("assets/rom_myhome1_wall/rom_myhome_window_tex.bin", rom_myhome_window_tex, 0x200, 0x594E60, 0, 0);
     pc_load_asset("assets/rom_myhome1_wall/rom_myhome_enter2_tex.bin", rom_myhome_enter2_tex, 0x800, 0x595060, 0, 0);
+    pc_patch_rom_myhome1_wall_models();
 }
 #endif

@@ -223,9 +223,37 @@ extern Gfx grd_s_f_mh_3_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_grd_s_f_mh_3_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    grd_s_f_mh_3_model[3].words.w1 = pc_gbi_ptr_encode(earth_pal_dummy);
+    grd_s_f_mh_3_model[4].words.w1 = pc_gbi_ptr_encode(stone_tex_dummy);
+    grd_s_f_mh_3_model[8].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[0]);
+    grd_s_f_mh_3_model[15].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[32]);
+    grd_s_f_mh_3_model[21].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[64]);
+    grd_s_f_mh_3_model[24].words.w1 = pc_gbi_ptr_encode(grass_tex_dummy);
+    grd_s_f_mh_3_model[26].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[77]);
+    grd_s_f_mh_3_model[34].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[107]);
+    grd_s_f_mh_3_model[38].words.w1 = pc_gbi_ptr_encode(earth_tex_dummy);
+    grd_s_f_mh_3_model[40].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[120]);
+    grd_s_f_mh_3_model[45].words.w1 = pc_gbi_ptr_encode(&grd_s_f_mh_3_v[150]);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_grd_s_f_mh_3_model(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_field_bg_acre_grd_s_f_mh_3_grd_s_f_mh_3_c(void) {
     pc_load_asset("assets/field/bg/grd_s_f_mh_3_v.bin", grd_s_f_mh_3_v, 0xB00, 0x9E3330, 0, 2);
+    pc_patch_grd_s_f_mh_3_model();
 }
 #endif
