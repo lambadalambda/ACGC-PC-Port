@@ -51,6 +51,7 @@ jobs:
 
           cp "pc/build-macos/bin/AnimalCrossing" "${APP_MACOS}/AnimalCrossing"
           cp -R "pc/build-macos/bin/shaders" "${APP_MACOS}/shaders"
+          cp -R "pc/build-macos/bin/shaders" "${APP_RESOURCES}/shaders"
           chmod +x "${APP_MACOS}/AnimalCrossing"
 
           SDL2_DYLIB="$(brew --prefix sdl2)/lib/libSDL2-2.0.0.dylib"

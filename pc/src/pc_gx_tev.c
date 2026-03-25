@@ -28,13 +28,38 @@ static char* load_text_file(const char* path) {
 
 static char* load_shader(const char* filename) {
     char path[512];
+    char* base_path;
+
     snprintf(path, sizeof(path), "shaders/%s", filename);
     char* src = load_text_file(path);
     if (src) {
         printf("[PC/TEV] Loaded shader: %s\n", path);
-    } else {
-        fprintf(stderr, "FATAL: Could not load shader: %s\n", path);
+        return src;
     }
+
+    base_path = SDL_GetBasePath();
+    if (base_path) {
+        snprintf(path, sizeof(path), "%sshaders/%s", base_path, filename);
+        src = load_text_file(path);
+        if (src) {
+            printf("[PC/TEV] Loaded shader: %s\n", path);
+            SDL_free(base_path);
+            return src;
+        }
+
+#if defined(__APPLE__)
+        snprintf(path, sizeof(path), "%s../MacOS/shaders/%s", base_path, filename);
+        src = load_text_file(path);
+        if (src) {
+            printf("[PC/TEV] Loaded shader: %s\n", path);
+            SDL_free(base_path);
+            return src;
+        }
+#endif
+        SDL_free(base_path);
+    }
+
+    fprintf(stderr, "FATAL: Could not load shader: shaders/%s\n", filename);
     return src;
 }
 
@@ -96,9 +121,11 @@ void pc_gx_tev_init(void) {
     char* fs_src = load_shader("default.frag");
 
     if (!vs_src || !fs_src) {
-        fprintf(stderr, "FATAL: Shader files missing from shaders/ directory.\n"
-                        "Expected: shaders/default.vert and shaders/default.frag\n"
-                        "Make sure shader files are next to the executable.\n");
+        fprintf(stderr, "FATAL: Shader files missing.\n"
+                        "Expected shader files under one of:\n"
+                        "  - ./shaders/\n"
+                        "  - <SDL base path>/shaders/\n"
+                        "  - <SDL base path>/../MacOS/shaders/ (macOS app fallback)\n");
         free(vs_src);
         free(fs_src);
         exit(1);
