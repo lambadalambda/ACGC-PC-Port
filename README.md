@@ -20,6 +20,12 @@ Pre-built releases for this fork are listed on the [Releases](https://github.com
    - HD textures: `~/Documents/ACGC/texture_pack/`
 5. Launch `AnimalCrossing.app`
 
+If Gatekeeper blocks first launch, use Finder > right-click > **Open** once, or run:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/AnimalCrossing.app
+```
+
 The game reads all assets directly from the disc image at startup. No extraction or preprocessing step is needed.
 
 ### Automated master builds

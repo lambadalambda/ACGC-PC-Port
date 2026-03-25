@@ -45,12 +45,26 @@ jobs:
           APP_CONTENTS="${APP_DIR}/Contents"
           APP_MACOS="${APP_CONTENTS}/MacOS"
           APP_RESOURCES="${APP_CONTENTS}/Resources"
+          APP_FRAMEWORKS="${APP_CONTENTS}/Frameworks"
           mkdir -p "${PKG_DIR}" "dist"
-          mkdir -p "${APP_MACOS}" "${APP_RESOURCES}"
+          mkdir -p "${APP_MACOS}" "${APP_RESOURCES}" "${APP_FRAMEWORKS}"
 
           cp "pc/build-macos/bin/AnimalCrossing" "${APP_MACOS}/AnimalCrossing"
           cp -R "pc/build-macos/bin/shaders" "${APP_MACOS}/shaders"
           chmod +x "${APP_MACOS}/AnimalCrossing"
+
+          SDL2_DYLIB="$(brew --prefix sdl2)/lib/libSDL2-2.0.0.dylib"
+          cp "${SDL2_DYLIB}" "${APP_FRAMEWORKS}/"
+
+          SDL2_LINK_PATH="$(otool -L "${APP_MACOS}/AnimalCrossing" | awk '/libSDL2-2\.0\.0\.dylib/{print $1; exit}')"
+          if [ -z "${SDL2_LINK_PATH}" ]; then
+            echo "failed to locate SDL2 linkage in AnimalCrossing binary" >&2
+            exit 1
+          fi
+
+          install_name_tool -change "${SDL2_LINK_PATH}" "@executable_path/../Frameworks/libSDL2-2.0.0.dylib" "${APP_MACOS}/AnimalCrossing"
+          install_name_tool -id "@executable_path/../Frameworks/libSDL2-2.0.0.dylib" "${APP_FRAMEWORKS}/libSDL2-2.0.0.dylib"
+          codesign --force --deep --sign - "${APP_DIR}"
 
           cat > "${APP_CONTENTS}/Info.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
