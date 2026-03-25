@@ -280,28 +280,64 @@ static int str_ends_ci(const char* s, const char* suffix) {
     return 1;
 }
 
+static int scan_disc_dir(const char* dir, char* out_path, int out_sz) {
+    DIR* dp = opendir(dir);
+    struct dirent* ent;
+
+    if (!dp) return 0;
+
+    while ((ent = readdir(dp)) != NULL) {
+        if (str_ends_ci(ent->d_name, ".ciso") ||
+            str_ends_ci(ent->d_name, ".iso")  ||
+            str_ends_ci(ent->d_name, ".gcm")) {
+            if (strcmp(dir, ".") == 0)
+                snprintf(out_path, out_sz, "%s", ent->d_name);
+            else
+                snprintf(out_path, out_sz, "%s/%s", dir, ent->d_name);
+            closedir(dp);
+            return 1;
+        }
+    }
+
+    closedir(dp);
+    return 0;
+}
+
+static int scan_documents_acgc(const char* home_root, char* out_path, int out_sz) {
+    char dir[512];
+
+    if (!home_root || home_root[0] == '\0') return 0;
+
+    snprintf(dir, sizeof(dir), "%s/Documents/ACGC", home_root);
+    if (scan_disc_dir(dir, out_path, out_sz)) return 1;
+
+    snprintf(dir, sizeof(dir), "%s/Documents/ACGC/rom", home_root);
+    return scan_disc_dir(dir, out_path, out_sz);
+}
+
 static int find_disc_image(char* out_path, int out_sz) {
     static const char* dirs[] = { ".", "orig", "rom", NULL };
+    const char* home;
     int d;
 
     for (d = 0; dirs[d]; d++) {
-        DIR* dp = opendir(dirs[d]);
-        struct dirent* ent;
-        if (!dp) continue;
-        while ((ent = readdir(dp)) != NULL) {
-            if (str_ends_ci(ent->d_name, ".ciso") ||
-                str_ends_ci(ent->d_name, ".iso")  ||
-                str_ends_ci(ent->d_name, ".gcm")) {
-                if (strcmp(dirs[d], ".") == 0)
-                    snprintf(out_path, out_sz, "%s", ent->d_name);
-                else
-                    snprintf(out_path, out_sz, "%s/%s", dirs[d], ent->d_name);
-                closedir(dp);
-                return 1;
-            }
-        }
-        closedir(dp);
+        if (scan_disc_dir(dirs[d], out_path, out_sz)) return 1;
     }
+
+    /* macOS-friendly fallback for DMG installs: look under ~/Documents/ACGC. */
+    home = getenv("HOME");
+    if (scan_documents_acgc(home, out_path, out_sz)) return 1;
+
+#ifdef _WIN32
+    {
+        const char* userprofile = getenv("USERPROFILE");
+        if (userprofile && (!home || strcmp(home, userprofile) != 0) &&
+            scan_documents_acgc(userprofile, out_path, out_sz)) {
+            return 1;
+        }
+    }
+#endif
+
     return 0;
 }
 

@@ -13,17 +13,17 @@ Supported versions: GAFE01_00: Rev 0 (USA)
 Pre-built releases for this fork are listed on the [Releases](https://github.com/lambadalambda/ACGC-PC-Port/releases) page.
 
 1. Download and extract the latest release zip
-2. Place your disc image in the `rom/` folder
+2. Place your disc image in the `rom/` folder, `~/Documents/ACGC/`, or `~/Documents/ACGC/rom/`
 3. Run the included `AnimalCrossing` binary (`AnimalCrossing.exe` on Windows builds)
 
 The game reads all assets directly from the disc image at startup. No extraction or preprocessing step is needed.
 
 ### Automated master builds
 
-Every push to `master` runs a GitHub Actions release-bundle build for macOS and uploads a `.tar.gz` artifact.
+Every push to `master` runs a GitHub Actions macOS build and uploads release artifacts (`.dmg` and `.tar.gz`).
 
 - Actions page: https://github.com/lambadalambda/ACGC-PC-Port/actions
-- Workflow: `Build Release Bundle`
+- Workflow: `Build macOS Release DMG`
 
 ## Building from Source
 
@@ -62,6 +62,8 @@ brew install cmake sdl2 make
    ```
    pc/build-macos/bin/rom/YourGame.ciso
    ```
+
+   You can also keep it in `~/Documents/ACGC/` or `~/Documents/ACGC/rom/`.
 
 4. Run:
    ```bash

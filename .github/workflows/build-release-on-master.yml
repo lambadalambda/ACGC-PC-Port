@@ -1,4 +1,4 @@
-name: Build Release Bundle
+name: Build macOS Release DMG
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
           set -eu
           SHA_SHORT="${GITHUB_SHA::7}"
           PKG_DIR="dist/AnimalCrossing-macos-${SHA_SHORT}"
-          mkdir -p "${PKG_DIR}"
+          mkdir -p "${PKG_DIR}" "dist"
 
           cp "pc/build-macos/bin/AnimalCrossing" "${PKG_DIR}/"
           cp -R "pc/build-macos/bin/shaders" "${PKG_DIR}/shaders"
@@ -43,11 +43,27 @@ jobs:
           mkdir -p "${PKG_DIR}/rom" "${PKG_DIR}/save" "${PKG_DIR}/texture_pack"
           cp "README.md" "${PKG_DIR}/"
 
+          cat > "${PKG_DIR}/ROM-LOCATION.txt" <<'EOF'
+          Place your disc image (.ciso/.iso/.gcm) in one of these paths:
+            - ./rom/                 (next to the binary)
+            - ~/Documents/ACGC/
+            - ~/Documents/ACGC/rom/
+          EOF
+
+          hdiutil create \
+            -volname "AnimalCrossing" \
+            -srcfolder "${PKG_DIR}" \
+            -ov \
+            -format UDZO \
+            "dist/AnimalCrossing-macos-${SHA_SHORT}.dmg"
+
           tar -czf "dist/AnimalCrossing-macos-${SHA_SHORT}.tar.gz" -C dist "AnimalCrossing-macos-${SHA_SHORT}"
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: AnimalCrossing-macos-${{ github.sha }}
-          path: dist/AnimalCrossing-macos-*.tar.gz
+          path: |
+            dist/AnimalCrossing-macos-*.dmg
+            dist/AnimalCrossing-macos-*.tar.gz
           if-no-files-found: error
