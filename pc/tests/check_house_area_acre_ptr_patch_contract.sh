@@ -16,6 +16,9 @@ FILES=(
     "src/data/field/bg/acre/grd_s_c5_s_2/grd_s_c5_s_2.c"
     "src/data/field/bg/acre/grd_s_f_mh_3/grd_s_f_mh_3.c"
     "src/data/field/bg/acre/grd_s_r7_2/grd_s_r7_2.c"
+    "src/data/field/bg/acre/grd_s_c7_3/grd_s_c7_3.c"
+    "src/data/field/bg/acre/grd_s_c1_s_4/grd_s_c1_s_4.c"
+    "src/data/field/bg/acre/grd_s_c1_r1_3/grd_s_c1_r1_3.c"
 )
 
 for rel in "${FILES[@]}"; do

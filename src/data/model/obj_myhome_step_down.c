@@ -46,3 +46,22 @@ Gfx obj_myhome_step_down_model[] = {
     gsSPNTriangles_5b(4, 23, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     gsSPEndDisplayList(),
 };
+
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_myhome_step_down_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_myhome_step_down_model[3].words.w1 = pc_gbi_ptr_encode(obj_myhome_step_pal);
+    obj_myhome_step_down_model[4].words.w1 = pc_gbi_ptr_encode(obj_myhome_step_tex);
+    obj_myhome_step_down_model[7].words.w1 = pc_gbi_ptr_encode(obj_myhome_step_down_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_myhome_step_down_model(void) {
+}
+#endif

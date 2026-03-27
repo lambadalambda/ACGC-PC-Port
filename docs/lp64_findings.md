@@ -26,6 +26,52 @@ This file tracks LP64 (64-bit host pointer-width) investigations and fixes so po
   - LP64 selftest/title smokes and ASAN title smoke continue to pass.
   - follow-up: validate on manual/user run that porter talk now triggers reliably at the station handoff.
 
+## 2026-03-25 - loaded-save house/interior model pointer fixups (myhome4 + stairs)
+
+- Symptom/signature:
+  - user-loaded GCI saves could enter town/house logic, but player houses and house interior geometry remained missing.
+  - runtime logs showed concentrated `[PC][emu64][zero]` hits on expanded-house symbols, including `obj_s_myhome4_*`, `rom_myhome4_1_floor_model`, `rom_myhome4_1_wall_model`, `obj_myhome_step_down_model`, and `obj_myhome_step_up_model`.
+- Root cause:
+  - LP64 static pointer mode still left display-list `w1` pointer words unpatched in myhome4 floor/wall models, myhome4 house exterior models, and interior stair models.
+- Fix approach and touched files:
+  - added guarded one-time LP64 patch helpers in:
+    - `src/data/model/rom_myhome4_1_floor.c` (`pc_patch_rom_myhome4_1_floor_models`)
+    - `src/data/model/rom_myhome4_1_wall.c` (`pc_patch_rom_myhome4_1_wall_models`)
+    - `src/data/model/obj_myhome_step_down.c` (`pc_patch_obj_myhome_step_down_model`)
+    - `src/data/model/obj_myhome_step_up.c` (`pc_patch_obj_myhome_step_up_model`)
+  - expanded `pc_patch_obj_myhome_models()` in `src/data/model/obj_s_myhome1.c` to cover `obj_s_myhome4_*` and `obj_w_myhome4_*` model display lists.
+  - invoked helper calls from indoor draw and asset-load paths:
+    - `src/actor/ac_my_indoor.c`
+    - `src/data/model/rom_myhome4_1_wall.c`
+    - `src/data/model/obj_myhome_step_up.c`
+  - extended contract coverage in `pc/tests/check_myhome_indoor_ptr_patch_contract.sh`.
+- Verification and follow-up:
+  - `bash pc/tests/check_myhome_indoor_ptr_patch_contract.sh` passes.
+  - `bash pc/tests/check_structure_mailbox_prop_ptr_patch_contract.sh` passes.
+  - macOS build succeeds (`cmake --build pc/build-macos -j4`).
+  - follow-up: rerun loaded-save repro and confirm `log_runs/1.log` no longer reports myhome4/stair zero-pointer symbols.
+
+## 2026-03-25 - acre batch 1 from loaded-save zero-symbol ranking
+
+- Symptom/signature:
+  - post-load runtime still showed concentrated acre zero-pointer hits in `log_runs/1.log`, led by `grd_s_c7_3_model`, `grd_s_c1_s_4_model`, and `grd_s_c1_r1_3_model`.
+- Root cause:
+  - these acre display lists still had unpatched static `w1` pointer words under LP64 static-pointer mode.
+- Fix approach and touched files:
+  - added guarded LP64 helpers and loader callsites for:
+    - `src/data/field/bg/acre/grd_s_c7_3/grd_s_c7_3.c`
+    - `src/data/field/bg/acre/grd_s_c1_s_4/grd_s_c1_s_4.c`
+    - `src/data/field/bg/acre/grd_s_c1_r1_3/grd_s_c1_r1_3.c`
+  - extended `pc/tests/check_house_area_acre_ptr_patch_contract.sh` to enforce generator/helper-call coverage for this batch.
+  - added `pc/tools/lp64_zero_ranker.py` to rank next LP64 zero-pointer targets from logs plus static metadata (`has_loader`, `has_helper`, generator fixup count).
+- Verification and follow-up:
+  - `bash pc/tests/check_house_area_acre_ptr_patch_contract.sh` passes.
+  - `bash pc/tests/check_myhome_indoor_ptr_patch_contract.sh` passes.
+  - `bash pc/tests/check_structure_mailbox_prop_ptr_patch_contract.sh` passes.
+  - macOS build succeeds (`cmake --build pc/build-macos -j4`).
+  - ranking tool runs successfully (`python3 pc/tools/lp64_zero_ranker.py --top 20 --only-loader --only-missing-helper --show-symbols`).
+  - follow-up: rerun loaded-save canary and confirm the three patched acre symbols disappear from `[PC][emu64][zero]` output.
+
 ## 2026-03-23 - post-train zero-operand pointer patch expansion (acre/model batch)
 
 - Symptom/signature:

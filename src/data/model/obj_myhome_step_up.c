@@ -46,9 +46,29 @@ Gfx obj_myhome_step_up_model[] = {
     gsSPEndDisplayList(),
 };
 
+#if defined(TARGET_PC) && defined(PC_EXPERIMENTAL_64BIT)
+void pc_patch_obj_myhome_step_up_model(void) {
+    static int s_patched = FALSE;
+
+    if (s_patched) {
+        return;
+    }
+
+    obj_myhome_step_up_model[3].words.w1 = pc_gbi_ptr_encode(rom_myhome_pal);
+    obj_myhome_step_up_model[4].words.w1 = pc_gbi_ptr_encode(rom_myhome_step_tex);
+    obj_myhome_step_up_model[7].words.w1 = pc_gbi_ptr_encode(obj_myhome_step_up_v);
+
+    s_patched = TRUE;
+}
+#else
+void pc_patch_obj_myhome_step_up_model(void) {
+}
+#endif
+
 #ifdef TARGET_PC
 extern void pc_load_asset(const char*, void*, unsigned int, unsigned int, int, int);
 void _pc_load_src_data_model_obj_myhome_step_up_c(void) {
     pc_load_asset("assets/obj_myhome_step_up/rom_myhome_pal.bin", rom_myhome_pal, 0x20, 0xBB86C0, 0, 1);
+    pc_patch_obj_myhome_step_up_model();
 }
 #endif

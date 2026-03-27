@@ -79,6 +79,8 @@ extern Gfx rom_myhome4_1_floor_new_model[];
 extern Gfx rom_myhome4_1_wall_new_model[];
 extern Gfx rom_myhome4_1_floor_new2_model[];
 extern Gfx rom_myhome4_1_wall_new2_model[];
+extern void pc_patch_rom_myhome4_1_floor_models(void);
+extern void pc_patch_rom_myhome4_1_wall_models(void);
 
 extern Gfx rom_myhome4_2_floor_model[];
 extern Gfx rom_myhome4_2_wall_model[];
@@ -132,6 +134,8 @@ static aMI_size_disp_data_c aMI_size_dsp_table[aMI_ROOM_KIND_NUM] = {
 
 extern Gfx obj_myhome_step_down_model[];
 extern Gfx obj_myhome_step_up_model[];
+extern void pc_patch_obj_myhome_step_down_model(void);
+extern void pc_patch_obj_myhome_step_up_model(void);
 
 static aMI_room_step_data_c aMI_step_data[aMI_STEP_TYPE_NUM] = {
     { obj_myhome_step_down_model, 0 },
@@ -708,6 +712,10 @@ static void My_Indoor_Actor_draw(ACTOR* actorx, GAME* game) {
 
     pc_patch_rom_myhome1_wall_models();
     pc_patch_rom_myhome1_floor_models();
+    pc_patch_rom_myhome4_1_wall_models();
+    pc_patch_rom_myhome4_1_floor_models();
+    pc_patch_obj_myhome_step_down_model();
+    pc_patch_obj_myhome_step_up_model();
 
     // Draw the wall
     (*my_indoor->banks[my_indoor->wall_bank_idx & 1].wall_draw_proc)(actorx, game);
