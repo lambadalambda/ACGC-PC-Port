@@ -9,6 +9,7 @@ PCSettings g_pc_settings = {
     .vsync         = 0,
     .msaa          = 4,
     .preload_textures = 0,
+    .launch_log_file = 0,
 };
 
 static const char* SETTINGS_FILE = "settings.ini";
@@ -30,7 +31,10 @@ static const char* DEFAULT_SETTINGS =
     "\n"
     "[Enhancements]\n"
     "# Preload HD textures at startup: 0 = off (load on demand), 1 = preload, 2 = preload + cache file (fastest)\n"
-    "preload_textures = 0\n";
+    "preload_textures = 0\n"
+    "\n"
+    "# Write a new per-launch log file to Documents/ACGC/logs: 0 = off, 1 = on\n"
+    "launch_log_file = 0\n";
 
 static const char* skip_ws(const char* s) {
     while (*s == ' ' || *s == '\t') s++;
@@ -61,6 +65,8 @@ static void apply_setting(const char* key, const char* value) {
             g_pc_settings.msaa = val;
     } else if (strcmp(key, "preload_textures") == 0) {
         if (val >= 0 && val <= 2) g_pc_settings.preload_textures = val;
+    } else if (strcmp(key, "launch_log_file") == 0) {
+        if (val == 0 || val == 1) g_pc_settings.launch_log_file = val;
     }
 }
 
@@ -95,6 +101,9 @@ void pc_settings_save(void) {
     fprintf(f, "[Enhancements]\n");
     fprintf(f, "# Preload HD textures at startup: 0 = off (load on demand), 1 = preload, 2 = preload + cache file (fastest)\n");
     fprintf(f, "preload_textures = %d\n", g_pc_settings.preload_textures);
+    fprintf(f, "\n");
+    fprintf(f, "# Write a new per-launch log file to Documents/ACGC/logs: 0 = off, 1 = on\n");
+    fprintf(f, "launch_log_file = %d\n", g_pc_settings.launch_log_file);
     fclose(f);
     printf("[Settings] Saved %s\n", SETTINGS_FILE);
 }
@@ -148,8 +157,8 @@ void pc_settings_load(void) {
         }
     }
     fclose(f);
-    printf("[Settings] Loaded %s: %dx%d fullscreen=%d vsync=%d msaa=%d preload_textures=%d\n",
+    printf("[Settings] Loaded %s: %dx%d fullscreen=%d vsync=%d msaa=%d preload_textures=%d launch_log_file=%d\n",
            SETTINGS_FILE, g_pc_settings.window_width, g_pc_settings.window_height,
            g_pc_settings.fullscreen, g_pc_settings.vsync, g_pc_settings.msaa,
-           g_pc_settings.preload_textures);
+           g_pc_settings.preload_textures, g_pc_settings.launch_log_file);
 }

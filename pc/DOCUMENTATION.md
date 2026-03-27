@@ -283,9 +283,21 @@ window_height = 720
 fullscreen = 0          # 0=windowed, 1=fullscreen, 2=borderless
 vsync = 0
 msaa = 4                # 0/2/4/8
+
+[Enhancements]
+preload_textures = 0     # 0=on demand, 1=preload, 2=preload+cache
+launch_log_file = 0      # 1=write a new launch log to Documents/ACGC/logs
 ```
 
 Auto-generated with defaults on first run. Resolution presets up to 4K supported. Custom resolutions can be set in the .ini file. DPI-aware on Windows (respects system scaling).
+
+When `launch_log_file = 1`, startup redirects stdout/stderr to a per-launch file at:
+
+- macOS/Linux: `~/Documents/ACGC/logs/launch_YYYYMMDD_HHMMSS_PID.log`
+- Windows: `%USERPROFILE%/Documents/ACGC/logs/launch_YYYYMMDD_HHMMSS_PID.log`
+
+The title-screen Options menu exposes this as **Launch Log**; changes take effect on the next launch.
+When enabled, the Options panel also shows the active log filename (or `File: (next launch)` until restart).
 
 ### HD Texture Packs
 

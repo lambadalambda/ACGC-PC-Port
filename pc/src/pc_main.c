@@ -8,6 +8,14 @@
 #include "pc_disc.h"
 #include "pc_typing.h"
 
+#include <errno.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 /* prefer discrete GPU on laptops */
 #ifdef _WIN32
 __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
@@ -28,6 +36,168 @@ int           g_pc_window_w = PC_SCREEN_WIDTH;
 int           g_pc_window_h = PC_SCREEN_HEIGHT;
 int           g_pc_widescreen_stretch = 0;
 int           g_pc_boot_player_select = 0;
+static char   g_pc_launch_log_path[768] = "";
+
+const char* pc_platform_get_launch_log_path(void) {
+    return g_pc_launch_log_path;
+}
+
+static const char* pc_skip_ws(const char* s) {
+    while (*s == ' ' || *s == '\t') {
+        s++;
+    }
+    return s;
+}
+
+static void pc_trim_end(char* s) {
+    int len = (int)strlen(s);
+    while (len > 0 && (s[len - 1] == ' ' || s[len - 1] == '\t' ||
+                       s[len - 1] == '\r' || s[len - 1] == '\n')) {
+        s[--len] = '\0';
+    }
+}
+
+static int pc_launch_log_setting_enabled(void) {
+    FILE* f = fopen("settings.ini", "r");
+    char line[256];
+
+    if (!f) {
+        return 0;
+    }
+
+    while (fgets(line, sizeof(line), f)) {
+        const char* p = pc_skip_ws(line);
+        char* eq;
+        char* key;
+        char* value;
+
+        if (*p == '#' || *p == ';' || *p == '\0' || *p == '\n' || *p == '[') {
+            continue;
+        }
+
+        eq = strchr(line, '=');
+        if (!eq) {
+            continue;
+        }
+
+        *eq = '\0';
+        key = (char*)pc_skip_ws(line);
+        pc_trim_end(key);
+        value = (char*)pc_skip_ws(eq + 1);
+        pc_trim_end(value);
+
+        if (strcmp(key, "launch_log_file") == 0) {
+            int enabled = (atoi(value) != 0);
+            fclose(f);
+            return enabled;
+        }
+    }
+
+    fclose(f);
+    return 0;
+}
+
+static int pc_mkdir_if_needed(const char* path) {
+    struct stat st;
+
+    if (!path || path[0] == '\0') {
+        return 0;
+    }
+
+#ifdef _WIN32
+    if (_mkdir(path) == 0) {
+        return 1;
+    }
+#else
+    if (mkdir(path, 0755) == 0) {
+        return 1;
+    }
+#endif
+
+    if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int pc_get_documents_acgc_root(char* out_path, size_t out_path_size) {
+    const char* home = getenv("HOME");
+
+#ifdef _WIN32
+    if (!home || home[0] == '\0') {
+        home = getenv("USERPROFILE");
+    }
+#endif
+
+    if (!home || home[0] == '\0') {
+        return 0;
+    }
+
+    snprintf(out_path, out_path_size, "%s/Documents/ACGC", home);
+    return 1;
+}
+
+static int pc_redirect_launch_log_file(void) {
+    char docs_root[512];
+    char logs_dir[576];
+    char log_path[768];
+    time_t now = time(NULL);
+    struct tm tm_local;
+    unsigned long pid;
+
+    if (!pc_get_documents_acgc_root(docs_root, sizeof(docs_root))) {
+        fprintf(stderr, "[PC] WARNING: launch_log_file=1 but HOME/USERPROFILE is unavailable\n");
+        return 0;
+    }
+
+    if (!pc_mkdir_if_needed(docs_root)) {
+        fprintf(stderr, "[PC] WARNING: launch_log_file=1 but failed to create/access '%s'\n", docs_root);
+        return 0;
+    }
+
+    snprintf(logs_dir, sizeof(logs_dir), "%s/logs", docs_root);
+    if (!pc_mkdir_if_needed(logs_dir)) {
+        fprintf(stderr, "[PC] WARNING: launch_log_file=1 but failed to create/access '%s'\n", logs_dir);
+        return 0;
+    }
+
+#ifdef _WIN32
+    pid = (unsigned long)GetCurrentProcessId();
+    if (localtime_s(&tm_local, &now) == 0) {
+#else
+    pid = (unsigned long)getpid();
+    if (localtime_r(&now, &tm_local) != NULL) {
+#endif
+        snprintf(log_path, sizeof(log_path),
+                 "%s/launch_%04d%02d%02d_%02d%02d%02d_%lu.log",
+                 logs_dir,
+                 tm_local.tm_year + 1900,
+                 tm_local.tm_mon + 1,
+                 tm_local.tm_mday,
+                 tm_local.tm_hour,
+                 tm_local.tm_min,
+                 tm_local.tm_sec,
+                 pid);
+    } else {
+        snprintf(log_path, sizeof(log_path), "%s/launch_%lu.log", logs_dir, pid);
+    }
+
+    if (!freopen(log_path, "w", stdout)) {
+        fprintf(stderr, "[PC] WARNING: failed to open launch log '%s' for stdout: %s\n", log_path, strerror(errno));
+        return 0;
+    }
+
+    if (!freopen(log_path, "a", stderr)) {
+        printf("[PC] WARNING: failed to redirect stderr to launch log '%s'\n", log_path);
+    }
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+    snprintf(g_pc_launch_log_path, sizeof(g_pc_launch_log_path), "%s", log_path);
+    printf("[PC] Launch log file: %s\n", log_path);
+    return 1;
+}
 
 /* exe image range — used by seg2k0 to distinguish pointers from segment addresses */
 uintptr_t pc_image_base = 0;
@@ -393,6 +563,10 @@ extern void ac_entry(void);
 extern int boot_main(int argc, const char** argv);
 
 int main(int argc, char* argv[]) {
+    int launch_log_active = 0;
+
+    g_pc_launch_log_path[0] = '\0';
+
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             printf("Usage: AnimalCrossing [options]\n");
@@ -436,9 +610,13 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (pc_launch_log_setting_enabled()) {
+        launch_log_active = pc_redirect_launch_log_file();
+    }
+
     /* Redirect stdout/stderr to NUL unless verbose — unbuffered terminal writes
      * are extremely slow on Windows and tank FPS. */
-    if (!g_pc_verbose) {
+    if (!launch_log_active && !g_pc_verbose) {
 #ifdef _WIN32
         freopen("NUL", "w", stdout);
         freopen("NUL", "w", stderr);
@@ -446,7 +624,7 @@ int main(int argc, char* argv[]) {
         freopen("/dev/null", "w", stdout);
         freopen("/dev/null", "w", stderr);
 #endif
-    } else {
+    } else if (!launch_log_active) {
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stderr, NULL, _IONBF, 0);
     }

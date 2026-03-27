@@ -25,6 +25,9 @@
 #include "pc_settings.h"
 #include "main.h"
 #include <stdio.h>
+#include <string.h>
+
+extern const char* pc_platform_get_launch_log_path(void);
 #endif
 
 #define G_CC_TITLE PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, PRIMITIVE, 0, TEXEL0, 0
@@ -393,12 +396,12 @@ static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
       return;
     }
 
-    /* Up/down navigation within options (5 items: 0=res, 1=fs, 2=vsync, 3=msaa, 4=textures) */
+    /* Up/down navigation within options (6 items: 0=res, 1=fs, 2=vsync, 3=msaa, 4=textures, 5=launch log) */
     if (actor->pc_cursor_cooldown == 0) {
       if (stick_y > 30 || (on_btn & BUTTON_DUP)) {
         if (actor->pc_options_sel > 0) { actor->pc_options_sel--; actor->pc_cursor_cooldown = 8; }
       } else if (stick_y < -30 || (on_btn & BUTTON_DDOWN)) {
-        if (actor->pc_options_sel < 4) { actor->pc_options_sel++; actor->pc_cursor_cooldown = 8; }
+        if (actor->pc_options_sel < 5) { actor->pc_options_sel++; actor->pc_cursor_cooldown = 8; }
       }
 
       /* Left/right to change values */
@@ -429,6 +432,7 @@ static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
           case 4: { /* Textures cycle up: 0→1→2 */
             if (g_pc_settings.preload_textures < 2) g_pc_settings.preload_textures++;
           } break;
+          case 5: g_pc_settings.launch_log_file = !g_pc_settings.launch_log_file; break;
         }
       } else if (stick_x < -30 || (on_btn & BUTTON_DLEFT)) {
         changed = 1; actor->pc_cursor_cooldown = 8;
@@ -451,6 +455,7 @@ static void aAL_pc_game_start_wait(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
           case 4: { /* Textures cycle down: 2→1→0 */
             if (g_pc_settings.preload_textures > 0) g_pc_settings.preload_textures--;
           } break;
+          case 5: g_pc_settings.launch_log_file = !g_pc_settings.launch_log_file; break;
         }
       }
       } /* end resolution presets block */
@@ -849,7 +854,7 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
   /* Semi-transparent background behind options panel */
   {
     Gfx* gfx;
-    int x0 = 45, y0_bg = 58, x1 = 295, y1_bg = 196;
+    int x0 = 45, y0_bg = 58, x1 = 300, y1_bg = 244;
     OPEN_DISP(graph);
     gfx = NOW_FONT_DISP;
     gDPPipeSync(gfx++);
@@ -961,14 +966,62 @@ static void aAL_pc_options_draw(ANIMAL_LOGO_ACTOR* actor, GAME* game) {
     sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
     sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   if (sel == item) mFont_SetLineStrings(game, str_arrow, 1, x - 12.0f, y, 255, 255, 255, 255, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+  item++; y += line_h;
+
+  /* Launch log */
+  len = sprintf(buf, "< %s >", g_pc_settings.launch_log_file ? "On" : "Off");
+  {
+    static u8 lbl[] = { 'L', 'a', 'u', 'n', 'c', 'h', ' ', 'L', 'o', 'g' };
+    mFont_SetLineStrings(game, lbl, sizeof(lbl), x, y,
+      sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
+      sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+  }
+  mFont_SetLineStrings(game, (u8*)buf, len, 180.0f, y,
+    sel == item ? 255 : 180, sel == item ? 255 : 180, sel == item ? 255 : 180,
+    sel == item ? 255 : 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+  if (sel == item) mFont_SetLineStrings(game, str_arrow, 1, x - 12.0f, y, 255, 255, 255, 255, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
   y += line_h * 1.5f;
 
   /* Hints */
   {
     static u8 str_save[] = { 'S', 'T', 'A', 'R', 'T', ':', ' ', 'S', 'a', 'v', 'e' };
     static u8 str_back[] = { 'B', ':', ' ', 'B', 'a', 'c', 'k' };
+    static u8 str_note[] = { 'L', 'o', 'g', ':', ' ', 'n', 'e', 'x', 't', ' ', 'l', 'a', 'u', 'n', 'c', 'h' };
+    char log_info[96];
+    int log_info_len = 0;
+    const char* log_path = pc_platform_get_launch_log_path();
+    const char* tail = NULL;
+    const char* slash = NULL;
+
     mFont_SetLineStrings(game, str_save, sizeof(str_save), x, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
     mFont_SetLineStrings(game, str_back, sizeof(str_back), 190.0f, y, 255, 255, 255, 160, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+    mFont_SetLineStrings(game, str_note, sizeof(str_note), x, y + 14.0f, 255, 255, 255, 120, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+
+    if (g_pc_settings.launch_log_file) {
+      if (log_path != NULL && log_path[0] != '\0') {
+        slash = strrchr(log_path, '/');
+#ifdef _WIN32
+        {
+          const char* win_slash = strrchr(log_path, '\\');
+          if (win_slash != NULL && (slash == NULL || win_slash > slash)) {
+            slash = win_slash;
+          }
+        }
+#endif
+        tail = (slash != NULL) ? slash + 1 : log_path;
+
+        if ((int)strlen(tail) > 24) {
+          snprintf(log_info, sizeof(log_info), "File: ...%s", tail + strlen(tail) - 24);
+        } else {
+          snprintf(log_info, sizeof(log_info), "File: %s", tail);
+        }
+      } else {
+        snprintf(log_info, sizeof(log_info), "File: (next launch)");
+      }
+
+      log_info_len = (int)strlen(log_info);
+      mFont_SetLineStrings(game, (u8*)log_info, log_info_len, x, y + 28.0f, 255, 255, 255, 120, FALSE, TRUE, 1.0f, 1.0f, mFont_MODE_FONT);
+    }
   }
 }
 

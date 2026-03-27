@@ -144,6 +144,7 @@ Graphics settings are stored in `settings.ini` and can be edited manually or thr
 - VSync
 - MSAA (anti-aliasing)
 - Texture Loading/Caching (No need to enable if you aren't using a texture pack)
+- Launch Log File (creates a new log in `Documents/ACGC/logs/` each launch; applies next launch, and Options shows active filename when available)
 
 ## Texture Packs
 
@@ -156,6 +157,8 @@ I highly recommend the following texture pack from the talented artists of Anima
 ## Save Data
 
 Save files are stored in `save/` using the standard GCI format, compatible with Dolphin emulator saves. Place a Dolphin GCI export in the save directory to import an existing save.
+
+When Launch Log File is enabled in the title Options menu, a fresh startup log is written to `~/Documents/ACGC/logs/` (or `%USERPROFILE%/Documents/ACGC/logs/` on Windows) on each launch.
 
 ## Credits
 

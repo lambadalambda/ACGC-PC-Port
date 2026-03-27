@@ -100,6 +100,7 @@ void pc_platform_init(void);
 void pc_platform_shutdown(void);
 void pc_platform_swap_buffers(void);
 int  pc_platform_poll_events(void);
+const char* pc_platform_get_launch_log_path(void);
 
 /* --- Crash protection (VEH + setjmp/longjmp) --- */
 void pc_crash_protection_init(void);
