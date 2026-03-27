@@ -23,6 +23,11 @@
 #include <unistd.h>
 #ifdef _WIN32
 #include <direct.h>  /* _mkdir */
+#include <windows.h>
+#undef near
+#undef far
+#else
+#include <dirent.h>
 #endif
 #include <dolphin/os.h>  /* OSReport */
 
@@ -470,10 +475,102 @@ static int pc_save_read_gci(const char* path) {
     return TRUE;
 }
 
+static int pc_path_ends_with_gci(const char* name) {
+    size_t len;
+    const char* ext;
+
+    if (!name) return FALSE;
+    len = strlen(name);
+    if (len < 4) return FALSE;
+
+    ext = name + len - 4;
+    return ext[0] == '.' &&
+           (ext[1] == 'g' || ext[1] == 'G') &&
+           (ext[2] == 'c' || ext[2] == 'C') &&
+           (ext[3] == 'i' || ext[3] == 'I');
+}
+
+static int pc_save_scan_gci_directory(const char* dir_path) {
+    if (!dir_path || dir_path[0] == '\0') {
+        return FALSE;
+    }
+
+#ifdef _WIN32
+    {
+        char search_path[1024];
+        char full_path[1024];
+        WIN32_FIND_DATAA fd;
+        HANDLE h;
+
+        snprintf(search_path, sizeof(search_path), "%s\\*", dir_path);
+        h = FindFirstFileA(search_path, &fd);
+        if (h == INVALID_HANDLE_VALUE) {
+            return FALSE;
+        }
+
+        do {
+            if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+                continue;
+            }
+            if (!pc_path_ends_with_gci(fd.cFileName)) {
+                continue;
+            }
+
+            snprintf(full_path, sizeof(full_path), "%s\\%s", dir_path, fd.cFileName);
+            OSReport("[PC] GCI scan: found '%s'\n", full_path);
+            if (pc_save_read_gci(full_path)) {
+                FindClose(h);
+                return TRUE;
+            }
+        } while (FindNextFileA(h, &fd));
+
+        FindClose(h);
+    }
+#else
+    {
+        DIR* d;
+        struct dirent* ent;
+
+        d = opendir(dir_path);
+        if (!d) {
+            return FALSE;
+        }
+
+        while ((ent = readdir(d)) != NULL) {
+            char full_path[1024];
+            struct stat st;
+
+            if (ent->d_name[0] == '.') {
+                continue;
+            }
+            if (!pc_path_ends_with_gci(ent->d_name)) {
+                continue;
+            }
+
+            snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, ent->d_name);
+            if (stat(full_path, &st) != 0 || !S_ISREG(st.st_mode)) {
+                continue;
+            }
+
+            OSReport("[PC] GCI scan: found '%s'\n", full_path);
+            if (pc_save_read_gci(full_path)) {
+                closedir(d);
+                return TRUE;
+            }
+        }
+
+        closedir(d);
+    }
+#endif
+
+    return FALSE;
+}
+
 static int pc_save_scan_gci_dir(void) {
-    const char* gci_names[6];
+    const char* gci_names[8];
     char docs_root_path[640];
     char docs_root_alt_path[640];
+    char save_dir_alt_path[640];
     int count = 0;
     int i;
     struct stat st;
@@ -481,6 +578,9 @@ static int pc_save_scan_gci_dir(void) {
     pc_save_init_paths();
 
     gci_names[count++] = PC_GCI_PATH;
+    snprintf(save_dir_alt_path, sizeof(save_dir_alt_path), "%s/%s", PC_SAVE_DIR,
+             "8P-GAFE-DobutsunomoriP_MURA.gci");
+    gci_names[count++] = save_dir_alt_path;
 
     if (strcmp(PC_GCI_PATH, PC_LEGACY_GCI_PATH) != 0) {
         gci_names[count++] = PC_LEGACY_GCI_PATH;
@@ -507,6 +607,18 @@ static int pc_save_scan_gci_dir(void) {
             }
         }
     }
+
+    /* Dolphin exports can use arbitrary filenames (e.g. animal-crossing.*.gci). */
+    if (pc_save_scan_gci_directory(PC_SAVE_DIR)) {
+        return TRUE;
+    }
+    if (strcmp(PC_SAVE_DIR, "save") != 0 && pc_save_scan_gci_directory("save")) {
+        return TRUE;
+    }
+    if (g_pc_save_root[0] != '\0' && pc_save_scan_gci_directory(g_pc_save_root)) {
+        return TRUE;
+    }
+
     return FALSE;
 }
 
